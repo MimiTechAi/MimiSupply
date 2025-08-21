@@ -431,24 +431,24 @@ struct DriverDashboardView: View {
             
             // Performance Metrics
             HStack(spacing: 16) {
-                PerformanceMetricCard(
+                DriverPerformanceMetricCard(
                     title: "Pünktlichkeit",
                     value: "\(Int(viewModel.onTimeDeliveryRate * 100))%",
-                    trend: viewModel.onTimeDeliveryTrend,
+                    change: viewModel.onTimeDeliveryTrend,
                     icon: "clock"
                 )
                 
-                PerformanceMetricCard(
+                DriverPerformanceMetricCard(
                     title: "Kundenbewertung",
                     value: String(format: "%.1f", viewModel.averageCustomerRating),
-                    trend: viewModel.ratingTrend,
+                    change: viewModel.ratingTrend,
                     icon: "star"
                 )
                 
-                PerformanceMetricCard(
+                DriverPerformanceMetricCard(
                     title: "Effizienz",
                     value: String(format: "%.1f/h", viewModel.deliveriesPerHour),
-                    trend: viewModel.efficiencyTrend,
+                    change: viewModel.efficiencyTrend,
                     icon: "speedometer"
                 )
             }
@@ -464,7 +464,7 @@ struct DriverDashboardView: View {
                 .foregroundColor(.primary)
             
             LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 2), spacing: 12) {
-                QuickActionButton(
+                DriverQuickActionButton(
                     title: "Fahrzeug",
                     icon: "car",
                     color: .blue,
@@ -473,7 +473,7 @@ struct DriverDashboardView: View {
                     showingVehicleStatus = true
                 }
                 
-                QuickActionButton(
+                DriverQuickActionButton(
                     title: "Support",
                     icon: "headphones",
                     color: .orange
@@ -481,7 +481,7 @@ struct DriverDashboardView: View {
                     viewModel.contactSupport()
                 }
                 
-                QuickActionButton(
+                DriverQuickActionButton(
                     title: "Notfall",
                     icon: "exclamationmark.triangle",
                     color: .red
@@ -489,7 +489,7 @@ struct DriverDashboardView: View {
                     viewModel.triggerEmergency()
                 }
                 
-                QuickActionButton(
+                DriverQuickActionButton(
                     title: "Pause",
                     icon: "pause.circle",
                     color: viewModel.isOnBreak ? .green : .gray
@@ -609,7 +609,7 @@ struct JobQueueCard: View {
                     .font(.caption)
                     .foregroundColor(.secondary)
                 
-                Text("ETA: \(job.estimatedDeliveryTime?.formatted(date: .omitted, time: .shortened) ?? "TBD")")
+                Text("ETA: \(job.estimatedDeliveryTime.formatted(date: .omitted, time: .shortened))")
                     .font(.caption)
                     .foregroundColor(.blue)
             }
@@ -744,10 +744,10 @@ struct EnhancedEarningsCard: View {
     }
 }
 
-struct PerformanceMetricCard: View {
+struct DriverPerformanceMetricCard: View {
     let title: String
     let value: String
-    let trend: Double
+    let change: Double
     let icon: String
     
     var body: some View {
@@ -761,9 +761,9 @@ struct PerformanceMetricCard: View {
                 .fontWeight(.semibold)
             
             HStack(spacing: 2) {
-                Image(systemName: trend > 0 ? "arrow.up" : trend < 0 ? "arrow.down" : "minus")
+                Image(systemName: change > 0 ? "arrow.up" : change < 0 ? "arrow.down" : "minus")
                     .font(.caption2)
-                    .foregroundColor(trend > 0 ? .green : trend < 0 ? .red : .gray)
+                    .foregroundColor(change > 0 ? .green : change < 0 ? .red : .gray)
                 
                 Text(title)
                     .font(.caption2)
@@ -777,7 +777,7 @@ struct PerformanceMetricCard: View {
     }
 }
 
-struct QuickActionButton: View {
+struct DriverQuickActionButton: View {
     let title: String
     let icon: String
     let color: Color

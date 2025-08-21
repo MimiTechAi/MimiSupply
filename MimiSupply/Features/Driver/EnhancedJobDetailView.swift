@@ -108,11 +108,9 @@ struct EnhancedJobDetailView: View {
                         .fontWeight(.bold)
                         .foregroundColor(.green)
                     
-                    if let eta = job.estimatedDeliveryTime {
-                        Text("ETA: \(eta.formatted(date: .omitted, time: .shortened))")
-                            .font(.caption)
-                            .foregroundColor(.secondary)
-                    }
+                    Text("ETA: \(job.estimatedDeliveryTime.formatted(date: .omitted, time: .shortened))")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
                 }
             }
             
