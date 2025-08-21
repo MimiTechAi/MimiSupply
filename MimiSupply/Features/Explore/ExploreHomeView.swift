@@ -280,8 +280,9 @@ struct ExploreHomeView: View {
         VStack(alignment: .leading, spacing: Spacing.md) {
             HStack {
                 Text("Featured Partners")
-                    .font(.titleLarge)
-                    .foregroundColor(.graphite)
+                    .font(.title2)
+                    .fontWeight(.bold)
+                    .foregroundColor(.primary)
                 
                 Spacer()
                 
@@ -290,30 +291,26 @@ struct ExploreHomeView: View {
                         await viewModel.showAllFeatured()
                     }
                 }
-                .font(.bodyMedium)
-                .foregroundColor(.emerald)
+                .font(.subheadline)
+                .fontWeight(.semibold)
+                .foregroundColor(Color(red: 0.31, green: 0.78, blue: 0.47))
             }
             
+            // Premium Featured Partners with Horizontal Scroll
             ScrollView(.horizontal, showsIndicators: false) {
-                LazyHStack(spacing: Spacing.md) {
-                    ForEach(viewModel.featuredPartners) { partner in
-                        Button(action: { viewModel.selectPartner(partner) }) {
-                            VStack {
-                                Text(partner.name)
-                                    .font(.headline)
-                                Text("⭐ \(String(format: "%.1f", partner.rating))")
-                                    .font(.caption)
-                            }
-                            .padding()
-                            .background(Color(.systemBackground))
-                            .cornerRadius(12)
-                            .shadow(radius: 2)
+                HStack(spacing: 16) {
+                    ForEach(viewModel.featuredPartners.prefix(5)) { partner in
+                        PremiumPartnerCard(partner: partner) {
+                            viewModel.selectPartner(partner)
                         }
+                        .frame(width: 280)
                     }
                 }
-                .padding(.horizontal, Spacing.md)
+                .padding(.horizontal, 20)
             }
+            .padding(.horizontal, -20)
         }
+        .accessibilityElement(children: .contain)
     }
     
 
@@ -350,72 +347,75 @@ struct PartnerRowCard: View {
     
     var body: some View {
         Button(action: onTap) {
-            AppCard {
+            ZStack {
+                // Background with partner-specific styling
+                partnerBackgroundGradient
+                
                 HStack(spacing: Spacing.md) {
-                    // Partner logo/image with optimized caching
-                    CachedAsyncImage(url: partner.logoURL ?? partner.heroImageURL) { image in
-                        image
-                            .resizable()
-                            .aspectRatio(contentMode: .fill)
-                    } placeholder: {
-                        Rectangle()
-                            .fill(Color.gray200)
-                            .overlay(
-                                Image(systemName: partner.category.iconName)
-                                    .foregroundColor(.gray400)
-                                    .font(.title2)
-                            )
+                    // Partner logo/image with premium styling
+                    ZStack {
+                        Circle()
+                            .fill(.white.opacity(0.9))
+                            .frame(width: 60, height: 60)
+                            .shadow(color: .black.opacity(0.1), radius: 4, x: 0, y: 2)
+                        
+                        partnerIcon
+                            .font(.title2)
+                            .foregroundColor(partnerAccentColor)
                     }
-                    .frame(width: 80, height: 80)
-                    .cornerRadius(8)
                     
                     VStack(alignment: .leading, spacing: Spacing.xs) {
                         HStack {
                             Text(partner.name)
                                 .font(.titleMedium)
-                                .foregroundColor(.graphite)
+                                .fontWeight(.semibold)
+                                .foregroundColor(.white)
                                 .lineLimit(1)
                             
                             if partner.isVerified {
                                 Image(systemName: "checkmark.seal.fill")
-                                    .foregroundColor(.success)
+                                    .foregroundColor(.yellow)
                                     .font(.caption)
                             }
                         }
                         
                         Text(partner.category.displayName)
                             .font(.bodySmall)
-                            .foregroundColor(.gray600)
-                        
-                        Text(partner.description)
-                            .font(.caption)
-                            .foregroundColor(.gray500)
-                            .lineLimit(1)
+                            .foregroundColor(.white.opacity(0.8))
                         
                         HStack(spacing: Spacing.md) {
                             // Rating
                             HStack(spacing: Spacing.xs) {
                                 Image(systemName: "star.fill")
-                                    .foregroundColor(.warning)
+                                    .foregroundColor(.yellow)
                                     .font(.caption)
-                                Text(String(format: "%.1f", partner.rating))
+                                Text(partner.formattedRating)
                                     .font(.bodySmall)
-                                    .foregroundColor(.gray600)
+                                    .fontWeight(.medium)
+                                    .foregroundColor(.white)
                                 Text("(\(partner.reviewCount))")
                                     .font(.caption)
-                                    .foregroundColor(.gray500)
+                                    .foregroundColor(.white.opacity(0.7))
                             }
                             
                             Spacer()
                             
-                            // Delivery time
-                            HStack(spacing: Spacing.xs) {
-                                Image(systemName: "clock")
-                                    .foregroundColor(.gray500)
-                                    .font(.caption)
+                            // Status & Delivery time
+                            VStack(alignment: .trailing, spacing: 2) {
+                                HStack(spacing: 4) {
+                                    Circle()
+                                        .fill(partner.isOpenNow ? .green : .red)
+                                        .frame(width: 6, height: 6)
+                                    
+                                    Text(partner.isOpenNow ? "Geöffnet" : "Geschlossen")
+                                        .font(.caption2)
+                                        .fontWeight(.medium)
+                                        .foregroundColor(.white)
+                                }
+                                
                                 Text("\(partner.estimatedDeliveryTime) min")
-                                    .font(.bodySmall)
-                                    .foregroundColor(.gray600)
+                                    .font(.caption)
+                                    .foregroundColor(.white.opacity(0.8))
                             }
                         }
                     }
@@ -423,13 +423,91 @@ struct PartnerRowCard: View {
                     Spacer()
                     
                     Image(systemName: "chevron.right")
-                        .foregroundColor(.gray400)
+                        .foregroundColor(.white.opacity(0.6))
                         .font(.caption)
                 }
+                .padding(16)
             }
         }
+        .frame(height: 90)
+        .clipShape(RoundedRectangle(cornerRadius: 16))
+        .shadow(color: .black.opacity(0.1), radius: 8, x: 0, y: 4)
         .accessibilityLabel("\(partner.name), \(partner.category.displayName), \(partner.rating) stars, \(partner.estimatedDeliveryTime) minutes delivery")
         .accessibilityHint("Tap to view partner details and menu")
+    }
+    
+    @ViewBuilder
+    private var partnerBackgroundGradient: some View {
+        switch partner.id {
+        case "mcdonalds_berlin_mitte":
+            LinearGradient(
+                colors: [Color.red.opacity(0.8), Color.red],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            )
+        case "rewe_alexanderplatz":
+            LinearGradient(
+                colors: [Color.green.opacity(0.7), Color.green],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            )
+        case "docmorris_berlin":
+            LinearGradient(
+                colors: [Color.blue.opacity(0.7), Color.blue],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            )
+        case "mediamarkt_alexanderplatz":
+            LinearGradient(
+                colors: [Color.orange.opacity(0.7), Color.orange],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            )
+        case "edeka_prenzlauer_berg":
+            LinearGradient(
+                colors: [Color.yellow.opacity(0.8), Color.yellow],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            )
+        default:
+            LinearGradient(
+                colors: [
+                    Color(red: 0.31, green: 0.78, blue: 0.47).opacity(0.8),
+                    Color(red: 0.25, green: 0.85, blue: 0.55)
+                ],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            )
+        }
+    }
+    
+    @ViewBuilder
+    private var partnerIcon: some View {
+        switch partner.id {
+        case "mcdonalds_berlin_mitte":
+            Image(systemName: "m.circle.fill")
+        case "rewe_alexanderplatz":
+            Image(systemName: "cart.fill")
+        case "docmorris_berlin":
+            Image(systemName: "cross.case.fill")
+        case "mediamarkt_alexanderplatz":
+            Image(systemName: "tv.fill")
+        case "edeka_prenzlauer_berg":
+            Image(systemName: "leaf.fill")
+        default:
+            Image(systemName: partner.category.iconName)
+        }
+    }
+    
+    private var partnerAccentColor: Color {
+        switch partner.id {
+        case "mcdonalds_berlin_mitte": return .yellow
+        case "rewe_alexanderplatz": return .white
+        case "docmorris_berlin": return .white
+        case "mediamarkt_alexanderplatz": return .white
+        case "edeka_prenzlauer_berg": return .green
+        default: return .white
+        }
     }
 }
 

@@ -40,7 +40,7 @@ struct OrderHistoryView: View {
                 
                 // Order List
                 if viewModel.isLoading {
-                    LoadingView()
+                    PremiumLoadingView()
                         .frame(maxWidth: .infinity, maxHeight: .infinity)
                 } else if viewModel.filteredOrders.isEmpty {
                     EmptyOrderHistoryView()

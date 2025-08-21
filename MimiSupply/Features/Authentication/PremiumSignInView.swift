@@ -546,15 +546,6 @@ extension UserRole {
         case .admin: return "person.badge.key.fill"
         }
     }
-    
-    var displayName: String {
-        switch self {
-        case .customer: return "Kunde"
-        case .partner: return "Partner"
-        case .driver: return "Fahrer"
-        case .admin: return "Admin"
-        }
-    }
 }
 
 // MARK: - Preview

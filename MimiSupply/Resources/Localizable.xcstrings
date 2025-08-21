@@ -157,6 +157,9 @@
     "🍽️" : {
 
     },
+    "🎯 Demo-Konten" : {
+
+    },
     "$" : {
 
     },
@@ -673,6 +676,9 @@
     "Dein lokaler Marktplatz" : {
 
     },
+    "Dein Premium Marktplatz" : {
+
+    },
     "Delete" : {
 
     },
@@ -907,9 +913,6 @@
     "Loading" : {
 
     },
-    "Loading MimiSupply..." : {
-
-    },
     "Loading States" : {
 
     },
@@ -917,6 +920,9 @@
 
     },
     "Location Settings" : {
+
+    },
+    "Login" : {
 
     },
     "Login Fehler" : {
@@ -1258,6 +1264,9 @@
     "Role selection screen" : {
 
     },
+    "Rolle wählen" : {
+
+    },
     "Sample Card" : {
 
     },
@@ -1535,6 +1544,12 @@
 
     },
     "Welcome to MimiSupply!" : {
+
+    },
+    "Willkommen bei" : {
+
+    },
+    "Wird geladen..." : {
 
     },
     "Your active orders will appear here" : {
