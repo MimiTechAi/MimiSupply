@@ -52,30 +52,28 @@ struct PerformanceDashboard: View {
                 .font(.headline)
             
             LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 2), spacing: 12) {
-                MetricCard(
+                PerformanceMetricCard(
                     title: "Memory Usage",
                     value: String(format: "%.1f MB", memoryManager.currentMemoryUsage),
                     change: 0.0, // Performance metrics don't have change tracking
                     icon: "memorychip"
                 )
                 
-                MetricCard(
+                PerformanceMetricCard(
                     title: "Memory Warning",
                     value: memoryManager.memoryWarningLevel.description,
                     change: 0.0,
-                    icon: "exclamationmark.triangle",
-
+                    icon: "exclamationmark.triangle"
                 )
                 
-                MetricCard(
+                PerformanceMetricCard(
                     title: "Animation FPS",
                     value: String(format: "%.1f", animationMonitor.averageFPS),
                     change: 0.0,
-                    icon: "speedometer",
-
+                    icon: "speedometer"
                 )
                 
-                MetricCard(
+                PerformanceMetricCard(
                     title: "Dropped Frames",
                     value: "\(animationMonitor.droppedFrames)",
                     change: 0.0,
@@ -320,7 +318,37 @@ struct PerformanceDashboard: View {
 }
 
 // MARK: - Supporting Views
-// MetricCard is defined in Features/Partner/AnalyticsDashboardView.swift
+
+struct PerformanceMetricCard: View {
+    let title: String
+    let value: String
+    let change: Double
+    let icon: String
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            HStack {
+                Image(systemName: icon)
+                    .foregroundColor(.blue)
+                    .font(.title2)
+                
+                Spacer()
+            }
+            
+            Text(value)
+                .font(.title2)
+                .fontWeight(.bold)
+                .foregroundColor(.primary)
+            
+            Text(title)
+                .font(.caption)
+                .foregroundColor(.secondary)
+        }
+        .padding()
+        .background(Color(.systemGray6))
+        .cornerRadius(12)
+    }
+}
 
 // MARK: - Data Models
 

@@ -53,63 +53,6 @@ struct NutritionInfo: Codable, Sendable, Hashable, Equatable {
 
 // MARK: - Analytics Types
 
-struct PartnerAnalytics: Codable {
-    let totalRevenue: Double
-    let totalOrders: Int
-    let averageOrderValue: Double
-    let customerCount: Int
-    let timeRange: TimeRange
-    
-    // Additional fields for compatibility
-    let totalRevenueCents: Int
-    let revenueChangePercent: Double
-    let ordersChangePercent: Double
-    let averageOrderValueCents: Int
-    let aovChangePercent: Double
-    let averageRating: Double
-    let ratingChangePercent: Double
-    
-    init(
-        totalRevenue: Double,
-        totalOrders: Int,
-        averageOrderValue: Double,
-        customerCount: Int,
-        timeRange: TimeRange,
-        totalRevenueCents: Int? = nil,
-        revenueChangePercent: Double = 0,
-        ordersChangePercent: Double = 0,
-        averageOrderValueCents: Int? = nil,
-        aovChangePercent: Double = 0,
-        averageRating: Double = 0,
-        ratingChangePercent: Double = 0
-    ) {
-        self.totalRevenue = totalRevenue
-        self.totalOrders = totalOrders
-        self.averageOrderValue = averageOrderValue
-        self.customerCount = customerCount
-        self.timeRange = timeRange
-        self.totalRevenueCents = totalRevenueCents ?? Int(totalRevenue * 100)
-        self.revenueChangePercent = revenueChangePercent
-        self.ordersChangePercent = ordersChangePercent
-        self.averageOrderValueCents = averageOrderValueCents ?? Int(averageOrderValue * 100)
-        self.aovChangePercent = aovChangePercent
-        self.averageRating = averageRating
-        self.ratingChangePercent = ratingChangePercent
-    }
-}
-
-struct OrdersDataPoint: Codable {
-    let date: Date
-    let orderCount: Int
-}
-
-struct TopProductData: Codable {
-    let productId: String
-    let productName: String
-    let orderCount: Int
-    let revenueCents: Int
-}
-
 /// Physical dimensions of products
 struct ProductDimensions: Codable, Sendable, Hashable, Equatable {
     let length: Double // centimeters

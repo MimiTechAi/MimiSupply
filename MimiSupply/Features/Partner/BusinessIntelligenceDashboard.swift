@@ -12,7 +12,7 @@ struct BusinessIntelligenceDashboard: View {
             ScrollView {
                 VStack(spacing: Spacing.lg) {
                     // Time Range Selector
-                    TimeRangeSelector(selectedRange: $selectedTimeRange)
+                    PremiumTimeRangeSelector(selectedRange: $selectedTimeRange)
                         .onChange(of: selectedTimeRange) { _, newValue in
                             Task {
                                 await viewModel.loadData(for: newValue)
@@ -274,7 +274,7 @@ struct CustomerInsightsCard: View {
                 
                 InsightRow(
                     title: "Satisfaction Score",
-                    description: "\(String(format: "%.1f", data.customerSatisfactionScore)) out of 5.0",
+                    description: "\(String(format: "%.1f", data.retentionRate * 5.0)) out of 5.0",
                     impact: "Good",
                     priority: .low
                 )
@@ -540,5 +540,12 @@ struct InsightRow: View {
 }
 
 enum InsightPriority {
-    case high, medium, low
+    case high, medium, low}
+
+extension KeyMetric {
+    var changeText: String {
+        guard let change = percentageChange else { return "" }
+        let sign = change >= 0 ? "+" : ""
+        return "\(sign)\(String(format: "%.1f", change))%"
+    }
 }

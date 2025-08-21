@@ -102,7 +102,7 @@ class AnalyticsDashboardViewModel: ObservableObject {
         )
         
         ordersData = data.map { dataPoint in
-            ChartDataPoint(date: dataPoint.date, value: dataPoint.orderCount)
+            ChartDataPoint(date: dataPoint.date, value: Double(dataPoint.orderCount))
         }
     }
     

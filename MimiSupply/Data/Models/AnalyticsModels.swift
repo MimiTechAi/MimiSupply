@@ -7,118 +7,86 @@
 
 import Foundation
 
-// MARK: - Revenue Analytics
+// MARK: - Additional Analytics Models for Premium Dashboard
 
-struct RevenueDataPoint: Identifiable, Codable {
+struct KeyMetrics {
+    let totalRevenue: Int // in cents
+    let revenueChange: Double
+    let totalOrders: Int
+    let ordersChange: Double
+    let averageOrderValue: Int // in cents
+    let aovChange: Double
+    let averageRating: Double
+    let ratingChange: Double
+}
+
+struct ChartDataPoint: Identifiable, Equatable {
     let id = UUID()
     let date: Date
-    let amount: Double
-    let orderCount: Int
+    let value: Double
     
-    var formattedAmount: String {
-        let formatter = NumberFormatter()
-        formatter.numberStyle = .currency
-        formatter.currencyCode = "USD"
-        return formatter.string(from: NSNumber(value: amount)) ?? "$0.00"
+    static func == (lhs: ChartDataPoint, rhs: ChartDataPoint) -> Bool {
+        return lhs.date == rhs.date && lhs.value == rhs.value
     }
 }
 
-// MARK: - Product Analytics
-
-struct TopProduct: Identifiable, Codable {
+struct TopProduct: Identifiable {
     let id: String
     let name: String
     let revenue: Double
     let orderCount: Int
     let imageURL: URL?
-    
-    // Computed property for cents-based revenue
-    var revenueCents: Int {
-        return Int(revenue * 100)
-    }
-    
-    var formattedRevenue: String {
-        let formatter = NumberFormatter()
-        formatter.numberStyle = .currency
-        formatter.currencyCode = "USD"
-        return formatter.string(from: NSNumber(value: revenue)) ?? "$0.00"
-    }
 }
 
-// MARK: - Key Metrics
-
-struct KeyMetric: Identifiable, Codable {
+struct PerformanceInsight: Identifiable {
     let id = UUID()
+    let type: InsightType
     let title: String
-    let value: String
-    let percentageChange: Double?
-    let icon: String
+    let description: String
     
-    var changeText: String {
-        guard let change = percentageChange else { return "" }
-        let prefix = change >= 0 ? "+" : ""
-        return "\(prefix)\(String(format: "%.1f", change))%"
+    enum InsightType {
+        case positive
+        case warning
+        case info
     }
 }
 
-// MARK: - Order Analytics
+// MARK: - CloudKit Response Models
 
-struct OrderAnalytics: Codable {
+struct PartnerAnalytics {
+    let totalRevenue: Double
     let totalOrders: Int
-    let completedOrders: Int
-    let cancelledOrders: Int
     let averageOrderValue: Double
-    let completionRate: Double
-    let peakOrderHour: Int
-    
-    init() {
-        self.totalOrders = 0
-        self.completedOrders = 0
-        self.cancelledOrders = 0
-        self.averageOrderValue = 0.0
-        self.completionRate = 0.0
-        self.peakOrderHour = 12
-    }
-    
-    var formattedAverageOrderValue: String {
-        let formatter = NumberFormatter()
-        formatter.numberStyle = .currency
-        formatter.currencyCode = "USD"
-        return formatter.string(from: NSNumber(value: averageOrderValue)) ?? "$0.00"
-    }
-    
-    var formattedCompletionRate: String {
-        return String(format: "%.1f%%", completionRate * 100)
-    }
+    let customerCount: Int
+    let timeRange: TimeRange
+    let totalRevenueCents: Int
+    let revenueChangePercent: Double
+    let ordersChangePercent: Double
+    let averageOrderValueCents: Int
+    let aovChangePercent: Double
+    let averageRating: Double
+    let ratingChangePercent: Double
 }
 
-// MARK: - Customer Analytics
-
-struct CustomerInsights: Codable {
-    let totalCustomers: Int
-    let newCustomers: Int
-    let returningCustomers: Int
-    let averageOrdersPerCustomer: Double
-    let customerRetentionRate: Double
-    let customerSatisfactionScore: Double
-    
-    init() {
-        self.totalCustomers = 0
-        self.newCustomers = 0
-        self.returningCustomers = 0
-        self.averageOrdersPerCustomer = 0.0
-        self.customerRetentionRate = 0.0
-        self.customerSatisfactionScore = 0.0
-    }
-    
-    var formattedRetentionRate: String {
-        return String(format: "%.1f%%", customerRetentionRate * 100)
-    }
+struct RevenueDataPoint {
+    let date: Date
+    let amount: Double
+    let orderCount: Int
 }
 
-// MARK: - Performance Insights
+struct OrdersDataPoint {
+    let date: Date
+    let orderCount: Int
+}
 
-struct PartnerInsightData: Codable {
+struct TopProductData {
+    let productId: String
+    let productName: String
+    let orderCount: Int
+    let revenueCents: Int
+}
+
+struct PartnerInsightData {
     let keyMetrics: [KeyMetric]
     let revenueData: [RevenueDataPoint]
     let orderAnalytics: OrderAnalytics
@@ -130,114 +98,55 @@ struct PartnerInsightData: Codable {
     let averageRating: Double
     let peakOrderHour: Int?
     let topProductName: String?
-    
-    init(
-        keyMetrics: [KeyMetric], 
-        revenueData: [RevenueDataPoint], 
-        orderAnalytics: OrderAnalytics, 
-        customerInsights: CustomerInsights, 
-        topProducts: [TopProduct], 
-        generatedAt: Date,
-        revenueChangePercent: Double = 15.5,
-        ordersChangePercent: Double = 12.3,
-        averageRating: Double = 4.6,
-        peakOrderHour: Int? = 12,
-        topProductName: String? = nil
-    ) {
-        self.keyMetrics = keyMetrics
-        self.revenueData = revenueData
-        self.orderAnalytics = orderAnalytics
-        self.customerInsights = customerInsights
-        self.topProducts = topProducts
-        self.generatedAt = generatedAt
-        self.revenueChangePercent = revenueChangePercent
-        self.ordersChangePercent = ordersChangePercent
-        self.averageRating = averageRating
-        self.peakOrderHour = peakOrderHour
-        self.topProductName = topProductName ?? topProducts.first?.name
-    }
 }
 
-// MARK: - Chart Data
-
-struct ChartDataPoint: Identifiable, Codable {
-    let id = UUID()
-    let date: Date
-    let value: Double
-    
-    init(date: Date, value: Double) {
-        self.date = date
-        self.value = value
-    }
-    
-    init(date: Date, value: Int) {
-        self.date = date
-        self.value = Double(value)
-    }
+struct KeyMetric {
+    let title: String
+    let value: String
+    let percentageChange: Double?
+    let icon: String
 }
 
-// MARK: - Key Metrics Dashboard
-
-struct KeyMetrics: Codable {
-    let totalRevenue: Int
-    let revenueChange: Double
+struct OrderAnalytics {
     let totalOrders: Int
-    let ordersChange: Double
-    let averageOrderValue: Int
-    let aovChange: Double
-    let averageRating: Double
-    let ratingChange: Double
+    let averageOrderValue: Double
+    let completionRate: Double
+    let peakOrderHour: Int
     
-    var formattedTotalRevenue: String {
-        let formatter = NumberFormatter()
-        formatter.numberStyle = .currency
-        formatter.currencyCode = "USD"
-        return formatter.string(from: NSNumber(value: Double(totalRevenue) / 100.0)) ?? "$0.00"
+    init(totalOrders: Int = 150, averageOrderValue: Double = 83.33, completionRate: Double = 0.94, peakOrderHour: Int = 18) {
+        self.totalOrders = totalOrders
+        self.averageOrderValue = averageOrderValue
+        self.completionRate = completionRate
+        self.peakOrderHour = peakOrderHour
     }
     
     var formattedAverageOrderValue: String {
-        let formatter = NumberFormatter()
-        formatter.numberStyle = .currency
-        formatter.currencyCode = "USD"
-        return formatter.string(from: NSNumber(value: Double(averageOrderValue) / 100.0)) ?? "$0.00"
-    }
-}
-
-// MARK: - Performance Insights
-
-enum InsightType: String, Codable {
-    case positive = "positive"
-    case warning = "warning"
-    case info = "info"
-}
-
-struct PerformanceInsight: Identifiable, Codable {
-    let id = UUID()
-    let type: InsightType
-    let title: String
-    let description: String
-    
-    var iconName: String {
-        switch type {
-        case .positive:
-            return "checkmark.circle.fill"
-        case .warning:
-            return "exclamationmark.triangle.fill"
-        case .info:
-            return "info.circle.fill"
-        }
+        return String(format: "€%.2f", averageOrderValue)
     }
     
-    var iconColor: String {
-        switch type {
-        case .positive:
-            return "green"
-        case .warning:
-            return "orange"
-        case .info:
-            return "blue"
-        }
+    var formattedCompletionRate: String {
+        return String(format: "%.1f%%", completionRate * 100)
     }
 }
 
-// TimeRange is defined in Data/Models/TimeRange.swift
+struct CustomerInsights {
+    let totalCustomers: Int
+    let newCustomers: Int
+    let returningCustomers: Int
+    let retentionRate: Double
+    let customerSatisfactionScore: Double
+    
+    init(totalCustomers: Int = 89, newCustomers: Int = 23, returningCustomers: Int = 66, retentionRate: Double = 0.74, customerSatisfactionScore: Double = 4.3) {
+        self.totalCustomers = totalCustomers
+        self.newCustomers = newCustomers
+        self.returningCustomers = returningCustomers
+        self.retentionRate = retentionRate
+        self.customerSatisfactionScore = customerSatisfactionScore
+    }
+    
+    var formattedRetentionRate: String {
+        return String(format: "%.1f%%", retentionRate * 100)
+    }
+}
+
+// MARK: - TimeRange is defined in Data/Models/TimeRange.swift

@@ -1408,8 +1408,10 @@ extension EnhancedCloudKitService {
             averageOrderValue: averageOrderValue,
             customerCount: Int.random(in: 10...100),
             timeRange: timeRange,
+            totalRevenueCents: Int(totalRevenue * 100),
             revenueChangePercent: Double.random(in: -20...20),
             ordersChangePercent: Double.random(in: -15...15),
+            averageOrderValueCents: Int(averageOrderValue * 100),
             aovChangePercent: Double.random(in: -10...10),
             averageRating: Double.random(in: 3.5...5.0),
             ratingChangePercent: Double.random(in: -0.5...0.5)
@@ -1457,9 +1459,11 @@ extension EnhancedCloudKitService {
             customerInsights: CustomerInsights(),
             topProducts: [],
             generatedAt: Date(),
-            revenueChangePercent: 0,
-            ordersChangePercent: 0,
-            averageRating: 0
+            revenueChangePercent: 15.2,
+            ordersChangePercent: 8.7,
+            averageRating: 4.5,
+            peakOrderHour: 18,
+            topProductName: "Pizza Margherita"
         )
     }
     

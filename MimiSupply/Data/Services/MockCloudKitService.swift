@@ -216,8 +216,10 @@ final class MockCloudKitService: CloudKitService {
             averageOrderValue: 83.33,
             customerCount: 89,
             timeRange: timeRange,
+            totalRevenueCents: 1250000,
             revenueChangePercent: 15.2,
             ordersChangePercent: 8.7,
+            averageOrderValueCents: 8333,
             aovChangePercent: 6.1,
             averageRating: 4.5,
             ratingChangePercent: 2.3
@@ -281,9 +283,11 @@ final class MockCloudKitService: CloudKitService {
             customerInsights: CustomerInsights(),
             topProducts: [],
             generatedAt: Date(),
-            revenueChangePercent: 0,
-            ordersChangePercent: 0,
-            averageRating: 0
+            revenueChangePercent: 15.2,
+            ordersChangePercent: 8.7,
+            averageRating: 4.5,
+            peakOrderHour: 18,
+            topProductName: "Pizza Margherita"
         )
     }
     
