@@ -9,6 +9,7 @@ import Foundation
 import CoreLocation
 import Combine
 import MapKit
+import SwiftUI
 
 /// Enhanced driver dashboard view model with comprehensive job management and performance tracking
 @MainActor
@@ -59,13 +60,13 @@ final class DriverDashboardViewModel: ObservableObject {
     
     private let driverService: DriverService
     private let cloudKitService: CloudKitService
-    private let locationManager: LocationManager
     private let notificationService: PushNotificationService
     private var cancellables = Set<AnyCancellable>()
     private var workStartTime: Date?
     private var breakStartTime: Date?
     private var locationUpdateTimer: Timer?
     private var performanceUpdateTimer: Timer?
+    private var currentLocation: CLLocationCoordinate2D?
     
     // MARK: - Computed Properties
     
@@ -95,16 +96,11 @@ final class DriverDashboardViewModel: ObservableObject {
     
     // MARK: - Initialization
     
-    init(
-        driverService: DriverService = DriverServiceImpl(),
-        cloudKitService: CloudKitService = CloudKitServiceImpl(),
-        locationManager: LocationManager = LocationManager.shared,
-        notificationService: PushNotificationService = PushNotificationServiceImpl()
-    ) {
-        self.driverService = driverService
-        self.cloudKitService = cloudKitService
-        self.locationManager = locationManager
-        self.notificationService = notificationService
+    init() {
+        // Use AppContainer services
+        self.driverService = AppContainer.shared.driverService
+        self.cloudKitService = AppContainer.shared.cloudKitService
+        self.notificationService = AppContainer.shared.pushNotificationService
         
         setupBindings()
         setupPerformanceTracking()
@@ -150,16 +146,17 @@ final class DriverDashboardViewModel: ObservableObject {
             // Mock driver profile - in real app would fetch from service
             driverProfile = Driver(
                 id: "driver_1",
+                userId: "user_1",
                 name: "Thomas Weber",
-                email: "thomas.weber@test.de",
                 phoneNumber: "+49 30 55555555",
-                licenseNumber: "B12345678",
                 vehicleType: .bicycle,
+                licensePlate: "B-MW-1234",
+                isOnline: isOnline,
+                isAvailable: isAvailable,
+                currentLocation: Coordinate(latitude: 52.5200, longitude: 13.4050),
                 rating: 4.8,
-                totalDeliveries: 247,
-                isVerified: true,
-                isActive: true,
-                currentLocation: CLLocationCoordinate2D(latitude: 52.5200, longitude: 13.4050)
+                completedDeliveries: 247,
+                verificationStatus: .verified
             )
         } catch {
             errorMessage = "Fehler beim Laden des Fahrerprofils: \(error.localizedDescription)"
@@ -552,10 +549,6 @@ final class DriverDashboardViewModel: ObservableObject {
     }
     
     func getDistance(to job: Order) -> String? {
-        guard let driverLocation = locationManager.currentLocation else {
-            return nil
-        }
-        
         // Mock distance calculation - in real app would use MapKit
         let distances = ["0.8 km", "1.2 km", "2.1 km", "3.5 km"]
         return distances.randomElement()
@@ -573,7 +566,8 @@ final class DriverDashboardViewModel: ObservableObject {
     // MARK: - Navigation & Location
     
     private func startLocationTracking() {
-        locationManager.startTracking()
+        // Mock location - in real app would use CLLocationManager
+        currentLocation = CLLocationCoordinate2D(latitude: 52.5200, longitude: 13.4050)
         
         // Update location every 30 seconds
         locationUpdateTimer = Timer.scheduledTimer(withTimeInterval: 30.0, repeats: true) { _ in
@@ -584,14 +578,13 @@ final class DriverDashboardViewModel: ObservableObject {
     }
     
     private func stopLocationTracking() {
-        locationManager.stopTracking()
         locationUpdateTimer?.invalidate()
         locationUpdateTimer = nil
     }
     
     private func calculateETA() {
         guard let currentJob = currentJob,
-              let driverLocation = locationManager.currentLocation else {
+              let driverLocation = currentLocation else {
             return
         }
         
@@ -694,10 +687,6 @@ final class DriverDashboardViewModel: ObservableObject {
     // MARK: - Helper Methods
     
     private func applySmartFilter(to jobs: [Order]) -> [Order] {
-        guard let driverLocation = locationManager.currentLocation else {
-            return jobs
-        }
-        
         // Mock smart filtering logic
         // In real app would consider:
         // - Distance from current location
@@ -778,7 +767,7 @@ final class DriverDashboardViewModel: ObservableObject {
     }
     
     private func updateLocationOnServer() async {
-        guard let location = locationManager.currentLocation else { return }
+        guard let location = currentLocation else { return }
         
         do {
             // Update driver location on server
@@ -845,7 +834,7 @@ struct VehicleInfo {
             case .bicycle: return "Fahrrad"
             case .eBike: return "E-Bike"
             case .scooter: return "Roller"
-            case .eScooter: return "E-Roller"
+            case .eScooter: return "N-Roller"
             case .motorcycle: return "Motorrad"
             case .car: return "Auto"
             }
