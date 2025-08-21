@@ -165,7 +165,7 @@ struct EnhancedJobCompletionView: View {
             }
         }
         .sheet(isPresented: $showingCamera) {
-            CameraView { image in
+            DriverCameraView { image in
                 deliveryPhoto = image
                 showingCamera = false
             }
@@ -174,7 +174,7 @@ struct EnhancedJobCompletionView: View {
 }
 
 // Simple camera view wrapper
-struct CameraView: UIViewControllerRepresentable {
+struct DriverCameraView: UIViewControllerRepresentable {
     let onImageCaptured: (UIImage) -> Void
     
     func makeUIViewController(context: Context) -> UIImagePickerController {
