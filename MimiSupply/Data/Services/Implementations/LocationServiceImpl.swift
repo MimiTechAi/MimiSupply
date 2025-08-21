@@ -6,23 +6,16 @@
 //
 
 import Foundation
-@preconcurrency import CoreLocation
+import CoreLocation
 import Combine
 
-// Import project-specific types - defined in Foundation/Error/AppError.swift
-
-
-/// Implementation of LocationService for managing location services with battery optimization
-final class LocationServiceImpl: NSObject, LocationService {
+@MainActor
+class LocationServiceImpl: NSObject, LocationService, CLLocationManagerDelegate {
     
-    // MARK: - Singleton
     static let shared = LocationServiceImpl()
     
     private let locationManager = CLLocationManager()
-    
-    // Thread-safe state management using actors
-    @MainActor private var currentLocationContinuation: CheckedContinuation<CLLocation?, Never>?
-    @MainActor private var permissionContinuation: CheckedContinuation<Void, Error>?
+    private var locationContinuation: CheckedContinuation<CLLocation?, Error>?
     
     // Location tracking state - protected by lock for thread safety
     private let stateLock = NSLock()
@@ -75,8 +68,13 @@ final class LocationServiceImpl: NSObject, LocationService {
     private let backgroundUpdateInterval: TimeInterval = 10.0
     private let foregroundUpdateInterval: TimeInterval = 5.0
     
-    override init() {
+    @Published private(set) var authorizationStatus: CLAuthorizationStatus
+    @Published private(set) var currentLocation: CLLocation?
+    
+    private override init() {
+        self.authorizationStatus = locationManager.authorizationStatus
         super.init()
+        locationManager.delegate = self
         setupLocationManager()
     }
     
@@ -86,33 +84,11 @@ final class LocationServiceImpl: NSObject, LocationService {
         locationManager.distanceFilter = 10 // Only update when moved 10 meters
     }
     
-    var currentLocation: CLLocation? {
-        get async {
-            // Return cached location if recent (within 30 seconds)
-            if let lastLocation = locationManager.location,
-               lastLocation.timestamp.timeIntervalSinceNow > -30 {
-                return lastLocation
-            }
-            
-            return await withCheckedContinuation { continuation in
-                Task { @MainActor in
-                    currentLocationContinuation = continuation
-                    locationManager.requestLocation()
-                }
-            }
-        }
-    }
-    
-    var authorizationStatus: CLAuthorizationStatus {
-        return locationManager.authorizationStatus
-    }
-    
     func requestLocationPermission() async throws {
         guard authorizationStatus == .notDetermined else { return }
         
         return try await withCheckedThrowingContinuation { continuation in
             Task { @MainActor in
-                permissionContinuation = continuation
                 locationManager.requestWhenInUseAuthorization()
             }
         }
@@ -193,14 +169,11 @@ final class LocationServiceImpl: NSObject, LocationService {
     }
 }
 
-// MARK: - Concurrency
-extension LocationServiceImpl: @unchecked Sendable {}
-
 // MARK: - CLLocationManagerDelegate
 
-extension LocationServiceImpl: @preconcurrency CLLocationManagerDelegate {
+extension LocationServiceImpl: CLLocationManagerDelegate {
     
-    @MainActor func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
+    func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
         guard let location = locations.last else { return }
         
         // Battery optimization: only process if enough time has passed
@@ -211,7 +184,7 @@ extension LocationServiceImpl: @preconcurrency CLLocationManagerDelegate {
         }
     }
     
-    @MainActor func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
+    func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
         let locationError: LocationError
         
         if let clError = error as? CLError {
@@ -234,7 +207,7 @@ extension LocationServiceImpl: @preconcurrency CLLocationManagerDelegate {
         permissionContinuation = nil
     }
     
-    @MainActor func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {
+    func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {
         switch manager.authorizationStatus {
         case .authorizedWhenInUse, .authorizedAlways:
             permissionContinuation?.resume()

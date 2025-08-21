@@ -18,6 +18,7 @@ struct MapView: View {
     )
     @State private var selectedPartner: Partner?
     @StateObject private var locationManager = MapLocationManager()
+    @EnvironmentObject private var router: AppRouter
     
     var body: some View {
         ZStack(alignment: .bottom) {
@@ -47,9 +48,11 @@ struct MapView: View {
             
             // Selected partner card
             if let selectedPartner = selectedPartner {
-                SelectedPartnerCard(partner: selectedPartner) {
+                SelectedPartnerCard(partner: selectedPartner, onDismiss: {
                     self.selectedPartner = nil
-                }
+                }, onNavigate: {
+                    router.push(.partnerDetail(selectedPartner))
+                }) // MODIFIED
                 .padding(.horizontal, Spacing.md)
                 .padding(.bottom, Spacing.lg)
                 .transition(.move(edge: .bottom).combined(with: .opacity))
@@ -98,6 +101,7 @@ struct PartnerMapAnnotation: View {
 struct SelectedPartnerCard: View {
     let partner: Partner
     let onDismiss: () -> Void
+    let onNavigate: () -> Void
     
     var body: some View {
         AppCard {
@@ -163,9 +167,7 @@ struct SelectedPartnerCard: View {
                             .font(.caption)
                     }
                     
-                    Button(action: {
-                        // Navigate to partner detail
-                    }) {
+                    Button(action: onNavigate) { // MODIFIED
                         Image(systemName: "arrow.right.circle.fill")
                             .foregroundColor(.emerald)
                             .font(.title2)
@@ -183,7 +185,7 @@ struct SelectedPartnerCard: View {
 class MapLocationManager: ObservableObject {
     private let locationService: LocationService
     
-    init(locationService: LocationService = LocationServiceImpl()) {
+    init(locationService: LocationService = LocationServiceImpl.shared) { // MODIFIED
         self.locationService = locationService
     }
     
@@ -227,4 +229,5 @@ class MapLocationManager: ObservableObject {
             estimatedDeliveryTime: 15
         )
     ])
+    .environmentObject(AppRouter())
 }

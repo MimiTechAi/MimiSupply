@@ -1,301 +1,212 @@
-//
-//  ExploreHomeViewModel.swift
-//  MimiSupply
-//
-//  Created by Kiro on 14.08.25.
-//
-
-import Foundation
-import MapKit
+import SwiftUI
 import Combine
+import CoreLocation
 
-/// ViewModel for ExploreHomeView with comprehensive partner discovery functionality
 @MainActor
 class ExploreHomeViewModel: ObservableObject {
     // MARK: - Published Properties
     @Published var partners: [Partner] = []
     @Published var featuredPartners: [Partner] = []
     @Published var categories: [PartnerCategory] = PartnerCategory.allCases
-    @Published var searchText: String = ""
     @Published var selectedCategory: PartnerCategory?
-    @Published var sortOption: SortOption = .relevance
+    @Published var sortOption: SortOption = .recommended
     @Published var priceRange: ClosedRange<Double> = 0...100
-    @Published var deliveryTimeRange: ClosedRange<Int> = 0...60
-    @Published var isLoading: Bool = false
-    @Published var isLoadingMore: Bool = false
-    @Published var currentLocationName: String = "Current Location"
-    @Published var cartItemCount: Int = 0
+    @Published var deliveryTimeRange: ClosedRange<Double> = 0...60
+    @Published var searchText: String = ""
+    @Published var isLoading = false
     @Published var selectedPartner: Partner?
+    @Published var currentLocationName = "Loading..."
+    @Published var cartItemCount = 0
+    @Published var showingCart = false
+    @Published private(set) var error: AppError?
     
     // MARK: - Private Properties
-    private let partnerRepository: PartnerRepository
     private let locationService: LocationService
-    private let cartService: CartService
+    private let googlePlacesService: GooglePlacesService
     private var cancellables = Set<AnyCancellable>()
-    private var currentRegion: MKCoordinateRegion
-    private var allPartners: [Partner] = []
-    private var searchTask: Task<Void, Never>?
-    private let pageSize = 20
-    private var currentPage = 0
-    private var hasMorePages = true
-    @Published var showingCart = false
-    
-    // MARK: - Computed Properties
-    var partnersListTitle: String {
-        if let selectedCategory = selectedCategory {
-            return selectedCategory.displayName
-        } else if !searchText.isEmpty {
-            return "Search Results"
-        } else {
-            return "All Partners"
-        }
-    }
-    
+    private var userLocation: CLLocation?
+
     // MARK: - Initialization
     init(
-        partnerRepository: PartnerRepository? = nil,
-        locationService: LocationService? = nil,
-        cartService: CartService? = nil
+        locationService: LocationService = LocationServiceImpl(),
+        googlePlacesService: GooglePlacesService = GooglePlacesServiceImpl()
     ) {
-        self.partnerRepository = partnerRepository ?? AppContainer.shared.partnerRepository
-        self.locationService = locationService ?? AppContainer.shared.locationService
-        self.cartService = cartService ?? AppContainer.shared.cartService
-        self.currentRegion = MKCoordinateRegion(
-            center: CLLocationCoordinate2D(latitude: 37.7749, longitude: -122.4194),
-            span: MKCoordinateSpan(latitudeDelta: 0.05, longitudeDelta: 0.05)
-        )
+        self.locationService = locationService
+        self.googlePlacesService = googlePlacesService
         
         setupBindings()
     }
     
-    // MARK: - Public Methods
+    // MARK: - Data Loading
     func loadInitialData() async {
-        guard !isLoading else { return }
-        
         isLoading = true
         defer { isLoading = false }
         
         do {
-            // Get current location
-            await updateCurrentLocation()
+            try await locationService.requestLocationPermission()
+            self.userLocation = await locationService.currentLocation
             
-            // Load partners and featured partners concurrently
-            async let partnersTask = partnerRepository.fetchPartners(in: currentRegion)
-            async let featuredTask = partnerRepository.fetchFeaturedPartners()
+            if let location = userLocation {
+                await updateLocationName(location: location)
+                await fetchNearbyPartners(location: location)
+            } else {
+                // Fallback or error handling if location is not available
+                currentLocationName = "Location not found"
+                // Optionally, load partners from a default location
+                let defaultLocation = CLLocation(latitude: 52.5200, longitude: 13.4050) // Berlin
+                await updateLocationName(location: defaultLocation)
+                await fetchNearbyPartners(location: defaultLocation)
+            }
             
-            let (loadedPartners, loadedFeatured) = try await (partnersTask, featuredTask)
-            
-            allPartners = loadedPartners
-            featuredPartners = Array(loadedFeatured.prefix(10)) // Limit featured partners
-            partners = Array(allPartners.prefix(pageSize))
-            currentPage = 1
-            hasMorePages = allPartners.count > pageSize
+            // For now, featured partners can remain static or be derived from the fetched partners
+            self.featuredPartners = GermanPartnerData.getFeaturedPartners()
             
         } catch {
-            print("Failed to load initial data: \(error)")
-            // Handle error - could show error state
+            self.error = .location(.permissionDenied)
+            currentLocationName = "Permission denied"
         }
     }
     
     func refreshData() async {
-        currentPage = 0
-        hasMorePages = true
         await loadInitialData()
     }
     
-    func performSearch(query: String) async {
-        // Cancel previous search
-        searchTask?.cancel()
+    // MARK: - Partner Fetching
+    private func fetchNearbyPartners(location: CLLocation) async {
+        let placeTypes = selectedCategory?.googlePlaceTypes ?? defaultPlaceTypes
         
-        // Debounce search
-        searchTask = Task {
-            try? await Task.sleep(nanoseconds: 300_000_000) // 300ms debounce
+        do {
+            let googlePlaces = try await googlePlacesService.findNearbyPlaces(
+                coordinate: location.coordinate,
+                radius: 5000, // 5km radius
+                placeTypes: placeTypes
+            )
             
-            guard !Task.isCancelled else { return }
+            // Convert GooglePlace to our Partner model
+            self.partners = googlePlaces.map { convertGooglePlaceToPartner($0) }
             
-            if query.isEmpty {
-                await applyFilters()
-            } else {
-                await searchPartners(query: query)
-            }
+        } catch {
+            self.error = .network(.requestFailed)
+            print("Error fetching nearby places: \(error.localizedDescription)")
         }
     }
     
-    func selectCategory(_ category: PartnerCategory) async {
+    // MARK: - Filtering and Sorting
+    func selectCategory(_ category: PartnerCategory?) async {
         if selectedCategory == category {
-            selectedCategory = nil
+            selectedCategory = nil // Deselect if tapped again
         } else {
             selectedCategory = category
         }
-        await applyFilters()
+        
+        if let location = userLocation {
+            isLoading = true
+            await fetchNearbyPartners(location: location)
+            isLoading = false
+        }
+    }
+    
+    func performSearch(query: String) async {
+        // Implement search logic here if needed, or rely on category filtering
     }
     
     func applyFilters() async {
-        var filteredPartners = allPartners
-        
-        // Apply category filter
-        if let selectedCategory = selectedCategory {
-            filteredPartners = filteredPartners.filter { $0.category == selectedCategory }
-        }
-        
-        // Apply search filter
-        if !searchText.isEmpty {
-            filteredPartners = filteredPartners.filter { partner in
-                partner.name.localizedCaseInsensitiveContains(searchText) ||
-                partner.description.localizedCaseInsensitiveContains(searchText) ||
-                partner.category.displayName.localizedCaseInsensitiveContains(searchText)
-            }
-        }
-        
-        // Apply price range filter (based on minimum order amount)
-        filteredPartners = filteredPartners.filter { partner in
-            let minOrderDollars = Double(partner.minimumOrderAmount) / 100.0
-            return priceRange.contains(minOrderDollars)
-        }
-        
-        // Apply delivery time filter
-        filteredPartners = filteredPartners.filter { partner in
-            deliveryTimeRange.contains(partner.estimatedDeliveryTime)
-        }
-        
-        // Apply sorting
-        filteredPartners = sortPartners(filteredPartners)
-        
-        partners = Array(filteredPartners.prefix(pageSize))
-        currentPage = 1
-        hasMorePages = filteredPartners.count > pageSize
+        // Implement filter logic if needed
     }
     
-    func loadMoreIfNeeded() async {
-        guard !isLoadingMore && hasMorePages else { return }
-        
-        isLoadingMore = true
-        defer { isLoadingMore = false }
-        
-        let startIndex = currentPage * pageSize
-        let endIndex = min(startIndex + pageSize, allPartners.count)
-        
-        if startIndex < allPartners.count {
-            let morePartners = Array(allPartners[startIndex..<endIndex])
-            partners.append(contentsOf: morePartners)
-            currentPage += 1
-            hasMorePages = endIndex < allPartners.count
-        }
+    func showAllFeatured() async {
+        // Implement logic to show all featured partners
     }
     
+    // MARK: - Navigation
     func selectPartner(_ partner: Partner) {
-        // Navigate to partner detail
-        selectedPartner = partner
+        self.selectedPartner = partner
     }
     
     func navigateToCart() {
         showingCart = true
     }
     
-    private func performSearch(query: String) {
-        searchTask?.cancel()
-        
-        if query.isEmpty {
-            partners = Array(allPartners.prefix(pageSize))
-            return
-        }
-        
-        searchTask = Task {
-            await searchPartners(query: query)
+    // MARK: - Helper Methods
+    private func setupBindings() {
+        // Setup any necessary Combine bindings
+    }
+    
+    private func updateLocationName(location: CLLocation) async {
+        let geocoder = CLGeocoder()
+        if let placemark = try? await geocoder.reverseGeocodeLocation(location).first {
+            currentLocationName = placemark.locality ?? placemark.name ?? "Current Location"
         }
     }
     
-    func showAllFeatured() async {
-        selectedCategory = nil
-        searchText = ""
-        partners = featuredPartners
-        currentPage = 1
-        hasMorePages = false
+    private var defaultPlaceTypes: [String] {
+        return ["restaurant", "cafe", "bakery", "grocery_or_supermarket", "pharmacy", "store"]
     }
     
     func getPartnerCount(for category: PartnerCategory) -> Int {
-        return allPartners.filter { $0.category == category }.count
+        // This can be adapted if needed, for now, it's less relevant with dynamic data
+        return partners.filter { $0.category == category }.count
     }
     
-    // MARK: - Private Methods
-    private func setupBindings() {
-        // Listen to cart item count changes
-        cartService.cartItemCountPublisher
-            .receive(on: DispatchQueue.main)
-            .sink { [weak self] count in
-                self?.cartItemCount = count
-            }
-            .store(in: &cancellables)
+    // MARK: - Conversion
+    private func convertGooglePlaceToPartner(_ place: GooglePlace) -> Partner {
+        // This is a simplified conversion. In a real app, you might fetch more details
+        // for each place to get ratings, opening hours, etc.
+        return Partner(
+            id: place.placeID,
+            name: place.name,
+            category: mapGoogleTypeToPartnerCategory(place.types),
+            description: place.address ?? "No address available",
+            address: Address(
+                street: place.address ?? "",
+                city: "", state: "", postalCode: "", country: "" // These would need more detailed fetching
+            ),
+            location: place.coordinate,
+            phoneNumber: nil,
+            email: nil,
+            heroImageURL: nil,
+            logoURL: nil,
+            isVerified: false,
+            isActive: true, // Assume active if returned by API
+            rating: 0, // Placeholder
+            reviewCount: 0, // Placeholder
+            openingHours: [:], // Placeholder
+            deliveryRadius: 5.0,
+            minimumOrderAmount: 0, // Placeholder
+            estimatedDeliveryTime: 25 // Placeholder
+        )
+    }
+    
+    private func mapGoogleTypeToPartnerCategory(_ types: [String]?) -> PartnerCategory {
+        guard let types = types else { return .restaurant }
         
-        // Search text debouncing
-        $searchText
-            .debounce(for: .milliseconds(500), scheduler: DispatchQueue.main)
-            .removeDuplicates()
-            .sink { [weak self] searchText in
-                self?.performSearch(query: searchText)
-            }
-            .store(in: &cancellables)
-    }
-    
-    private func updateCurrentLocation() async {
-        do {
-            try await locationService.requestLocationPermission()
-            
-            if let location = await locationService.currentLocation {
-                currentRegion = MKCoordinateRegion(
-                    center: location.coordinate,
-                    span: MKCoordinateSpan(latitudeDelta: 0.05, longitudeDelta: 0.05)
-                )
-                
-                // Update location name (mock implementation)
-                currentLocationName = "Current Location" // TODO: Reverse geocode
-            }
-        } catch {
-            print("Failed to get location: \(error)")
-        }
-    }
-    
-    private func searchPartners(query: String) async {
-        do {
-            let searchResults = try await partnerRepository.searchPartners(
-                query: query,
-                in: currentRegion
-            )
-            partners = Array(searchResults.prefix(pageSize))
-            currentPage = 1
-            hasMorePages = searchResults.count > pageSize
-        } catch {
-            print("Search failed: \(error)")
-        }
-    }
-    
-    private func sortPartners(_ partners: [Partner]) -> [Partner] {
-        switch sortOption {
-        case .relevance:
-            return partners.sorted { $0.rating > $1.rating }
-        case .rating:
-            return partners.sorted { $0.rating > $1.rating }
-        case .deliveryTime:
-            return partners.sorted { $0.estimatedDeliveryTime < $1.estimatedDeliveryTime }
-        case .distance:
-            // TODO: Implement distance sorting based on current location
-            return partners
-        case .alphabetical:
-            return partners.sorted { $0.name < $1.name }
-        }
+        if types.contains("restaurant") { return .restaurant }
+        if types.contains("cafe") { return .coffee }
+        if types.contains("bakery") { return .bakery }
+        if types.contains("grocery_or_supermarket") { return .grocery }
+        if types.contains("pharmacy") { return .pharmacy }
+        if types.contains("electronics_store") { return .electronics }
+        if types.contains("florist") { return .flowers }
+        if types.contains("liquor_store") { return .alcohol }
+        // Add more mappings as needed
+        
+        return .retail
     }
 }
 
-// MARK: - Supporting Types
-
-enum SortOption: String, CaseIterable {
-    case relevance = "Relevance"
-    case rating = "Rating"
-    case deliveryTime = "Delivery Time"
-    case distance = "Distance"
-    case alphabetical = "A-Z"
-    
-    var displayName: String {
-        return rawValue
+extension PartnerCategory {
+    var googlePlaceTypes: [String] {
+        switch self {
+        case .restaurant: return ["restaurant"]
+        case .grocery: return ["grocery_or_supermarket"]
+        case .pharmacy: return ["pharmacy"]
+        case .coffee: return ["cafe"]
+        case .retail: return ["store"]
+        case .convenience: return ["convenience_store"]
+        case .bakery: return ["bakery"]
+        case .alcohol: return ["liquor_store"]
+        case .flowers: return ["florist"]
+        case .electronics: return ["electronics_store"]
+        }
     }
 }

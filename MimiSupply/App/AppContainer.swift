@@ -11,7 +11,25 @@ import SwiftUI
 /// Main dependency injection container for the MimiSupply app
 @MainActor
 final class AppContainer: ObservableObject {
-    static let shared = AppContainer()
+    // MARK: - Protocols
+    
+    let pushNotificationService: PushNotificationService
+    let googlePlacesService: GooglePlacesService
+    
+    // MARK: - Initialization
+    
+    init() {
+        self.appRouter = AppRouter()
+        self.appState = AppState()
+        self.analytics = AnalyticsServiceImpl()
+        self.authenticationService = AuthenticationServiceImpl.shared
+        self.featureFlagService = FeatureFlagServiceImpl.shared
+        self.cloudKitService = CloudKitServiceImpl.shared
+        self.pushNotificationService = PushNotificationServiceImpl.shared
+        self.googlePlacesService = GooglePlacesServiceImpl() // AND ADD THIS
+        
+        setupCloudKitSubscriptions()
+    }
     
     // MARK: - Core Services
     let cloudKitService: CloudKitService
