@@ -102,7 +102,7 @@ struct PremiumTabView: View {
                 case .partner:
                     PartnerDashboardView()
                 case .admin:
-                    PartnerDashboardView() // Admin can see partner dashboard
+                    AdminDashboardView() // Show Admin Dashboard for admins
                 default:
                     PremiumExploreView() // Fallback
                 }
