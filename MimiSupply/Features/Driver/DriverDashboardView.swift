@@ -826,6 +826,113 @@ struct QuickActionButton: View {
     }
 }
 
+// MARK: - Supporting Views
+
+struct StatusIndicator: View {
+    let title: String
+    let value: String
+    let color: Color
+    
+    var body: some View {
+        VStack(spacing: 4) {
+            Text(title)
+                .font(.caption2)
+                .foregroundColor(.secondary)
+            
+            Text(value)
+                .font(.caption)
+                .fontWeight(.semibold)
+                .foregroundColor(color)
+        }
+    }
+}
+
+struct AvailableJobCard: View {
+    let job: Order
+    let onAction: (JobAction) -> Void
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack {
+                Text("Order #\(job.id.prefix(8))")
+                    .font(.subheadline)
+                    .fontWeight(.medium)
+                
+                Spacer()
+                
+                Text(job.formattedTotal)
+                    .font(.subheadline)
+                    .fontWeight(.semibold)
+                    .foregroundColor(.green)
+            }
+            
+            Text(job.deliveryAddress.singleLineAddress)
+                .font(.caption)
+                .foregroundColor(.secondary)
+                .lineLimit(2)
+            
+            HStack {
+                Button("Accept") {
+                    onAction(.accept)
+                }
+                .buttonStyle(.borderedProminent)
+                .font(.caption)
+                
+                Button("Decline") {
+                    onAction(.decline)
+                }
+                .buttonStyle(.bordered)
+                .font(.caption)
+                
+                Spacer()
+                
+                Button("Details") {
+                    onAction(.viewDetails)
+                }
+                .buttonStyle(.plain)
+                .font(.caption)
+            }
+        }
+        .padding()
+        .background(Color(.systemGray6))
+        .cornerRadius(8)
+    }
+}
+
+struct EarningsCard: View {
+    let title: String
+    let amount: String
+    let deliveries: Int
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text(title)
+                .font(.caption)
+                .foregroundColor(.secondary)
+            
+            Text(amount)
+                .font(.title2)
+                .fontWeight(.semibold)
+                .foregroundColor(.primary)
+            
+            Text("\(deliveries) deliveries")
+                .font(.caption)
+                .foregroundColor(.secondary)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding()
+        .background(Color(.systemBackground))
+        .cornerRadius(8)
+        .shadow(radius: 1)
+    }
+}
+
+enum JobAction {
+    case accept
+    case decline
+    case viewDetails
+}
+
 // MARK: - Preview
 
 struct DriverDashboardView_Previews: PreviewProvider {
