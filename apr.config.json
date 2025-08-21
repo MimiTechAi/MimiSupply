@@ -1,0 +1,39 @@
+{
+  "provider": "zai",
+  "model": "glm-4.5",
+  "api_env_var": "ZAI_API_KEY",
+  "thinking": { "type": "disabled" },
+  "file_scopes": [
+    "MimiSupply/**/*.swift",
+    "MimiSupplyTests/**/*.swift",
+    "MimiSupplyUITests/**/*.swift"
+  ],
+  "excludes": [
+    "**/project.pbxproj",
+    "**/DerivedData/**",
+    "build/**",
+    "MimiSupply.xcodeproj/**",
+    "**/.git/**"
+  ],
+  "max_change_lines": 120,
+  "retries": 2,
+  "xcode": {
+    "project_kind": "xcodeproj",
+    "project_path": "MimiSupply.xcodeproj",
+    "scheme": "MimiSupply",
+    "destination": "platform=iOS Simulator,name=iPhone 16",
+    "additional_args": []
+  },
+  "paths": {
+    "build_log": "build.log",
+    "report_path": "apr-report.json"
+  },
+  "lint": {
+    "swiftlint": false,
+    "swiftformat": false
+  },
+  "triggers": {
+    "mode": "manual", 
+    "label": "apr-run"
+  }
+}

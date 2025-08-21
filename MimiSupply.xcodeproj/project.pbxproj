@@ -6,6 +6,10 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		227E99DF2E4FF68500002AB4 /* StoreKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2255F90F2E4D2AFC007C1DDB /* StoreKit.framework */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXContainerItemProxy section */
 		22653D7E2E4CBA8A006F76C2 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -24,14 +28,28 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		2255F90F2E4D2AFC007C1DDB /* StoreKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = StoreKit.framework; path = System/Library/Frameworks/StoreKit.framework; sourceTree = SDKROOT; };
 		22653D702E4CBA89006F76C2 /* MimiSupply.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MimiSupply.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		22653D7D2E4CBA8A006F76C2 /* MimiSupplyTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = MimiSupplyTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		22653D872E4CBA8A006F76C2 /* MimiSupplyUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = MimiSupplyUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		22653D9C2E4CCAA4006F76C2 /* Exceptions for "MimiSupply" folder in "MimiSupply" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = 22653D6F2E4CBA89006F76C2 /* MimiSupply */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		22653D722E4CBA89006F76C2 /* MimiSupply */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				22653D9C2E4CCAA4006F76C2 /* Exceptions for "MimiSupply" folder in "MimiSupply" target */,
+			);
 			path = MimiSupply;
 			sourceTree = "<group>";
 		};
@@ -52,6 +70,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				227E99DF2E4FF68500002AB4 /* StoreKit.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -72,13 +91,30 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		223EAB252E51F22400809C0F /* Recovered References */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = "Recovered References";
+			sourceTree = "<group>";
+		};
+		2255F90E2E4D2AFC007C1DDB /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				2255F90F2E4D2AFC007C1DDB /* StoreKit.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
 		22653D672E4CBA89006F76C2 = {
 			isa = PBXGroup;
 			children = (
 				22653D722E4CBA89006F76C2 /* MimiSupply */,
 				22653D802E4CBA8A006F76C2 /* MimiSupplyTests */,
 				22653D8A2E4CBA8A006F76C2 /* MimiSupplyUITests */,
+				2255F90E2E4D2AFC007C1DDB /* Frameworks */,
 				22653D712E4CBA89006F76C2 /* Products */,
+				223EAB252E51F22400809C0F /* Recovered References */,
 			);
 			sourceTree = "<group>";
 		};
@@ -322,7 +358,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 18.5;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
@@ -380,7 +416,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 18.5;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
@@ -395,11 +431,23 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
+				CODE_SIGN_ENTITLEMENTS = MimiSupply/MimiSupply.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 63X96LFZ6Z;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = MimiSupply/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = MimiSupply;
+				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.food-and-drink";
+				INFOPLIST_KEY_NSCameraUsageDescription = "Camera is used for QR/barcode scanning, delivery proof photos, and uploading images.";
+				INFOPLIST_KEY_NSFaceIDUsageDescription = "Face ID enables quick and secure sign-in.";
+				INFOPLIST_KEY_NSLocationAlwaysAndWhenInUseUsageDescription = "For drivers: MimiSupply tracks location in the background to reliably track orders and provide customers with precise live tracking.";
+				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "We need your location to show nearby partners, calculate distances/ETAs, and navigate deliveries to you.";
+				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "MimiSupply saves delivery proof photos to your device when you want.";
+				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "Photos are used to upload receipts and delivery proofs.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -423,11 +471,23 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
+				CODE_SIGN_ENTITLEMENTS = MimiSupply/MimiSupply.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 63X96LFZ6Z;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = MimiSupply/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = MimiSupply;
+				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.food-and-drink";
+				INFOPLIST_KEY_NSCameraUsageDescription = "Camera is used for QR/barcode scanning, delivery proof photos, and uploading images.";
+				INFOPLIST_KEY_NSFaceIDUsageDescription = "Face ID enables quick and secure sign-in.";
+				INFOPLIST_KEY_NSLocationAlwaysAndWhenInUseUsageDescription = "For drivers: MimiSupply tracks location in the background to reliably track orders and provide customers with precise live tracking.";
+				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "We need your location to show nearby partners, calculate distances/ETAs, and navigate deliveries to you.";
+				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "MimiSupply saves delivery proof photos to your device when you want.";
+				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "Photos are used to upload receipts and delivery proofs.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -454,7 +514,7 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 63X96LFZ6Z;
 				GENERATE_INFOPLIST_FILE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 18.5;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.mimisupply.app.MimiSupplyTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -473,7 +533,7 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 63X96LFZ6Z;
 				GENERATE_INFOPLIST_FILE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 18.5;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.mimisupply.app.MimiSupplyTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";

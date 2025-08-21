@@ -1,0 +1,21 @@
+{
+  "version": "0.2",
+  "language": "en",
+  "words": [
+    "checkmark",
+    "xmark",
+    "Subpredicates",
+    "subpredicates",
+    "mimisupply",
+    "Kiro",
+    "preconcurrency",
+    "Geocoder"
+  ],
+  "ignorePaths": [
+    "build/**",
+    "MimiSupply.xcodeproj/**",
+    "MimiSupply.xcodeproj/project.xcworkspace/**",
+    "MimiSupply.xcodeproj/xcuserdata/**",
+    ".kiro/**"
+  ]
+}

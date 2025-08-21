@@ -1,0 +1,124 @@
+{
+  "failures": {
+    "errors": [
+      {
+        "path": "/Users/sanji/Desktop/mimi supply ios app/MimiSupply/MimiSupplyTests/Features/CartIntegrationTests.swift",
+        "line": 17,
+        "col": 28,
+        "message": "'MockCoreDataStack' is ambiguous for type lookup in this context"
+      },
+      {
+        "path": "/Users/sanji/Desktop/mimi supply ios app/MimiSupply/MimiSupplyTests/Features/CartIntegrationTests.swift",
+        "line": 114,
+        "col": 27,
+        "message": "referencing operator function '~=' on '_ErrorCodeProtocol' requires that 'CartError' conform to '_ErrorCodeProtocol'"
+      },
+      {
+        "path": "/Users/sanji/Desktop/mimi supply ios app/MimiSupply/MimiSupplyTests/Features/CartIntegrationTests.swift",
+        "line": 124,
+        "col": 27,
+        "message": "referencing operator function '~=' on '_ErrorCodeProtocol' requires that 'CartError' conform to '_ErrorCodeProtocol'"
+      },
+      {
+        "path": "/Users/sanji/Desktop/mimi supply ios app/MimiSupply/MimiSupplyTests/BusinessLogic/DriverAssignmentTests.swift",
+        "line": 15,
+        "col": 34,
+        "message": "'DriverAssignmentService' is ambiguous for type lookup in this context"
+      },
+      {
+        "path": "/Users/sanji/Desktop/mimi supply ios app/MimiSupply/MimiSupplyTests/BusinessLogic/DriverAssignmentTests.swift",
+        "line": 16,
+        "col": 28,
+        "message": "'MockDriverService' is ambiguous for type lookup in this context"
+      },
+      {
+        "path": "/Users/sanji/Desktop/mimi supply ios app/MimiSupply/MimiSupplyTests/BusinessLogic/DriverAssignmentTests.swift",
+        "line": 17,
+        "col": 30,
+        "message": "'MockLocationService' is ambiguous for type lookup in this context"
+      },
+      {
+        "path": "/Users/sanji/Desktop/mimi supply ios app/MimiSupply/MimiSupplyTests/BusinessLogic/DriverAssignmentTests.swift",
+        "line": 347,
+        "col": 10,
+        "message": "invalid redeclaration of 'DriverAssignmentService'"
+      },
+      {
+        "path": "/Users/sanji/Desktop/mimi supply ios app/MimiSupply/MimiSupplyTests/BusinessLogic/DriverAssignmentTests.swift",
+        "line": 375,
+        "col": 36,
+        "message": "'DriverAssignmentService' is ambiguous for type lookup in this context"
+      },
+      {
+        "path": "/Users/sanji/Desktop/mimi supply ios app/MimiSupply/MimiSupplyTests/BusinessLogic/DriverAssignmentTests.swift",
+        "line": 24,
+        "col": 58,
+        "message": "incorrect argument label in call (have 'driverService:locationService:', expected 'cloudKitService:locationService:')"
+      },
+      {
+        "path": "/Users/sanji/Desktop/mimi supply ios app/MimiSupply/MimiSupplyTests/BusinessLogic/DriverAssignmentTests.swift",
+        "line": 179,
+        "col": 36,
+        "message": "cannot infer contextual base in reference to member 'car'"
+      },
+      {
+        "path": "/Users/sanji/Desktop/mimi supply ios app/MimiSupply/MimiSupplyTests/BusinessLogic/DriverAssignmentTests.swift",
+        "line": 294,
+        "col": 22,
+        "message": "missing arguments for parameters 'name', 'phoneNumber' in call"
+      },
+      {
+        "path": "/Users/sanji/Desktop/mimi supply ios app/MimiSupply/MimiSupplyTests/BusinessLogic/DriverAssignmentTests.swift",
+        "line": 301,
+        "col": 30,
+        "message": "cannot convert value of type 'CLLocationCoordinate2D' to expected argument type 'Coordinate'"
+      },
+      {
+        "path": "/Users/sanji/Desktop/mimi supply ios app/MimiSupply/MimiSupplyTests/Features/CheckoutIntegrationTests.swift",
+        "line": 85,
+        "col": 9,
+        "message": "global function 'XCTAssertEqual(_:_:_:file:line:)' requires that 'PaymentResult' conform to 'Equatable'"
+      },
+      {
+        "path": "/Users/sanji/Desktop/mimi supply ios app/MimiSupply/MimiSupplyTests/Features/CheckoutIntegrationTests.swift",
+        "line": 146,
+        "col": 47,
+        "message": "missing argument for parameter 'estimatedDeliveryTime' in call"
+      },
+      {
+        "path": "/Users/sanji/Desktop/mimi supply ios app/MimiSupply/MimiSupplyTests/Features/CheckoutIntegrationTests.swift",
+        "line": 167,
+        "col": 47,
+        "message": "missing argument for parameter 'estimatedDeliveryTime' in call"
+      },
+      {
+        "path": "/Users/sanji/Desktop/mimi supply ios app/MimiSupply/MimiSupplyTests/Features/CheckoutIntegrationTests.swift",
+        "line": 277,
+        "col": 9,
+        "message": "errors thrown from here are not handled"
+      },
+      {
+        "path": "/Users/sanji/Desktop/mimi supply ios app/MimiSupply/MimiSupplyTests/Features/CheckoutIntegrationTests.swift",
+        "line": 375,
+        "col": 37,
+        "message": "missing argument for parameter 'estimatedDeliveryTime' in call"
+      },
+      {
+        "path": "/Users/sanji/Desktop/mimi supply ios app/MimiSupply/MimiSupplyTests/Data/CoreDataStackTests.swift",
+        "line": 20,
+        "col": 15,
+        "message": "'CoreDataStack' initializer is inaccessible due to 'private' protection level"
+      }
+    ],
+    "tests_failed": [],
+    "log_missing": false
+  },
+  "patch": {
+    "changes": [],
+    "notes": "Environment variable 'ZAI_API_KEY' not set. No patch generated."
+  },
+  "apply": null,
+  "validation": null,
+  "rolled_back": false,
+  "notes": "Environment variable 'ZAI_API_KEY' not set. No patch generated."
+}

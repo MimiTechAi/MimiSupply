@@ -1,0 +1,18 @@
+"/Users/sanji/Desktop/mimi supply ios app/MimiSupply/MimiSupply/Data/Repositories/Protocols/PartnerRepository.swift":
+  object: "/Users/sanji/Desktop/mimi supply ios app/MimiSupply/build/MimiSupply.build/Debug-iphoneos/MimiSupply.build/Objects-normal/arm64/PartnerRepository.o"
+  diagnostics: "/Users/sanji/Desktop/mimi supply ios app/MimiSupply/build/MimiSupply.build/Debug-iphoneos/MimiSupply.build/Objects-normal/arm64/PartnerRepository.dia"
+  const-values: "/Users/sanji/Desktop/mimi supply ios app/MimiSupply/build/MimiSupply.build/Debug-iphoneos/MimiSupply.build/Objects-normal/arm64/PartnerRepository.swiftconstvalues"
+  swift-dependencies: "/Users/sanji/Desktop/mimi supply ios app/MimiSupply/build/MimiSupply.build/Debug-iphoneos/MimiSupply.build/Objects-normal/arm64/PartnerRepository.swiftdeps"
+  dependencies: "/Users/sanji/Desktop/mimi supply ios app/MimiSupply/build/MimiSupply.build/Debug-iphoneos/MimiSupply.build/Objects-normal/arm64/PartnerRepository.d"
+"/Users/sanji/Desktop/mimi supply ios app/MimiSupply/MimiSupply/Data/Services/Protocols/AuthenticationService.swift":
+  const-values: "/Users/sanji/Desktop/mimi supply ios app/MimiSupply/build/MimiSupply.build/Debug-iphoneos/MimiSupply.build/Objects-normal/arm64/AuthenticationService.swiftconstvalues"
+  swift-dependencies: "/Users/sanji/Desktop/mimi supply ios app/MimiSupply/build/MimiSupply.build/Debug-iphoneos/MimiSupply.build/Objects-normal/arm64/AuthenticationService.swiftdeps"
+  diagnostics: "/Users/sanji/Desktop/mimi supply ios app/MimiSupply/build/MimiSupply.build/Debug-iphoneos/MimiSupply.build/Objects-normal/arm64/AuthenticationService.dia"
+  dependencies: "/Users/sanji/Desktop/mimi supply ios app/MimiSupply/build/MimiSupply.build/Debug-iphoneos/MimiSupply.build/Objects-normal/arm64/AuthenticationService.d"
+  object: "/Users/sanji/Desktop/mimi supply ios app/MimiSupply/build/MimiSupply.build/Debug-iphoneos/MimiSupply.build/Objects-normal/arm64/AuthenticationService.o"
+"/Users/sanji/Desktop/mimi supply ios app/MimiSupply/MimiSupply/MimiSupplyApp.swift":
+  object: "/Users/sanji/Desktop/mimi supply ios app/MimiSupply/build/MimiSupply.build/Debug-iphoneos/MimiSupply.build/Objects-normal/arm64/MimiSupplyApp.o"
+  const-values: "/Users/sanji/Desktop/mimi supply ios app/MimiSupply/build/MimiSupply.build/Debug-iphoneos/MimiSupply.build/Objects-normal/arm64/MimiSupplyApp.swiftconstvalues"
+  swift-dependencies: "/Users/sanji/Desktop/mimi supply ios app/MimiSupply/build/MimiSupply.build/Debug-iphoneos/MimiSupply.build/Objects-normal/arm64/MimiSupplyApp.swiftdeps"
+  dependencies: "/Users/sanji/Desktop/mimi supply ios app/MimiSupply/build/MimiSupply.build/Debug-iphoneos/MimiSupply.build/Objects-normal/arm64/MimiSupplyApp.d"
+  diagnostics: "/Users/sanji/Desktop/mimi supply ios app/MimiSupply/build/MimiSupply.build/Debug-iphoneos/MimiSupply.build/Objects-normal/arm64/MimiSupplyApp.dia"

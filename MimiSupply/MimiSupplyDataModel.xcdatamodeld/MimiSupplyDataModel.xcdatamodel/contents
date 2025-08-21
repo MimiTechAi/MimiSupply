@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="22758" systemVersion="23F79" minimumToolsVersion="Automatic" sourceLanguage="Swift" usedWithCloudKit="YES" userDefinedModelVersionIdentifier="">
+    <entity name="CartItemEntity" representedClassName="CartItemEntity" syncable="YES">
+        <attribute name="addedAt" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="id" optional="YES" attributeType="String"/>
+        <attribute name="productData" optional="YES" attributeType="Binary"/>
+        <attribute name="quantity" optional="YES" attributeType="Integer 32" defaultValue="0" usesScalarValueType="YES"/>
+        <attribute name="specialInstructions" optional="YES" attributeType="String"/>
+    </entity>
+    <entity name="PartnerEntity" representedClassName="PartnerEntity" syncable="YES">
+        <attribute name="category" optional="YES" attributeType="String"/>
+        <attribute name="id" optional="YES" attributeType="String"/>
+        <attribute name="lastUpdated" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="name" optional="YES" attributeType="String"/>
+        <attribute name="partnerData" optional="YES" attributeType="Binary"/>
+    </entity>
+    <entity name="ProductEntity" representedClassName="ProductEntity" syncable="YES">
+        <attribute name="category" optional="YES" attributeType="String"/>
+        <attribute name="id" optional="YES" attributeType="String"/>
+        <attribute name="isAvailable" optional="YES" attributeType="Boolean" usesScalarValueType="YES"/>
+        <attribute name="lastUpdated" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="name" optional="YES" attributeType="String"/>
+        <attribute name="partnerId" optional="YES" attributeType="String"/>
+        <attribute name="priceCents" optional="YES" attributeType="Integer 32" defaultValue="0" usesScalarValueType="YES"/>
+        <attribute name="productData" optional="YES" attributeType="Binary"/>
+    </entity>
+</model>

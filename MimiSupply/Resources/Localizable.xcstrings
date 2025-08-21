@@ -1,0 +1,1504 @@
+{
+  "sourceLanguage" : "en",
+  "strings" : {
+    "" : {
+
+    },
+    "(%lld reviews)" : {
+
+    },
+    "(%lld)" : {
+
+    },
+    "%.1f%%" : {
+
+    },
+    "%@ • %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ • %2$@"
+          }
+        }
+      }
+    },
+    "%@ × %lld" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ × %2$lld"
+          }
+        }
+      }
+    },
+    "%@ has been added to your cart" : {
+
+    },
+    "%@, %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@, %2$@"
+          }
+        }
+      }
+    },
+    "%@, %@, %lf stars, %lld minutes delivery" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@, %2$@, %3$lf stars, %4$lld minutes delivery"
+          }
+        }
+      }
+    },
+    "%@, %lld products" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@, %2$lld products"
+          }
+        }
+      }
+    },
+    "%@, quantity %lld, %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@, quantity %2$lld, %3$@"
+          }
+        }
+      }
+    },
+    "%@: %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@: %2$@"
+          }
+        }
+      }
+    },
+    "%lld" : {
+
+    },
+    "%lld - %lld min" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$lld - %2$lld min"
+          }
+        }
+      }
+    },
+    "%lld deliveries" : {
+
+    },
+    "%lld document(s) selected" : {
+
+    },
+    "%lld items" : {
+
+    },
+    "%lld items • %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$lld items • %2$@"
+          }
+        }
+      }
+    },
+    "%lld km" : {
+
+    },
+    "%lld MB" : {
+
+    },
+    "%lld min" : {
+
+    },
+    "%lld notifications" : {
+
+    },
+    "%lld orders" : {
+
+    },
+    "%lld%%" : {
+
+    },
+    "%lldx" : {
+
+    },
+    "%lldx %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$lldx %2$@"
+          }
+        }
+      }
+    },
+    "• %lld deliveries" : {
+
+    },
+    "+ %lld more items" : {
+
+    },
+    "×%lld" : {
+
+    },
+    "⭐ %@" : {
+
+    },
+    "🍽️" : {
+
+    },
+    "$" : {
+
+    },
+    "$%@" : {
+
+    },
+    "$%lld - $%lld" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "$%1$lld - $%2$lld"
+          }
+        }
+      }
+    },
+    "$0.00" : {
+
+    },
+    "0.00" : {
+
+    },
+    "About" : {
+
+    },
+    "Accept" : {
+
+    },
+    "Accept Job" : {
+
+    },
+    "Accessibility Info" : {
+
+    },
+    "Account" : {
+
+    },
+    "Account Actions" : {
+
+    },
+    "Account Type" : {
+
+    },
+    "Account type: %@. %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Account type: %1$@. %2$@"
+          }
+        }
+      }
+    },
+    "Actions" : {
+
+    },
+    "Add %@ to cart" : {
+
+    },
+    "Add any additional notes about the delivery (optional)" : {
+
+    },
+    "Add any special requests..." : {
+
+    },
+    "Add Holiday Hours" : {
+
+    },
+    "Add product" : {
+
+    },
+    "Add some delicious items from our partners to get started" : {
+
+    },
+    "Add Special Hours" : {
+
+    },
+    "Added to Cart" : {
+
+    },
+    "Adding to cart..." : {
+
+    },
+    "Address" : {
+
+    },
+    "Admin Content" : {
+
+    },
+    "All Orders" : {
+
+    },
+    "Allergens" : {
+
+    },
+    "Analytics" : {
+
+    },
+    "Animation Performance" : {
+
+    },
+    "Apple Pay" : {
+
+    },
+    "Apple Pay Not Available" : {
+
+    },
+    "Are you sure you want to delete %@? This action cannot be undone." : {
+
+    },
+    "Are you sure you want to delete your account? This action cannot be undone and will permanently remove all your business data." : {
+
+    },
+    "Are you sure you want to sign out? You'll need to sign in again to access your account." : {
+
+    },
+    "Authenticate using your Apple ID" : {
+
+    },
+    "Authentication Error" : {
+
+    },
+    "Availability" : {
+
+    },
+    "Available" : {
+
+    },
+    "Available for Order" : {
+
+    },
+    "Available Jobs" : {
+
+    },
+    "Average FPS" : {
+
+    },
+    "Badge: %@" : {
+
+    },
+    "Badges" : {
+
+    },
+    "Basic Information" : {
+
+    },
+    "Body Medium - This is regular body text that scales with Dynamic Type." : {
+
+    },
+    "Browse Products" : {
+
+    },
+    "Business" : {
+
+    },
+    "Business Documents" : {
+
+    },
+    "Business Hours" : {
+
+    },
+    "Business Intelligence" : {
+
+    },
+    "Business License Number" : {
+
+    },
+    "Business Logo" : {
+
+    },
+    "Business Name" : {
+
+    },
+    "Business Profile" : {
+
+    },
+    "Business Status" : {
+
+    },
+    "Business Verification" : {
+
+    },
+    "Buttons" : {
+
+    },
+    "Call driver" : {
+
+    },
+    "Cancel" : {
+
+    },
+    "Cards" : {
+
+    },
+    "Cart" : {
+
+    },
+    "Cart is empty. Start shopping to add items." : {
+
+    },
+    "Categories" : {
+
+    },
+    "Categories list" : {
+
+    },
+    "Category" : {
+
+    },
+    "Change" : {
+
+    },
+    "Change Logo" : {
+
+    },
+    "Change Password" : {
+
+    },
+    "Change Role" : {
+
+    },
+    "Change Your Role" : {
+
+    },
+    "Changed by %lf%%" : {
+
+    },
+    "Chart requires iOS 16+" : {
+
+    },
+    "Check for Memory Leaks" : {
+
+    },
+    "Checkout" : {
+
+    },
+    "Checkout Error" : {
+
+    },
+    "Choose Photo" : {
+
+    },
+    "City" : {
+
+    },
+    "Clear" : {
+
+    },
+    "Clear Badge" : {
+
+    },
+    "Clear History" : {
+
+    },
+    "Close" : {
+
+    },
+    "Close Time" : {
+
+    },
+    "Colors" : {
+
+    },
+    "common.add" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "إضافة"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hinzufügen"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Add"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Agregar"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ajouter"
+          }
+        },
+        "he" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "הוסף"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "追加"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "추가"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Adicionar"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Добавить"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "เพิ่ม"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Thêm"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "添加"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "新增"
+          }
+        }
+      }
+    },
+    "common.cancel" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "إلغاء"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Abbrechen"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Cancel"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cancelar"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Annuler"
+          }
+        },
+        "he" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ביטול"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "キャンセル"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "취소"
+          }
+        },
+        "pt" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cancelar"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Отмена"
+          }
+        },
+        "th" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ยกเลิก"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hủy"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "取消"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "取消"
+          }
+        }
+      }
+    },
+    "Complete" : {
+
+    },
+    "Complete Delivery" : {
+
+    },
+    "Completion Notes" : {
+
+    },
+    "Confirm delivery completion" : {
+
+    },
+    "Confirm New Password" : {
+
+    },
+    "Contact Information" : {
+
+    },
+    "Contains search field and clear button" : {
+
+    },
+    "Content above divider" : {
+
+    },
+    "Content below divider" : {
+
+    },
+    "Continue Shopping" : {
+
+    },
+    "Current Delivery" : {
+
+    },
+    "Current delivery location: %@" : {
+
+    },
+    "Current Password" : {
+
+    },
+    "Current Status" : {
+
+    },
+    "Currently selected" : {
+
+    },
+    "Custom" : {
+
+    },
+    "Customer Content" : {
+
+    },
+    "Customer Insights" : {
+
+    },
+    "Dashboard" : {
+
+    },
+    "Date" : {
+
+    },
+    "Decline" : {
+
+    },
+    "Delete" : {
+
+    },
+    "Delete Account" : {
+
+    },
+    "Delete Product" : {
+
+    },
+    "Deliver to" : {
+
+    },
+    "Delivery" : {
+
+    },
+    "Delivery Address" : {
+
+    },
+    "Delivery Details" : {
+
+    },
+    "Delivery Fee" : {
+
+    },
+    "Delivery Information" : {
+
+    },
+    "Delivery Location" : {
+
+    },
+    "Delivery Radius" : {
+
+    },
+    "Delivery Settings" : {
+
+    },
+    "Delivery Time" : {
+
+    },
+    "Description" : {
+
+    },
+    "Design System" : {
+
+    },
+    "Details" : {
+
+    },
+    "Display Large" : {
+
+    },
+    "Dividers" : {
+
+    },
+    "Done" : {
+
+    },
+    "Double tap to pay with Apple Pay" : {
+
+    },
+    "Double tap to view partner details" : {
+
+    },
+    "Drive" : {
+
+    },
+    "Driver Content" : {
+
+    },
+    "Driver Status" : {
+
+    },
+    "Dropped Frames" : {
+
+    },
+    "Earnings" : {
+
+    },
+    "Edit" : {
+
+    },
+    "Edit Profile" : {
+
+    },
+    "Email" : {
+
+    },
+    "Email Address" : {
+
+    },
+    "Empty" : {
+
+    },
+    "Empty States" : {
+
+    },
+    "Enable" : {
+
+    },
+    "End Date" : {
+
+    },
+    "Enter completion notes..." : {
+
+    },
+    "Error" : {
+
+    },
+    "Error: %@" : {
+
+    },
+    "Estimated arrival: %@" : {
+
+    },
+    "Estimated Delivery" : {
+
+    },
+    "ETA: %@" : {
+
+    },
+    "Explore" : {
+
+    },
+    "Export Report" : {
+
+    },
+    "Featured Partners" : {
+
+    },
+    "Filters" : {
+
+    },
+    "FPS: %@" : {
+
+    },
+    "Frames: %lld" : {
+
+    },
+    "Frequency" : {
+
+    },
+    "General" : {
+
+    },
+    "Headline Medium" : {
+
+    },
+    "Hi %@!" : {
+
+    },
+    "Holiday Information" : {
+
+    },
+    "Holiday Name" : {
+
+    },
+    "Home" : {
+
+    },
+    "Hours" : {
+
+    },
+    "How would you like to use MimiSupply?" : {
+
+    },
+    "Images" : {
+
+    },
+    "Include Charts" : {
+
+    },
+    "Initialized" : {
+
+    },
+    "Insights" : {
+
+    },
+    "Instructions: %@" : {
+
+    },
+    "Items" : {
+
+    },
+    "Items (%lld)" : {
+
+    },
+    "Job Details" : {
+
+    },
+    "Key Metrics" : {
+
+    },
+    "Label Small" : {
+
+    },
+    "Language" : {
+
+    },
+    "Later" : {
+
+    },
+    "Loading" : {
+
+    },
+    "Loading MimiSupply..." : {
+
+    },
+    "Loading States" : {
+
+    },
+    "Loading..." : {
+
+    },
+    "Location Settings" : {
+
+    },
+    "Manage Business" : {
+
+    },
+    "Manage Products" : {
+
+    },
+    "Map" : {
+
+    },
+    "Mark Available" : {
+
+    },
+    "Mark Picked Up" : {
+
+    },
+    "Mark Unavailable" : {
+
+    },
+    "Marketing Updates" : {
+
+    },
+    "Memory" : {
+
+    },
+    "Memory Usage Over Time" : {
+
+    },
+    "Memory: %@" : {
+
+    },
+    "MimiSupply" : {
+
+    },
+    "Minimum Order" : {
+
+    },
+    "Minimum Order Amount" : {
+
+    },
+    "Navigate back to previous screen" : {
+
+    },
+    "Need Help?" : {
+
+    },
+    "New Orders" : {
+
+    },
+    "New Password" : {
+
+    },
+    "No Active Orders" : {
+
+    },
+    "No data available" : {
+
+    },
+    "No Order History" : {
+
+    },
+    "No performance history available" : {
+
+    },
+    "No photo selected" : {
+
+    },
+    "Not available" : {
+
+    },
+    "Not Now" : {
+
+    },
+    "Note: %@" : {
+
+    },
+    "Notification Permissions" : {
+
+    },
+    "Notification Types" : {
+
+    },
+    "Notifications" : {
+
+    },
+    "Nutrition Information" : {
+
+    },
+    "Offline" : {
+
+    },
+    "OK" : {
+
+    },
+    "Online" : {
+
+    },
+    "Open" : {
+
+    },
+    "Open for Business" : {
+
+    },
+    "Open on this day" : {
+
+    },
+    "Open Settings" : {
+
+    },
+    "Open Time" : {
+
+    },
+    "Optional" : {
+
+    },
+    "Options" : {
+
+    },
+    "Order #" : {
+
+    },
+    "Order #%@" : {
+
+    },
+    "Order Analytics" : {
+
+    },
+    "Order Confirmed!" : {
+
+    },
+    "Order Details" : {
+
+    },
+    "Order History" : {
+
+    },
+    "Order ID" : {
+
+    },
+    "Order Items" : {
+
+    },
+    "Order Progress" : {
+
+    },
+    "Order Summary" : {
+
+    },
+    "Order Tracking" : {
+
+    },
+    "Order Update" : {
+
+    },
+    "Order Updates" : {
+
+    },
+    "Orders" : {
+
+    },
+    "Original Price $" : {
+
+    },
+    "Out of stock" : {
+
+    },
+    "Out of Stock" : {
+
+    },
+    "Partner Content" : {
+
+    },
+    "Partner Dashboard" : {
+
+    },
+    "Password must be at least 8 characters long and contain a mix of letters, numbers, and symbols." : {
+
+    },
+    "Pay %@ with Apple Pay" : {
+
+    },
+    "Pay with Apple Pay" : {
+
+    },
+    "Payment" : {
+
+    },
+    "Payment Error" : {
+
+    },
+    "Payment Method" : {
+
+    },
+    "Payment Summary" : {
+
+    },
+    "Pending Orders" : {
+
+    },
+    "Performance Dashboard" : {
+
+    },
+    "Performance History" : {
+
+    },
+    "Performance Metrics" : {
+
+    },
+    "Personal Information" : {
+
+    },
+    "Phone Number" : {
+
+    },
+    "Photo Confirmation" : {
+
+    },
+    "Placed on %@" : {
+
+    },
+    "Platform Fee" : {
+
+    },
+    "Please add a payment method to Apple Wallet or use a different device." : {
+
+    },
+    "Please upload clear photos of your business license, tax documents, and any other relevant business registration documents." : {
+
+    },
+    "Preferences" : {
+
+    },
+    "Preparation Time" : {
+
+    },
+    "Pricing" : {
+
+    },
+    "Privacy & Security" : {
+
+    },
+    "Privacy Policy" : {
+
+    },
+    "Processing payment" : {
+
+    },
+    "Processing..." : {
+
+    },
+    "Product Name" : {
+
+    },
+    "Profile" : {
+
+    },
+    "Profile Photo" : {
+
+    },
+    "Promotional Offers" : {
+
+    },
+    "Push Notifications" : {
+
+    },
+    "Quantity" : {
+
+    },
+    "Quick Actions" : {
+
+    },
+    "Ready to Complete" : {
+
+    },
+    "Ready to pay" : {
+
+    },
+    "Real-time Metrics" : {
+
+    },
+    "Recent Orders" : {
+
+    },
+    "Refresh" : {
+
+    },
+    "Remove %@ from cart" : {
+
+    },
+    "Report Frequency" : {
+
+    },
+    "Requirements" : {
+
+    },
+    "Reset" : {
+
+    },
+    "Restart Now" : {
+
+    },
+    "Restart Required" : {
+
+    },
+    "Retry" : {
+
+    },
+    "Revenue" : {
+
+    },
+    "Revenue Trends" : {
+
+    },
+    "Role" : {
+
+    },
+    "Role selection screen" : {
+
+    },
+    "Sample Card" : {
+
+    },
+    "Save" : {
+
+    },
+    "Schedule" : {
+
+    },
+    "Schedule Report" : {
+
+    },
+    "Search bar" : {
+
+    },
+    "Section content" : {
+
+    },
+    "Secure authentication with your Apple ID" : {
+
+    },
+    "See All" : {
+
+    },
+    "Select how you'd like to use MimiSupply" : {
+
+    },
+    "Select Images" : {
+
+    },
+    "Selected" : {
+
+    },
+    "Service status: %@" : {
+
+    },
+    "Settings" : {
+
+    },
+    "Share" : {
+
+    },
+    "Share Dashboard" : {
+
+    },
+    "Share your business intelligence dashboard with team members or stakeholders." : {
+
+    },
+    "Shopping cart" : {
+
+    },
+    "Sign in to access your profile" : {
+
+    },
+    "Sign in with Apple" : {
+
+    },
+    "Sign Out" : {
+
+    },
+    "Signing In..." : {
+
+    },
+    "Skip" : {
+
+    },
+    "Sort" : {
+
+    },
+    "Sort By" : {
+
+    },
+    "Special Hours" : {
+
+    },
+    "Special Instructions" : {
+
+    },
+    "Special Instructions (Optional)" : {
+
+    },
+    "Start Date" : {
+
+    },
+    "Start Delivery" : {
+
+    },
+    "Start Monitoring" : {
+
+    },
+    "Start Shopping" : {
+
+    },
+    "Startup Performance" : {
+
+    },
+    "Startup Time" : {
+
+    },
+    "State" : {
+
+    },
+    "Status" : {
+
+    },
+    "Stock Quantity" : {
+
+    },
+    "Stop Monitoring" : {
+
+    },
+    "Street Address" : {
+
+    },
+    "Submit" : {
+
+    },
+    "Submit Documents" : {
+
+    },
+    "Submit documents to verify your business" : {
+
+    },
+    "Subtotal" : {
+
+    },
+    "Suggestion: %@" : {
+
+    },
+    "Support" : {
+
+    },
+    "Swipe horizontally to browse categories" : {
+
+    },
+    "Switch to list view" : {
+
+    },
+    "Switch to map view" : {
+
+    },
+    "Take a photo to confirm successful delivery (optional)" : {
+
+    },
+    "Take Photo" : {
+
+    },
+    "Tap to change delivery location" : {
+
+    },
+    "Tap to dismiss" : {
+
+    },
+    "Tap to filter by this category" : {
+
+    },
+    "Tap to select this category" : {
+
+    },
+    "Tap to select this role" : {
+
+    },
+    "Tap to sort by %@" : {
+
+    },
+    "Tap to view details or add to cart" : {
+
+    },
+    "Tap to view partner details and menu" : {
+
+    },
+    "Tax" : {
+
+    },
+    "Tax ID / EIN" : {
+
+    },
+    "Terms of Service" : {
+
+    },
+    "Test Notification" : {
+
+    },
+    "Text Fields" : {
+
+    },
+    "The app needs to restart to apply the new language. You can restart now or the changes will take effect the next time you open the app." : {
+
+    },
+    "This action cannot be undone. All your data will be permanently deleted." : {
+
+    },
+    "This is a sample card demonstrating the card component with consistent styling and shadows." : {
+
+    },
+    "Time" : {
+
+    },
+    "Timeline" : {
+
+    },
+    "Tip" : {
+
+    },
+    "Title Large" : {
+
+    },
+    "to" : {
+
+    },
+    "To enable location services, please go to Settings > Privacy & Security > Location Services and allow access for MimiSupply." : {
+
+    },
+    "Toggle business online status" : {
+
+    },
+    "Toggle Loading" : {
+
+    },
+    "Top Products" : {
+
+    },
+    "Total" : {
+
+    },
+    "Track Order" : {
+
+    },
+    "Track orders, save favorites, and more" : {
+
+    },
+    "Typography" : {
+
+    },
+    "Unavailable" : {
+
+    },
+    "Upload Documents" : {
+
+    },
+    "Uploading photo" : {
+
+    },
+    "Uploading photo..." : {
+
+    },
+    "Value" : {
+
+    },
+    "Verification" : {
+
+    },
+    "Verification Pending" : {
+
+    },
+    "Verified Business" : {
+
+    },
+    "View Available Jobs" : {
+
+    },
+    "Website" : {
+
+    },
+    "Weekly Schedule" : {
+
+    },
+    "Welcome to MimiSupply!" : {
+
+    },
+    "Your active orders will appear here" : {
+
+    },
+    "Your business has been verified" : {
+
+    },
+    "Your business is currently accepting orders" : {
+
+    },
+    "Your business is currently closed to new orders" : {
+
+    },
+    "Your cart is empty" : {
+
+    },
+    "Your completed orders will appear here" : {
+
+    },
+    "Your local marketplace" : {
+
+    },
+    "Your order has been placed successfully and is being prepared." : {
+
+    },
+    "ZIP Code" : {
+
+    }
+  },
+  "version" : "1.0"
+}

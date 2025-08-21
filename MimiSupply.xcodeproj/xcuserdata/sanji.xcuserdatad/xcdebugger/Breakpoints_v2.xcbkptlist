@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Bucket
+   uuid = "D81D43D0-62CE-497D-9896-3A16FD21DBF9"
+   type = "1"
+   version = "2.0">
+   <Breakpoints>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            uuid = "134D6A09-C4ED-4BCD-99C6-F6E510AC7086"
+            shouldBeEnabled = "Yes"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "MimiSupply/Data/Services/Implementations/DriverServiceImpl.swift"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "119"
+            endingLineNumber = "119"
+            landmarkName = "updateDriverLocation(_:for:)"
+            landmarkType = "7">
+            <Locations>
+               <Location
+                  uuid = "134D6A09-C4ED-4BCD-99C6-F6E510AC7086 - c040154d0e4522a7"
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "(5) suspend resume partial function for MimiSupply.DriverServiceImpl.updateDriverLocation(_: __C.CLLocationCoordinate2D, for: Swift.String) async throws -&gt; ()"
+                  moduleName = "MimiSupply.debug.dylib"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/sanji/Desktop/mimi%20supply%20ios%20app/MimiSupply/MimiSupply/Data/Services/Implementations/DriverServiceImpl.swift"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "120"
+                  endingLineNumber = "120">
+               </Location>
+               <Location
+                  uuid = "134D6A09-C4ED-4BCD-99C6-F6E510AC7086 - b0053463ec509462"
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "(10) suspend resume partial function for MimiSupply.DriverServiceImpl.updateDriverLocation(_: __C.CLLocationCoordinate2D, for: Swift.String) async throws -&gt; ()"
+                  moduleName = "MimiSupply.debug.dylib"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/sanji/Desktop/mimi%20supply%20ios%20app/MimiSupply/MimiSupply/Data/Services/Implementations/DriverServiceImpl.swift"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "120"
+                  endingLineNumber = "120">
+               </Location>
+            </Locations>
+         </BreakpointContent>
+      </BreakpointProxy>
+   </Breakpoints>
+</Bucket>

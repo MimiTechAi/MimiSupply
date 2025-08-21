@@ -1,0 +1,16 @@
+{
+  "source": "/Users/sanji/Desktop/mimi supply ios app/MimiSupply/MimiSupply/ContentView.swift",
+  "tables": {
+    "Localizable": [
+      {
+        "comment": "",
+        "key": "Hello, world!",
+        "location": {
+          "startingColumn": 18,
+          "startingLine": 16
+        }
+      }
+    ]
+  },
+  "version": 1
+}
