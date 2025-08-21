@@ -28,7 +28,8 @@ struct GermanProductData {
                 sodium: 1040.0
             ),
             allergens: [.wheat, .milk],
-            tags: ["burger", "bestseller"]
+            tags: ["burger", "bestseller"],
+            imageAssetName: "bigmac"
         ),
         createProduct(
             partnerId: "mcdonalds_berlin_mitte",
@@ -46,7 +47,8 @@ struct GermanProductData {
                 sodium: 540.0
             ),
             allergens: [.wheat],
-            tags: ["chicken", "popular"]
+            tags: ["chicken", "popular"],
+            imageAssetName: "mcnuggets"
         ),
         createProduct(
             partnerId: "mcdonalds_berlin_mitte",
@@ -64,7 +66,8 @@ struct GermanProductData {
                 sodium: 180.0
             ),
             allergens: [.milk, .wheat],
-            tags: ["dessert", "ice cream"]
+            tags: ["dessert", "ice cream"],
+            imageAssetName: "mcflurry"
         ),
         createProduct(
             partnerId: "mcdonalds_berlin_mitte",
@@ -82,7 +85,8 @@ struct GermanProductData {
                 sodium: 246.0
             ),
             allergens: [],
-            tags: ["side", "popular"]
+            tags: ["side", "popular"],
+            imageAssetName: "fries"
         )
     ]
     
@@ -283,7 +287,8 @@ struct GermanProductData {
         category: ProductCategory,
         nutritionalInfo: NutritionInfo? = nil,
         allergens: [Allergen] = [],
-        tags: [String] = []
+        tags: [String] = [],
+        imageAssetName: String? = nil
     ) -> Product {
         return Product(
             id: id,
@@ -294,7 +299,8 @@ struct GermanProductData {
             category: category,
             nutritionInfo: nutritionalInfo,
             allergens: allergens,
-            tags: tags
+            tags: tags,
+            imageAssetName: imageAssetName
         )
     }
 }

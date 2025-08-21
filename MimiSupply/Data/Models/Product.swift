@@ -17,6 +17,8 @@ struct Product: Codable, Sendable, Identifiable, Hashable, Equatable {
     var originalPriceCents: Int?
     var category: ProductCategory
     var imageURLs: [URL]
+    var imageAssetName: String?   // NEU
+    
     var isAvailable: Bool
     var stockQuantity: Int?
     var nutritionInfo: NutritionInfo?
@@ -35,6 +37,7 @@ struct Product: Codable, Sendable, Identifiable, Hashable, Equatable {
         priceCents: Int,
         originalPriceCents: Int? = nil,
         category: ProductCategory,
+        imageAssetName: String? = nil, // NEU
         imageURLs: [URL] = [],
         isAvailable: Bool = true,
         stockQuantity: Int? = nil,
@@ -53,6 +56,7 @@ struct Product: Codable, Sendable, Identifiable, Hashable, Equatable {
         self.priceCents = priceCents
         self.originalPriceCents = originalPriceCents
         self.category = category
+        self.imageAssetName = imageAssetName      // NEU
         self.imageURLs = imageURLs
         self.isAvailable = isAvailable
         self.stockQuantity = stockQuantity

@@ -20,6 +20,8 @@ struct Partner: Identifiable, Codable, Hashable, Sendable {
     let email: String?
     let heroImageURL: URL?
     let logoURL: URL?
+    let heroAssetName: String?   // NEU
+    let logoAssetName: String?   // NEU
     let isVerified: Bool
     let isActive: Bool
     let rating: Double
@@ -61,6 +63,8 @@ struct Partner: Identifiable, Codable, Hashable, Sendable {
         email: String? = nil,
         heroImageURL: URL? = nil,
         logoURL: URL? = nil,
+        heroAssetName: String? = nil,  // NEU
+        logoAssetName: String? = nil,  // NEU
         isVerified: Bool = false,
         isActive: Bool = true,
         rating: Double = 0.0,
@@ -82,6 +86,8 @@ struct Partner: Identifiable, Codable, Hashable, Sendable {
         self.email = email
         self.heroImageURL = heroImageURL
         self.logoURL = logoURL
+        self.heroAssetName = heroAssetName    // NEU
+        self.logoAssetName = logoAssetName    // NEU
         self.isVerified = isVerified
         self.isActive = isActive
         self.rating = rating

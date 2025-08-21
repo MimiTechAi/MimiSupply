@@ -318,6 +318,9 @@
     "Business" : {
 
     },
+    "Business Analytics" : {
+
+    },
     "Business Documents" : {
 
     },
@@ -394,6 +397,9 @@
 
     },
     "Chart requires iOS 16+" : {
+
+    },
+    "Chart Type" : {
 
     },
     "Check for Memory Leaks" : {
@@ -910,10 +916,19 @@
     "Language" : {
 
     },
+    "Last 7 days" : {
+
+    },
     "Later" : {
 
     },
+    "Live" : {
+
+    },
     "Loading" : {
+
+    },
+    "Loading chart data..." : {
 
     },
     "Loading States" : {
@@ -1156,6 +1171,9 @@
     "Performance Metrics" : {
 
     },
+    "Performance Trends" : {
+
+    },
     "Personal Information" : {
 
     },
@@ -1232,9 +1250,6 @@
 
     },
     "Recent Orders" : {
-
-    },
-    "Refresh" : {
 
     },
     "Remove %@ from cart" : {
@@ -1426,6 +1441,9 @@
     "Tap to filter by this category" : {
 
     },
+    "Tap to navigate to %@" : {
+
+    },
     "Tap to select this category" : {
 
     },
@@ -1504,6 +1522,12 @@
     "Track orders, save favorites, and more" : {
 
     },
+    "Track your performance and grow your business" : {
+
+    },
+    "Trend: %@" : {
+
+    },
     "Typography" : {
 
     },
@@ -1535,6 +1559,9 @@
 
     },
     "Verified Business" : {
+
+    },
+    "View All" : {
 
     },
     "View Available Jobs" : {
