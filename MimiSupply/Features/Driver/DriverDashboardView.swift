@@ -7,12 +7,17 @@
 
 import SwiftUI
 import CoreLocation
+import MapKit
 
-/// Driver dashboard with online/offline toggle, job management, and earnings tracking
+/// Enhanced driver dashboard with comprehensive job management, navigation, and earnings tracking
 struct DriverDashboardView: View {
     @State private var viewModel: DriverDashboardViewModel
     @State private var showingJobDetails = false
     @State private var selectedJob: Order?
+    @State private var showingNavigation = false
+    @State private var showingEarningsDetail = false
+    @State private var showingVehicleStatus = false
+    @State private var showingCommunication = false
     
     init() {
         self._viewModel = State(initialValue: DriverDashboardViewModel())
@@ -22,32 +27,38 @@ struct DriverDashboardView: View {
         NavigationView {
             ScrollView {
                 VStack(spacing: 20) {
-                    // Status Card
-                    statusCard
+                    // Enhanced Status Card with Quick Actions
+                    enhancedStatusCard
                     
-                    // Current Job Card
+                    // Current Job Card with Navigation
                     if let currentJob = viewModel.currentJob {
-                        currentJobCard(currentJob)
+                        enhancedCurrentJobCard(currentJob)
                     }
                     
-                    // Available Jobs
+                    // Job Queue (Multiple jobs)
+                    if !viewModel.jobQueue.isEmpty {
+                        jobQueueSection
+                    }
+                    
+                    // Available Jobs with Smart Filtering
                     if viewModel.isOnline && viewModel.isAvailable && !viewModel.availableJobs.isEmpty {
-                        availableJobsSection
+                        enhancedAvailableJobsSection
                     }
                     
-                    // Earnings Summary
-                    earningsSection
+                    // Enhanced Earnings with Performance Metrics
+                    enhancedEarningsSection
+                    
+                    // Quick Action Grid
+                    quickActionGrid
                     
                     Spacer()
                 }
                 .padding()
             }
-            .navigationTitle("Dashboard")
+            .navigationTitle("Fahrer Dashboard")
             .refreshable {
                 Task {
-                    await viewModel.loadDriverProfile()
-                    await viewModel.loadCurrentJob()
-                    await viewModel.loadEarnings()
+                    await viewModel.refreshAllData()
                 }
             }
         }
@@ -59,19 +70,52 @@ struct DriverDashboardView: View {
         }
         .sheet(isPresented: $showingJobDetails) {
             if let selectedJob = selectedJob {
-                JobDetailView(job: selectedJob) { action in
+                EnhancedJobDetailView(job: selectedJob) { action in
                     handleJobAction(job: selectedJob, action: action)
                 }
             }
         }
+        .sheet(isPresented: $showingNavigation) {
+            if let currentJob = viewModel.currentJob {
+                DriverNavigationView(job: currentJob)
+            }
+        }
+        .sheet(isPresented: $showingEarningsDetail) {
+            DriverEarningsDetailView(
+                dailyEarnings: viewModel.dailyEarnings,
+                weeklyEarnings: viewModel.weeklyEarnings,
+                monthlyEarnings: viewModel.monthlyEarnings
+            )
+        }
+        .sheet(isPresented: $showingVehicleStatus) {
+            VehicleStatusView(
+                vehicleInfo: viewModel.vehicleInfo,
+                onUpdate: { updatedInfo in
+                    viewModel.updateVehicleInfo(updatedInfo)
+                }
+            )
+        }
+        .sheet(isPresented: $showingCommunication) {
+            if let currentJob = viewModel.currentJob {
+                DriverCommunicationView(job: currentJob)
+            }
+        }
         .sheet(isPresented: $viewModel.showingJobCompletion) {
             if let currentJob = viewModel.currentJob {
-                JobCompletionView(job: currentJob) { photoData, notes in
-                    viewModel.completeDelivery(photoData: photoData, notes: notes)
+                EnhancedJobCompletionView(job: currentJob) { photoData, notes, rating in
+                    viewModel.completeDelivery(photoData: photoData, notes: notes, customerRating: rating)
                 }
             }
         }
-        .alert("Error", isPresented: .constant(viewModel.errorMessage != nil)) {
+        .alert("Warnung", isPresented: $viewModel.showingBreakReminder) {
+            Button("Pause einlegen") {
+                viewModel.startBreak()
+            }
+            Button("Später erinnern") { }
+        } message: {
+            Text("Du arbeitest seit \(viewModel.workingHours) Stunden. Gönn dir eine Pause!")
+        }
+        .alert("Fehler", isPresented: .constant(viewModel.errorMessage != nil)) {
             Button("OK") {
                 viewModel.errorMessage = nil
             }
@@ -82,13 +126,13 @@ struct DriverDashboardView: View {
         }
     }
     
-    // MARK: - Status Card
+    // MARK: - Enhanced Status Card
     
-    private var statusCard: some View {
+    private var enhancedStatusCard: some View {
         VStack(spacing: 16) {
             HStack {
                 VStack(alignment: .leading, spacing: 4) {
-                    Text("Driver Status")
+                    Text("Status")
                         .font(.headline)
                         .foregroundColor(.primary)
                     
@@ -101,8 +145,8 @@ struct DriverDashboardView: View {
                 
                 Spacer()
                 
-                VStack(spacing: 8) {
-                    // Online/Offline Toggle
+                // Enhanced Status Controls
+                VStack(spacing: 12) {
                     HStack {
                         Text("Online")
                             .font(.caption)
@@ -113,10 +157,9 @@ struct DriverDashboardView: View {
                             }
                     }
                     
-                    // Available Toggle (only if online)
                     if viewModel.isOnline {
                         HStack {
-                            Text("Available")
+                            Text("Verfügbar")
                                 .font(.caption)
                             Toggle("", isOn: .constant(viewModel.isAvailable))
                                 .labelsHidden()
@@ -125,32 +168,47 @@ struct DriverDashboardView: View {
                                 }
                         }
                     }
+                    
+                    // Break Status
+                    if viewModel.isOnBreak {
+                        Button("Pause beenden") {
+                            viewModel.endBreak()
+                        }
+                        .font(.caption)
+                        .foregroundColor(.orange)
+                    }
                 }
             }
             
-            // Status Indicators
+            // Enhanced Status Indicators with Performance Metrics
             HStack(spacing: 16) {
                 StatusIndicator(
                     title: "Status",
-                    value: viewModel.isOnline ? "Online" : "Offline",
-                    color: viewModel.isOnline ? .green : .gray
+                    value: viewModel.statusText,
+                    color: viewModel.statusColor
                 )
                 
                 if viewModel.isOnline {
                     StatusIndicator(
-                        title: "Availability",
-                        value: viewModel.isAvailable ? "Available" : "Busy",
-                        color: viewModel.isAvailable ? .blue : .orange
+                        title: "Heute",
+                        value: "\(viewModel.todayDeliveries) Lieferungen",
+                        color: .blue
                     )
                 }
                 
                 if let driver = viewModel.driverProfile {
                     StatusIndicator(
                         title: "Rating",
-                        value: String(format: "%.1f", driver.rating),
+                        value: String(format: "%.1f⭐", driver.rating),
                         color: .yellow
                     )
                 }
+                
+                StatusIndicator(
+                    title: "Arbeitszeit",
+                    value: "\(viewModel.workingHours)h",
+                    color: viewModel.workingHours > 8 ? .red : .green
+                )
             }
         }
         .padding()
@@ -159,51 +217,109 @@ struct DriverDashboardView: View {
         .shadow(radius: 2)
     }
     
-    // MARK: - Current Job Card
+    // MARK: - Enhanced Current Job Card
     
-    private func currentJobCard(_ job: Order) -> some View {
+    private func enhancedCurrentJobCard(_ job: Order) -> some View {
         VStack(alignment: .leading, spacing: 16) {
             HStack {
-                Text("Current Delivery")
+                Text("Aktuelle Lieferung")
                     .font(.headline)
                     .foregroundColor(.primary)
                 
                 Spacer()
                 
-                Text(job.status.displayName)
-                    .font(.caption)
-                    .padding(.horizontal, 8)
-                    .padding(.vertical, 4)
-                    .background(statusColor(for: job.status))
-                    .foregroundColor(.white)
-                    .cornerRadius(8)
-            }
-            
-            VStack(alignment: .leading, spacing: 8) {
-                Text("Order #\(job.id.prefix(8))")
-                    .font(.subheadline)
-                    .foregroundColor(.secondary)
-                
-                Text(job.deliveryAddress.singleLineAddress)
-                    .font(.body)
-                    .foregroundColor(.primary)
-                
-                if let instructions = job.deliveryInstructions {
-                    Text("Instructions: \(instructions)")
+                HStack {
+                    Text(job.status.displayName)
                         .font(.caption)
-                        .foregroundColor(.secondary)
+                        .padding(.horizontal, 8)
+                        .padding(.vertical, 4)
+                        .background(statusColor(for: job.status))
+                        .foregroundColor(.white)
+                        .cornerRadius(8)
+                    
+                    // ETA
+                    if let eta = viewModel.estimatedTimeOfArrival {
+                        Text("ETA: \(eta.formatted(date: .omitted, time: .shortened))")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                    }
                 }
             }
             
-            HStack {
-                Text(job.formattedTotal)
-                    .font(.title3)
-                    .fontWeight(.semibold)
-                    .foregroundColor(.primary)
+            // Enhanced Job Info with Customer Details
+            VStack(alignment: .leading, spacing: 12) {
+                HStack {
+                    Text("Auftrag #\(job.id.prefix(8))")
+                        .font(.subheadline)
+                        .foregroundColor(.secondary)
+                    
+                    Spacer()
+                    
+                    Text(job.formattedTotal)
+                        .font(.title3)
+                        .fontWeight(.semibold)
+                        .foregroundColor(.green)
+                }
+                
+                // Pickup Location
+                if job.status == .driverAssigned || job.status == .readyForPickup {
+                    LocationInfoCard(
+                        title: "Abholung",
+                        address: viewModel.pickupAddress?.singleLineAddress ?? "Restaurant",
+                        icon: "bag",
+                        color: .blue
+                    )
+                }
+                
+                // Delivery Location
+                LocationInfoCard(
+                    title: "Lieferung",
+                    address: job.deliveryAddress.singleLineAddress,
+                    icon: "house",
+                    color: .green
+                )
+                
+                if let instructions = job.deliveryInstructions {
+                    Text("📝 \(instructions)")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                        .padding(.top, 4)
+                }
+            }
+            
+            // Enhanced Action Buttons
+            HStack(spacing: 12) {
+                // Navigation Button
+                Button(action: { showingNavigation = true }) {
+                    HStack {
+                        Image(systemName: "location")
+                        Text("Navigation")
+                    }
+                    .font(.caption)
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 8)
+                    .background(Color.blue)
+                    .foregroundColor(.white)
+                    .cornerRadius(8)
+                }
+                
+                // Communication Button
+                Button(action: { showingCommunication = true }) {
+                    HStack {
+                        Image(systemName: "message")
+                        Text("Kontakt")
+                    }
+                    .font(.caption)
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 8)
+                    .background(Color.orange)
+                    .foregroundColor(.white)
+                    .cornerRadius(8)
+                }
                 
                 Spacer()
                 
-                // Action buttons based on job status
+                // Status Action Button
                 jobActionButtons(for: job)
             }
         }
@@ -213,17 +329,61 @@ struct DriverDashboardView: View {
         .shadow(radius: 2)
     }
     
-    // MARK: - Available Jobs Section
+    // MARK: - Job Queue Section
     
-    private var availableJobsSection: some View {
+    private var jobQueueSection: some View {
         VStack(alignment: .leading, spacing: 16) {
-            Text("Available Jobs")
+            Text("Job-Warteschlange (\(viewModel.jobQueue.count))")
                 .font(.headline)
                 .foregroundColor(.primary)
             
+            ForEach(viewModel.jobQueue) { job in
+                JobQueueCard(job: job) { action in
+                    handleJobAction(job: job, action: action)
+                }
+            }
+        }
+    }
+    
+    // MARK: - Enhanced Available Jobs Section
+    
+    private var enhancedAvailableJobsSection: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            HStack {
+                Text("Verfügbare Aufträge")
+                    .font(.headline)
+                    .foregroundColor(.primary)
+                
+                Spacer()
+                
+                // Smart Filter Toggle
+                Button(action: { viewModel.toggleSmartFilter() }) {
+                    HStack {
+                        Image(systemName: viewModel.smartFilterEnabled ? "brain.head.profile" : "line.horizontal.3.decrease")
+                        Text(viewModel.smartFilterEnabled ? "Smart" : "Alle")
+                    }
+                    .font(.caption)
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 4)
+                    .background(viewModel.smartFilterEnabled ? Color.purple : Color.gray)
+                    .foregroundColor(.white)
+                    .cornerRadius(6)
+                }
+            }
+            
+            if viewModel.smartFilterEnabled {
+                Text("🧠 Optimiert für deine Route und Präferenzen")
+                    .font(.caption)
+                    .foregroundColor(.purple)
+            }
+            
             LazyVStack(spacing: 12) {
                 ForEach(viewModel.availableJobs) { job in
-                    AvailableJobCard(job: job) { action in
+                    EnhancedAvailableJobCard(
+                        job: job,
+                        distance: viewModel.getDistance(to: job),
+                        estimatedEarnings: viewModel.getEstimatedEarnings(for: job)
+                    ) { action in
                         handleJobAction(job: job, action: action)
                     }
                 }
@@ -231,53 +391,140 @@ struct DriverDashboardView: View {
         }
     }
     
-    // MARK: - Earnings Section
+    // MARK: - Enhanced Earnings Section
     
-    private var earningsSection: some View {
+    private var enhancedEarningsSection: some View {
         VStack(alignment: .leading, spacing: 16) {
-            Text("Earnings")
-                .font(.headline)
-                .foregroundColor(.primary)
+            HStack {
+                Text("Verdienste & Performance")
+                    .font(.headline)
+                    .foregroundColor(.primary)
+                
+                Spacer()
+                
+                Button("Details") {
+                    showingEarningsDetail = true
+                }
+                .font(.caption)
+                .foregroundColor(.blue)
+            }
             
             HStack(spacing: 16) {
-                // Daily Earnings
-                EarningsCard(
-                    title: "Today",
-                    amount: viewModel.dailyEarnings?.formattedTotalEarnings ?? "$0.00",
-                    deliveries: viewModel.dailyEarnings?.totalDeliveries ?? 0
+                // Enhanced Daily Earnings
+                EnhancedEarningsCard(
+                    title: "Heute",
+                    amount: viewModel.dailyEarnings?.formattedTotalEarnings ?? "€0,00",
+                    breakdown: viewModel.dailyEarnings?.breakdown ?? "",
+                    deliveries: viewModel.dailyEarnings?.totalDeliveries ?? 0,
+                    color: .green
                 )
                 
                 // Weekly Earnings
-                EarningsCard(
-                    title: "This Week",
-                    amount: viewModel.weeklyEarnings?.formattedTotalEarnings ?? "$0.00",
-                    deliveries: viewModel.weeklyEarnings?.totalDeliveries ?? 0
+                EnhancedEarningsCard(
+                    title: "Diese Woche",
+                    amount: viewModel.weeklyEarnings?.formattedTotalEarnings ?? "€0,00",
+                    breakdown: viewModel.weeklyEarnings?.breakdown ?? "",
+                    deliveries: viewModel.weeklyEarnings?.totalDeliveries ?? 0,
+                    color: .blue
+                )
+            }
+            
+            // Performance Metrics
+            HStack(spacing: 16) {
+                PerformanceMetricCard(
+                    title: "Pünktlichkeit",
+                    value: "\(Int(viewModel.onTimeDeliveryRate * 100))%",
+                    trend: viewModel.onTimeDeliveryTrend,
+                    icon: "clock"
+                )
+                
+                PerformanceMetricCard(
+                    title: "Kundenbewertung",
+                    value: String(format: "%.1f", viewModel.averageCustomerRating),
+                    trend: viewModel.ratingTrend,
+                    icon: "star"
+                )
+                
+                PerformanceMetricCard(
+                    title: "Effizienz",
+                    value: String(format: "%.1f/h", viewModel.deliveriesPerHour),
+                    trend: viewModel.efficiencyTrend,
+                    icon: "speedometer"
                 )
             }
         }
     }
     
-    // MARK: - Helper Methods
+    // MARK: - Quick Action Grid
+    
+    private var quickActionGrid: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            Text("Schnellzugriff")
+                .font(.headline)
+                .foregroundColor(.primary)
+            
+            LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 2), spacing: 12) {
+                QuickActionButton(
+                    title: "Fahrzeug",
+                    icon: "car",
+                    color: .blue,
+                    badgeCount: viewModel.vehicleAlerts
+                ) {
+                    showingVehicleStatus = true
+                }
+                
+                QuickActionButton(
+                    title: "Support",
+                    icon: "headphones",
+                    color: .orange
+                ) {
+                    viewModel.contactSupport()
+                }
+                
+                QuickActionButton(
+                    title: "Notfall",
+                    icon: "exclamationmark.triangle",
+                    color: .red
+                ) {
+                    viewModel.triggerEmergency()
+                }
+                
+                QuickActionButton(
+                    title: "Pause",
+                    icon: "pause.circle",
+                    color: viewModel.isOnBreak ? .green : .gray
+                ) {
+                    if viewModel.isOnBreak {
+                        viewModel.endBreak()
+                    } else {
+                        viewModel.startBreak()
+                    }
+                }
+            }
+        }
+    }
+    
+    // MARK: - Helper Methods (gleich wie vorher)
     
     private func jobActionButtons(for job: Order) -> some View {
         HStack(spacing: 8) {
             switch job.status {
             case .driverAssigned, .readyForPickup:
-                Button("Mark Picked Up") {
+                Button("Abgeholt") {
                     viewModel.updateJobStatus(.pickedUp)
                 }
                 .buttonStyle(.borderedProminent)
                 .font(.caption)
                 
             case .pickedUp:
-                Button("Start Delivery") {
+                Button("Unterwegs") {
                     viewModel.updateJobStatus(.delivering)
                 }
                 .buttonStyle(.borderedProminent)
                 .font(.caption)
                 
             case .delivering:
-                Button("Complete") {
+                Button("Abgeschlossen") {
                     viewModel.showingJobCompletion = true
                 }
                 .buttonStyle(.borderedProminent)
@@ -317,59 +564,129 @@ struct DriverDashboardView: View {
     }
 }
 
-// MARK: - Supporting Views
+// MARK: - Enhanced Supporting Views
 
-struct StatusIndicator: View {
+struct LocationInfoCard: View {
     let title: String
-    let value: String
+    let address: String
+    let icon: String
     let color: Color
     
     var body: some View {
-        VStack(spacing: 4) {
-            Text(title)
-                .font(.caption2)
-                .foregroundColor(.secondary)
-            
-            Text(value)
-                .font(.caption)
-                .fontWeight(.semibold)
+        HStack {
+            Image(systemName: icon)
                 .foregroundColor(color)
+                .frame(width: 20)
+            
+            VStack(alignment: .leading, spacing: 2) {
+                Text(title)
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+                
+                Text(address)
+                    .font(.body)
+                    .foregroundColor(.primary)
+            }
+            
+            Spacer()
         }
+        .padding(.vertical, 8)
     }
 }
 
-struct AvailableJobCard: View {
+struct JobQueueCard: View {
     let job: Order
+    let onAction: (JobAction) -> Void
+    
+    var body: some View {
+        HStack {
+            VStack(alignment: .leading, spacing: 4) {
+                Text("Auftrag #\(job.id.prefix(8))")
+                    .font(.subheadline)
+                    .fontWeight(.medium)
+                
+                Text(job.deliveryAddress.city)
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+                
+                Text("ETA: \(job.estimatedDeliveryTime?.formatted(date: .omitted, time: .shortened) ?? "TBD")")
+                    .font(.caption)
+                    .foregroundColor(.blue)
+            }
+            
+            Spacer()
+            
+            VStack(alignment: .trailing, spacing: 4) {
+                Text(job.formattedTotal)
+                    .font(.subheadline)
+                    .fontWeight(.semibold)
+                    .foregroundColor(.green)
+                
+                Button("Details") {
+                    onAction(.viewDetails)
+                }
+                .font(.caption)
+                .foregroundColor(.blue)
+            }
+        }
+        .padding()
+        .background(Color(.systemGray6))
+        .cornerRadius(8)
+    }
+}
+
+struct EnhancedAvailableJobCard: View {
+    let job: Order
+    let distance: String?
+    let estimatedEarnings: String?
     let onAction: (JobAction) -> Void
     
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             HStack {
-                Text("Order #\(job.id.prefix(8))")
+                Text("Auftrag #\(job.id.prefix(8))")
                     .font(.subheadline)
                     .fontWeight(.medium)
                 
                 Spacer()
                 
+                if let estimatedEarnings = estimatedEarnings {
+                    Text(estimatedEarnings)
+                        .font(.subheadline)
+                        .fontWeight(.semibold)
+                        .foregroundColor(.green)
+                }
+            }
+            
+            HStack {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("📍 \(job.deliveryAddress.city)")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                    
+                    if let distance = distance {
+                        Text("🚗 \(distance)")
+                            .font(.caption)
+                            .foregroundColor(.blue)
+                    }
+                }
+                
+                Spacer()
+                
                 Text(job.formattedTotal)
-                    .font(.subheadline)
+                    .font(.title3)
                     .fontWeight(.semibold)
                     .foregroundColor(.green)
             }
             
-            Text(job.deliveryAddress.singleLineAddress)
-                .font(.caption)
-                .foregroundColor(.secondary)
-                .lineLimit(2)
-            
             HStack {
-                Button("Accept") {
+                Button("Annehmen") {
                     onAction(.accept)
                 }
                 .buttonStyle(.borderedProminent)
                 .font(.caption)
                 
-                Button("Decline") {
+                Button("Ablehnen") {
                     onAction(.decline)
                 }
                 .buttonStyle(.bordered)
@@ -385,15 +702,18 @@ struct AvailableJobCard: View {
             }
         }
         .padding()
-        .background(Color(.systemGray6))
+        .background(Color(.systemBackground))
         .cornerRadius(8)
+        .shadow(radius: 1)
     }
 }
 
-struct EarningsCard: View {
+struct EnhancedEarningsCard: View {
     let title: String
     let amount: String
+    let breakdown: String
     let deliveries: Int
+    let color: Color
     
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
@@ -404,9 +724,15 @@ struct EarningsCard: View {
             Text(amount)
                 .font(.title2)
                 .fontWeight(.semibold)
-                .foregroundColor(.primary)
+                .foregroundColor(color)
             
-            Text("\(deliveries) deliveries")
+            if !breakdown.isEmpty {
+                Text(breakdown)
+                    .font(.caption2)
+                    .foregroundColor(.secondary)
+            }
+            
+            Text("\(deliveries) Lieferungen")
                 .font(.caption)
                 .foregroundColor(.secondary)
         }
@@ -418,10 +744,86 @@ struct EarningsCard: View {
     }
 }
 
-enum JobAction {
-    case accept
-    case decline
-    case viewDetails
+struct PerformanceMetricCard: View {
+    let title: String
+    let value: String
+    let trend: Double
+    let icon: String
+    
+    var body: some View {
+        VStack(spacing: 6) {
+            Image(systemName: icon)
+                .font(.caption)
+                .foregroundColor(.secondary)
+            
+            Text(value)
+                .font(.subheadline)
+                .fontWeight(.semibold)
+            
+            HStack(spacing: 2) {
+                Image(systemName: trend > 0 ? "arrow.up" : trend < 0 ? "arrow.down" : "minus")
+                    .font(.caption2)
+                    .foregroundColor(trend > 0 ? .green : trend < 0 ? .red : .gray)
+                
+                Text(title)
+                    .font(.caption2)
+                    .foregroundColor(.secondary)
+            }
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, 8)
+        .background(Color(.systemGray6))
+        .cornerRadius(8)
+    }
+}
+
+struct QuickActionButton: View {
+    let title: String
+    let icon: String
+    let color: Color
+    let badgeCount: Int?
+    let action: () -> Void
+    
+    init(title: String, icon: String, color: Color, badgeCount: Int? = nil, action: @escaping () -> Void) {
+        self.title = title
+        self.icon = icon
+        self.color = color
+        self.badgeCount = badgeCount
+        self.action = action
+    }
+    
+    var body: some View {
+        Button(action: action) {
+            VStack(spacing: 8) {
+                ZStack {
+                    Image(systemName: icon)
+                        .font(.title2)
+                        .foregroundColor(color)
+                    
+                    if let badgeCount = badgeCount, badgeCount > 0 {
+                        Circle()
+                            .fill(Color.red)
+                            .frame(width: 16, height: 16)
+                            .overlay(
+                                Text("\(badgeCount)")
+                                    .font(.caption2)
+                                    .foregroundColor(.white)
+                            )
+                            .offset(x: 12, y: -8)
+                    }
+                }
+                
+                Text(title)
+                    .font(.caption)
+                    .foregroundColor(.primary)
+            }
+            .frame(maxWidth: .infinity)
+            .frame(height: 80)
+            .background(Color(.systemBackground))
+            .cornerRadius(8)
+            .shadow(radius: 1)
+        }
+    }
 }
 
 // MARK: - Preview
