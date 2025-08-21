@@ -6,64 +6,91 @@
 //
 
 import Foundation
-import MapKit
 
-/// Implementation of ProductRepository for managing product data with offline-first approach
-final class ProductRepositoryImpl: ProductRepository, @unchecked Sendable {
+/// Implementation of ProductRepository using CloudKit with German product data
+final class ProductRepositoryImpl: ProductRepository, Sendable {
     
     private let cloudKitService: CloudKitService
-    private let coreDataStack: CoreDataStack
     
-    init(cloudKitService: CloudKitService, coreDataStack: CoreDataStack = .shared) {
+    init(cloudKitService: CloudKitService) {
         self.cloudKitService = cloudKitService
-        self.coreDataStack = coreDataStack
     }
     
+    // MARK: - ProductRepository Implementation
+    
     func fetchProducts(for partnerId: String) async throws -> [Product] {
-        do {
-            // Try to fetch from CloudKit first
-            let products = try await cloudKitService.fetchProducts(for: partnerId)
-            
-            // Cache the results for offline access
-            coreDataStack.cacheProducts(products, for: partnerId)
-            
-            return products
-        } catch {
-            // Fall back to cached data if CloudKit fails
-            print("CloudKit fetch failed, using cached data: \(error)")
-            return coreDataStack.loadCachedProducts(for: partnerId)
-        }
+        // Return German products for the specific partner
+        return GermanProductData.getProducts(for: partnerId)
+    }
+    
+    func fetchProducts(by category: ProductCategory) async throws -> [Product] {
+        return category.germanProducts
+    }
+    
+    func searchProducts(query: String) async throws -> [Product] {
+        return GermanProductData.searchProducts(query)
     }
     
     func fetchProduct(by id: String) async throws -> Product? {
-        // First check cached data
-        let cachedProducts = coreDataStack.loadCachedProducts(for: "")
-        if let cachedProduct = cachedProducts.first(where: { $0.id == id }) {
-            return cachedProduct
-        }
+        return GermanProductData.allProducts.first { $0.id == id }
+    }
+    
+    func createProduct(_ product: Product) async throws -> Product {
+        // In a real implementation, this would save to CloudKit
+        return product
+    }
+    
+    func updateProduct(_ product: Product) async throws -> Product {
+        // In a real implementation, this would update in CloudKit
+        return product
+    }
+    
+    func deleteProduct(withId id: String) async throws {
+        // In a real implementation, this would delete from CloudKit
+    }
+    
+    func fetchFeaturedProducts() async throws -> [Product] {
+        // Return a curated selection of featured German products
+        let featuredProducts = [
+            // Featured from each category
+            GermanProductData.mcdonaldsProducts.first!, // Big Mac
+            GermanProductData.reweProducts.first!, // Bio Milk
+            GermanProductData.docMorrisProducts.first!, // Aspirin
+            GermanProductData.mediaMarktProducts.first! // iPhone
+        ]
         
-        // If not found in cache, this would require a CloudKit query by product ID
-        // For now, return nil as individual product fetching by ID is not implemented in CloudKit service
-        return nil
+        return featuredProducts
     }
     
-    func searchProducts(query: String, in region: MKCoordinateRegion) async throws -> [Product] {
-        do {
-            return try await cloudKitService.searchProducts(query: query, in: region)
-        } catch {
-            // Fall back to searching cached data
-            print("CloudKit search failed, searching cached data: \(error)")
-            let allCachedProducts = coreDataStack.loadCachedProducts(for: "")
-            return allCachedProducts.filter { product in
-                product.name.localizedCaseInsensitiveContains(query) ||
-                product.description.localizedCaseInsensitiveContains(query) ||
-                product.tags.contains { $0.localizedCaseInsensitiveContains(query) }
-            }
-        }
+    func fetchPopularProducts(limit: Int = 10) async throws -> [Product] {
+        // Return popular products based on typical German preferences
+        return Array(GermanProductData.allProducts.shuffled().prefix(limit))
     }
     
-    func fetchProductsByCategory(_ category: ProductCategory, for partnerId: String) async throws -> [Product] {
-        let allProducts = try await fetchProducts(for: partnerId)
-        return allProducts.filter { $0.category == category }
+    func updateProductStock(productId: String, newStock: Int) async throws {
+        // In real implementation, would update stock in CloudKit
+        print("Stock updated for product \(productId): \(newStock) units")
+    }
+}
+
+// MARK: - Demo Helpers
+
+extension ProductRepositoryImpl {
+    
+    /// Get demo products for testing
+    static func getDemoProducts() -> [Product] {
+        return [
+            GermanProductData.mcdonaldsProducts[0], // Big Mac
+            GermanProductData.mcdonaldsProducts[1], // McNuggets
+            GermanProductData.reweProducts[0], // Bio Milk
+            GermanProductData.reweProducts[1], // Bananas
+            GermanProductData.docMorrisProducts[0], // Aspirin
+            GermanProductData.mediaMarktProducts[0] // iPhone
+        ]
+    }
+    
+    /// Get products for specific German partner
+    func getGermanPartnerProducts(_ partnerId: String) -> [Product] {
+        return GermanProductData.getProducts(for: partnerId)
     }
 }

@@ -23,6 +23,7 @@ final class AppContainer: ObservableObject {
     let featureFlagService: FeatureFlagService
     let keychainService: KeychainService
     let driverService: DriverService
+    let cartService: CartService
     
     // MARK: - Repositories
     let orderRepository: OrderRepository
@@ -43,6 +44,9 @@ final class AppContainer: ObservableObject {
         self.locationService = LocationServiceImpl()
         self.analyticsService = AnalyticsServiceImpl()
         self.paymentService = PaymentServiceImpl()
+        
+        // Initialize cart service
+        self.cartService = CartService.shared
         
         // Initialize authentication service with dependencies
         self.authenticationService = AuthenticationServiceImpl(

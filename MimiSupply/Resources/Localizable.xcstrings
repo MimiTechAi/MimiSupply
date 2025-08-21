@@ -136,18 +136,11 @@
     "%lld%%" : {
 
     },
-    "%lldx" : {
+    "%lld×" : {
 
     },
-    "%lldx %@" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "%1$lldx %2$@"
-          }
-        }
-      }
+    "%lldx" : {
+
     },
     "• %lld deliveries" : {
 
@@ -271,6 +264,9 @@
     "Apple Pay Not Available" : {
 
     },
+    "Are you sure you want to cancel this order? This action cannot be undone." : {
+
+    },
     "Are you sure you want to delete %@? This action cannot be undone." : {
 
     },
@@ -353,6 +349,9 @@
 
     },
     "Cancel" : {
+
+    },
+    "Cancel Order" : {
 
     },
     "Cards" : {
@@ -855,6 +854,9 @@
 
     },
     "Job Details" : {
+
+    },
+    "Keep Order" : {
 
     },
     "Key Metrics" : {
@@ -1367,6 +1369,9 @@
     "Tap to sort by %@" : {
 
     },
+    "Tap to Track" : {
+
+    },
     "Tap to view details or add to cart" : {
 
     },
@@ -1493,7 +1498,7 @@
     "Your local marketplace" : {
 
     },
-    "Your order has been placed successfully and is being prepared." : {
+    "Your order has been placed successfully and is being prepared with care." : {
 
     },
     "ZIP Code" : {
