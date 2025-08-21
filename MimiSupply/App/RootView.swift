@@ -12,35 +12,31 @@ struct RootView: View {
     
     @EnvironmentObject private var container: AppContainer
     @EnvironmentObject private var router: AppRouter
+    @StateObject private var demoAuth = DemoAuthService.shared
     
-    @State private var isAuthenticated = false
-    @State private var currentUser: UserProfile?
     @State private var isLoading = true
     
     var body: some View {
         Group {
             if isLoading {
-                LoadingView()
-            } else if isAuthenticated, currentUser != nil {
+                PremiumLoadingView()
+            } else if demoAuth.isAuthenticated {
                 // Authenticated user with main tab navigation
-                RootTabView()
+                PremiumTabView()
                     .environmentObject(container)
                     .environmentObject(router)
+                    .environmentObject(demoAuth)
             } else {
-                // Unauthenticated user - explore-first experience
-                RootTabView()
-                    .environmentObject(container)
-                    .environmentObject(router)
+                // Unauthenticated user - show premium sign-in
+                PremiumSignInView()
+                    .environmentObject(demoAuth)
             }
         }
         .task {
-            await checkAuthenticationState()
-        }
-        .onChange(of: isAuthenticated) { _, newValue in
-            if newValue, let user = currentUser {
-                router.navigateToRoleBasedHome(for: user.role)
-            } else {
-                router.navigate(to: .explore)
+            // Simulate app initialization
+            try? await Task.sleep(nanoseconds: 1_500_000_000) // 1.5 seconds
+            withAnimation(.spring(response: 0.8, dampingFraction: 0.8)) {
+                isLoading = false
             }
         }
     }
@@ -49,9 +45,9 @@ struct RootView: View {
     private func destinationView(for route: AppRoute) -> some View {
         switch route {
         case .partnerDetail(let partner):
-            PartnerDetailView(partner: partner)
+            PremiumPartnerDetailView(partner: partner)
         case .productDetail(let product):
-            ProductDetailView(product: product)
+            PremiumProductDetailView(product: product)
         case .orderTracking(let orderId):
             OrderTrackingView(
                 order: sampleOrderForId(orderId),
@@ -61,9 +57,9 @@ struct RootView: View {
                 }
             )
         case .settings:
-            SettingsView()
+            PremiumSettingsView()
         case .cart:
-            CartView()
+            PremiumCartView()
         case .checkout:
             CheckoutView(
                 cartItems: [],
@@ -73,122 +69,10 @@ struct RootView: View {
                 onCancel: { }
             )
         case .authentication:
-            DemoSignInView()
-                .environmentObject(AuthenticationManager())
+            PremiumSignInView()
         default:
             EmptyView()
         }
-    }
-    
-    @ViewBuilder
-    private func sheetContent(for sheet: SheetRoute) -> some View {
-        switch sheet {
-        case .cart:
-            NavigationView {
-                CartView()
-            }
-        case .checkout(let items):
-            NavigationView {
-                CheckoutView(
-                    cartItems: items,
-                    paymentService: container.paymentService,
-                    cloudKitService: container.cloudKitService,
-                    onOrderComplete: { _ in
-                        router.dismissSheet()
-                    },
-                    onCancel: {
-                        router.dismissSheet()
-                    }
-                )
-            }
-        case .authentication:
-            NavigationView {
-                DemoSignInView()
-                    .environmentObject(AuthenticationManager())
-            }
-        case .roleSelection(let user):
-            NavigationView {
-                RoleSelectionView(user: user) { role in
-                    Task {
-                        // Update user role and navigate to appropriate home
-                        router.dismissSheet()
-                        router.navigateToRoleBasedHome(for: role)
-                    }
-                }
-            }
-        case .profile:
-            NavigationView {
-                ProfileView()
-            }
-        case .productDetail(let product):
-            NavigationView {
-                ProductDetailView(product: product)
-            }
-        case .orderDetail(let order):
-            NavigationView {
-                OrderDetailView(order: order)
-            }
-        case .partnerSettings:
-            NavigationView {
-                PartnerSettingsView()
-            }
-        case .businessHours:
-            NavigationView {
-                BusinessHoursManagementView()
-            }
-        case .productManagement:
-            NavigationView {
-                ProductManagementView()
-            }
-        case .analytics:
-            NavigationView {
-                AnalyticsDashboardView()
-            }
-        }
-    }
-    
-    @ViewBuilder
-    private func fullScreenContent(for fullScreen: FullScreenRoute) -> some View {
-        switch fullScreen {
-        case .onboarding:
-            OnboardingView()
-        case .orderTracking(let order):
-            OrderTrackingView(
-                order: order,
-                cloudKitService: container.cloudKitService,
-                onClose: {
-                    router.dismissFullScreen()
-                }
-            )
-        case .jobCompletion(let order):
-            JobCompletionView(job: order) { photoData, notes in
-                // Handle job completion
-                router.dismissFullScreen()
-            }
-        }
-    }
-    
-    private func checkAuthenticationState() async {
-        isAuthenticated = await container.authenticationService.isAuthenticated
-        currentUser = await container.authenticationService.currentUser
-        
-        // Navigate to appropriate home screen based on user role
-        if let user = currentUser {
-            switch user.role {
-            case .customer:
-                router.navigate(to: .customerHome)
-            case .driver:
-                router.navigate(to: .driverDashboard)
-            case .partner:
-                router.navigate(to: .partnerDashboard)
-            case .admin:
-                router.navigate(to: .customerHome) // Default to customer view for admin
-            }
-        } else {
-            router.navigate(to: .explore)
-        }
-        
-        isLoading = false
     }
     
     private func sampleOrderForId(_ orderId: String) -> Order {
@@ -223,33 +107,92 @@ struct RootView: View {
     }
 }
 
-// MARK: - Placeholder Views
-
-struct LoadingView: View {
+// MARK: - Premium Loading View
+struct PremiumLoadingView: View {
+    @State private var animationOffset: CGFloat = -50
+    @State private var animationOpacity: Double = 0
+    @State private var logoRotation: Double = 0
+    
     var body: some View {
-        VStack(spacing: Spacing.lg) {
-            ProgressView()
-                .scaleEffect(1.5)
+        ZStack {
+            // Premium gradient background
+            LinearGradient(
+                colors: [
+                    Color(red: 0.31, green: 0.78, blue: 0.47),
+                    Color(red: 0.25, green: 0.85, blue: 0.55),
+                    Color(red: 0.35, green: 0.75, blue: 0.65)
+                ],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            )
+            .ignoresSafeArea()
             
-            Text("Loading MimiSupply...")
-                .font(.titleMedium)
-                .foregroundColor(.gray600)
+            VStack(spacing: 32) {
+                // Animated Logo
+                ZStack {
+                    Circle()
+                        .stroke(
+                            LinearGradient(
+                                colors: [.white.opacity(0.3), .white.opacity(0.1)],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            ),
+                            lineWidth: 2
+                        )
+                        .frame(width: 100, height: 100)
+                        .rotationEffect(.degrees(logoRotation))
+                    
+                    Circle()
+                        .fill(.white.opacity(0.95))
+                        .frame(width: 80, height: 80)
+                        .shadow(color: .black.opacity(0.1), radius: 10, x: 0, y: 4)
+                    
+                    Image(systemName: "bag.fill")
+                        .font(.system(size: 32, weight: .semibold))
+                        .foregroundStyle(
+                            LinearGradient(
+                                colors: [
+                                    Color(red: 0.31, green: 0.78, blue: 0.47),
+                                    Color(red: 0.25, green: 0.85, blue: 0.55)
+                                ],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            )
+                        )
+                }
+                .offset(y: animationOffset)
+                .opacity(animationOpacity)
+                
+                VStack(spacing: 16) {
+                    Text("MimiSupply")
+                        .font(.system(size: 36, weight: .bold, design: .rounded))
+                        .foregroundColor(.white)
+                    
+                    Text("Wird geladen...")
+                        .font(.title3)
+                        .fontWeight(.medium)
+                        .foregroundColor(.white.opacity(0.8))
+                    
+                    ProgressView()
+                        .progressViewStyle(CircularProgressViewStyle(tint: .white))
+                        .scaleEffect(1.2)
+                }
+                .offset(y: animationOffset * 0.5)
+                .opacity(animationOpacity)
+            }
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(Color.chalk)
+        .onAppear {
+            withAnimation(.spring(response: 0.8, dampingFraction: 0.8)) {
+                animationOffset = 0
+                animationOpacity = 1
+            }
+            
+            withAnimation(.linear(duration: 2).repeatForever(autoreverses: false)) {
+                logoRotation = 360
+            }
+        }
     }
 }
-
-// All views are now implemented in their respective feature folders:
-// - ExploreHomeView: Features/Explore/ExploreHomeView.swift
-// - CustomerHomeView: Features/Customer/CustomerHomeView.swift (to be created)
-// - PartnerDashboardView: Features/Partner/PartnerDashboardView.swift
-// - SettingsView: Features/Settings/SettingsView.swift
-// - CheckoutView: Features/Shared/CheckoutView.swift
-// - AuthenticationView: Features/Authentication/AuthenticationManager.swift
-// - RoleSelectionView: Features/Authentication/RoleSelectionView.swift
-// - ProfileView: Features/Settings/ProfileView.swift (to be created)
-// - OnboardingView: Features/Onboarding/OnboardingView.swift (to be created)
 
 #Preview {
     RootView()
