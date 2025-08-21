@@ -312,3 +312,31 @@ extension Partner {
 
 // Note: CLLocationCoordinate2D extensions for Codable and Hashable 
 // should be defined in a separate file to avoid conflicts
+
+extension PartnerCategory {
+    /// Premium/AI-generiertes Icon oder Symbolbild für jede Kategorie
+    var premiumIconURL: URL? {
+        switch self {
+        case .restaurant:
+            return URL(string: "https://cdn.mimisupply.ai/premium/category-restaurant.png")
+        case .grocery:
+            return URL(string: "https://cdn.mimisupply.ai/premium/category-grocery.png")
+        case .pharmacy:
+            return URL(string: "https://cdn.mimisupply.ai/premium/category-pharmacy.png")
+        case .retail:
+            return URL(string: "https://cdn.mimisupply.ai/premium/category-retail.png")
+        case .convenience:
+            return URL(string: "https://cdn.mimisupply.ai/premium/category-convenience.png")
+        case .bakery:
+            return URL(string: "https://cdn.mimisupply.ai/premium/category-bakery.png")
+        case .coffee:
+            return URL(string: "https://cdn.mimisupply.ai/premium/category-coffee.png")
+        case .alcohol:
+            return URL(string: "https://cdn.mimisupply.ai/premium/category-alcohol.png")
+        case .flowers:
+            return URL(string: "https://cdn.mimisupply.ai/premium/category-flowers.png")
+        case .electronics:
+            return URL(string: "https://cdn.mimisupply.ai/premium/category-electronics.png")
+        }
+    }
+}
