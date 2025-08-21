@@ -235,57 +235,64 @@ struct ExploreHomeView: View {
                 .font(.titleLarge)
                 .foregroundColor(.graphite)
                 .accessibleHeading("Categories", level: .h2)
-            
-            ScrollView(.horizontal, showsIndicators: false) {
-                HStack(spacing: Spacing.md) {
-                    ForEach(viewModel.categories, id: \.self) { category in
-                        Button(action: {
-                            Task {
-                                await viewModel.selectCategory(category)
-                            }
-                        }) {
-                            VStack {
-                                if let premiumImageURL = category.premiumIconURL {
-                                    // KI-generiertes Bild/Icon für die Kategorie
-                                    AsyncImage(url: premiumImageURL) { image in
-                                        image.resizable().aspectRatio(contentMode: .fill)
-                                            .frame(width: 38, height: 38)
-                                            .clipShape(RoundedRectangle(cornerRadius: 10))
-                                    } placeholder: {
-                                        ProgressView()
-                                            .frame(width: 38, height: 38)
-                                    }
-                                } else {
-                                    Text("🍽️") // Standard-Emoji bzw. Symbol
-                                        .font(.largeTitle)
-                                }
-                                Text(category.displayName)
-                                    .font(.caption)
-                                    .multilineTextAlignment(.center)
-                            }
-                            .frame(width: 80, height: 80)
-                            .background(viewModel.selectedCategory == category ? Color.blue.opacity(0.2) : Color(.systemBackground))
-                            .cornerRadius(12)
-                            .shadow(radius: 1)
-                        }
-                        .accessibleCard(
-                            title: category.displayName,
-                            subtitle: "\(viewModel.getPartnerCount(for: category)) partners",
-                            hint: "Tap to filter by \(category.displayName.lowercased())",
-                            isSelected: viewModel.selectedCategory == category
-                        )
-                        .switchControlAccessible(
-                            identifier: "category-\(category.rawValue)",
-                            sortPriority: 0.8
-                        )
-                    }
-                }
-                .padding(.horizontal, Spacing.md)
-            }
-            .accessibilityLabel("Categories list")
-            .accessibilityHint("Swipe horizontally to browse categories")
+            categoriesScrollView
         }
         .accessibilityElement(children: .contain)
+    }
+
+    @ViewBuilder
+    private var categoriesScrollView: some View {
+        ScrollView(.horizontal, showsIndicators: false) {
+            HStack(spacing: Spacing.md) {
+                ForEach(viewModel.categories, id: \.self) { category in
+                    categoryButton(for: category)
+                }
+            }
+            .padding(.horizontal, Spacing.md)
+        }
+        .accessibilityLabel("Categories list")
+        .accessibilityHint("Swipe horizontally to browse categories")
+    }
+
+    @ViewBuilder
+    private func categoryButton(for category: PartnerCategory) -> some View {
+        Button(action: {
+            Task {
+                await viewModel.selectCategory(category)
+            }
+        }) {
+            VStack {
+                if let premiumImageURL = category.premiumIconURL {
+                    AsyncImage(url: premiumImageURL) { image in
+                        image.resizable().aspectRatio(contentMode: .fill)
+                            .frame(width: 38, height: 38)
+                            .clipShape(RoundedRectangle(cornerRadius: 10))
+                    } placeholder: {
+                        ProgressView()
+                            .frame(width: 38, height: 38)
+                    }
+                } else {
+                    Text("🍽️").font(.largeTitle)
+                }
+                Text(category.displayName)
+                    .font(.caption)
+                    .multilineTextAlignment(.center)
+            }
+            .frame(width: 80, height: 80)
+            .background(viewModel.selectedCategory == category ? Color.blue.opacity(0.2) : Color(.systemBackground))
+            .cornerRadius(12)
+            .shadow(radius: 1)
+        }
+        .accessibleCard(
+            title: category.displayName,
+            subtitle: "\(viewModel.getPartnerCount(for: category)) partners",
+            hint: "Tap to filter by \(category.displayName.lowercased())",
+            isSelected: viewModel.selectedCategory == category
+        )
+        .switchControlAccessible(
+            identifier: "category-\(category.rawValue)",
+            sortPriority: 0.8
+        )
     }
     
     private var featuredSection: some View {
@@ -668,5 +675,50 @@ struct PremiumPartnerCard: View {
             .shadow(color: Color.black.opacity(0.13), radius: 8, x: 0, y: 3)
         }
         .frame(width: 280, height: 170)
+    }
+
+    @ViewBuilder
+    private var partnerBackgroundGradient: some View {
+        switch partner.id {
+        case "mcdonalds_berlin_mitte":
+            LinearGradient(
+                colors: [Color.red.opacity(0.8), Color.red],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            )
+        case "rewe_alexanderplatz":
+            LinearGradient(
+                colors: [Color.green.opacity(0.7), Color.green],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            )
+        case "docmorris_berlin":
+            LinearGradient(
+                colors: [Color.blue.opacity(0.7), Color.blue],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            )
+        case "mediamarkt_alexanderplatz":
+            LinearGradient(
+                colors: [Color.orange.opacity(0.7), Color.orange],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            )
+        case "edeka_prenzlauer_berg":
+            LinearGradient(
+                colors: [Color.yellow.opacity(0.8), Color.yellow],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            )
+        default:
+            LinearGradient(
+                colors: [
+                    Color(red: 0.31, green: 0.78, blue: 0.47).opacity(0.8),
+                    Color(red: 0.25, green: 0.85, blue: 0.55)
+                ],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            )
+        }
     }
 }
