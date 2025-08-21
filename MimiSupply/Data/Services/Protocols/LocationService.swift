@@ -1,21 +1,12 @@
-//
-//  LocationService.swift
-//  MimiSupply
-//
-//  Created by Kiro on 13.08.25.
-//
-
 import Foundation
 import CoreLocation
 
-/// Location service protocol for managing location services
-protocol LocationService: Sendable {
-    var currentLocation: CLLocation? { get async }
+protocol LocationService {
     var authorizationStatus: CLAuthorizationStatus { get }
+    var currentLocation: CLLocation? { get }
     
-    func requestLocationPermission() async throws
-    func startLocationUpdates() async throws
-    func stopLocationUpdates()
-    func startBackgroundLocationUpdates() async throws
-    func stopBackgroundLocationUpdates()
+    func requestLocationPermission() async throws -> Bool
+    func startUpdatingLocation()
+    func stopUpdatingLocation()
+    func getPlacemark(for location: CLLocation) async throws -> CLPlacemark?
 }

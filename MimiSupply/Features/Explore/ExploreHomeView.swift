@@ -614,7 +614,8 @@ struct PartnerCardSkeleton: View {
 
 #Preview {
     ExploreHomeView()
-        .environmentObject(AppRouter())
+        .environmentObject(AppContainer.shared.appRouter)
+        .environmentObject(AppContainer.shared)
 }
 
 // Suche nach PremiumPartnerCard(partner: ...) oder erstelle Component falls sie fehlt, sonst ändere analog PartnerRowCard:

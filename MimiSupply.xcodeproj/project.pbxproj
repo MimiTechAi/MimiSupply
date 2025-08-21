@@ -8,6 +8,8 @@
 
 /* Begin PBXBuildFile section */
 		227E99DF2E4FF68500002AB4 /* StoreKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2255F90F2E4D2AFC007C1DDB /* StoreKit.framework */; };
+		22C415952E57E91500744393 /* GooglePlaces in Frameworks */ = {isa = PBXBuildFile; productRef = 22C415942E57E91500744393 /* GooglePlaces */; };
+		22C415972E57E91500744393 /* GooglePlacesSwift in Frameworks */ = {isa = PBXBuildFile; productRef = 22C415962E57E91500744393 /* GooglePlacesSwift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -71,6 +73,8 @@
 			buildActionMask = 2147483647;
 			files = (
 				227E99DF2E4FF68500002AB4 /* StoreKit.framework in Frameworks */,
+				22C415952E57E91500744393 /* GooglePlaces in Frameworks */,
+				22C415972E57E91500744393 /* GooglePlacesSwift in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -148,6 +152,8 @@
 			);
 			name = MimiSupply;
 			packageProductDependencies = (
+				22C415942E57E91500744393 /* GooglePlaces */,
+				22C415962E57E91500744393 /* GooglePlacesSwift */,
 			);
 			productName = MimiSupply;
 			productReference = 22653D702E4CBA89006F76C2 /* MimiSupply.app */;
@@ -632,6 +638,19 @@
 			};
 		};
 /* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		22C415942E57E91500744393 /* GooglePlaces */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 22C4158B2E57E63E00744393 /* XCRemoteSwiftPackageReference "ios-places-sdk" */;
+			productName = GooglePlaces;
+		};
+		22C415962E57E91500744393 /* GooglePlacesSwift */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 22C4158B2E57E63E00744393 /* XCRemoteSwiftPackageReference "ios-places-sdk" */;
+			productName = GooglePlacesSwift;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 22653D682E4CBA89006F76C2 /* Project object */;
 }

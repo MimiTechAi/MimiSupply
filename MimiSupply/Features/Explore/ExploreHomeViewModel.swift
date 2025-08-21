@@ -28,7 +28,7 @@ class ExploreHomeViewModel: ObservableObject {
 
     // MARK: - Initialization
     init(
-        locationService: LocationService = LocationServiceImpl(),
+        locationService: LocationService = LocationServiceImpl.shared,
         googlePlacesService: GooglePlacesService = GooglePlacesServiceImpl()
     ) {
         self.locationService = locationService

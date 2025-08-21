@@ -146,28 +146,6 @@ struct SystemStatusCard: View {
     }
 }
 
-// MARK: - Status Indicator
-struct StatusIndicator: View {
-    let status: SystemHealthStatus
-    
-    var body: some View {
-        HStack(spacing: 4) {
-            Circle()
-                .fill(status.color)
-                .frame(width: 10, height: 10)
-            
-            Text(status.description)
-                .font(.caption)
-                .fontWeight(.medium)
-                .foregroundColor(.primary)
-        }
-        .padding(.horizontal, 8)
-        .padding(.vertical, 4)
-        .background(status.backgroundColor)
-        .cornerRadius(8)
-    }
-}
-
 // MARK: - System Statistics Grid
 struct SystemStatisticsGrid: View {
     let ordersToday: Int
@@ -382,34 +360,6 @@ struct ActivityItem: View {
                 .foregroundColor(.secondary)
         }
         .padding(.vertical, 8)
-    }
-}
-
-// MARK: - Empty State View
-struct EmptyStateView: View {
-    let title: String
-    let message: String
-    let icon: String
-    
-    var body: some View {
-        VStack(spacing: 12) {
-            Image(systemName: icon)
-                .font(.title)
-                .foregroundColor(.secondary)
-            
-            Text(title)
-                .font(.headline)
-                .foregroundColor(.primary)
-            
-            Text(message)
-                .font(.caption)
-                .foregroundColor(.secondary)
-                .multilineTextAlignment(.center)
-        }
-        .frame(maxWidth: .infinity)
-        .padding()
-        .background(Color(.systemBackground))
-        .cornerRadius(12)
     }
 }
 

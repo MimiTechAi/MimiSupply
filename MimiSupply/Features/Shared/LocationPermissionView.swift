@@ -177,15 +177,28 @@ enum LocationPermissionType {
 
 /// Location permission manager
 @MainActor
+class LocationPermissionViewModel: ObservableObject {
+    private let locationService: LocationService
+    
+    @MainActor // Add this annotation
+    init(locationService: LocationService = LocationServiceImpl.shared) {
+        self.locationService = locationService
+    }
+    
+    var authorizationStatus: CLAuthorizationStatus {
+        locationService.authorizationStatus
+    }
+}
+
+/// Location permission manager
+@MainActor
 class LocationPermissionManager: ObservableObject {
-    @Published var authorizationStatus: CLAuthorizationStatus = .notDetermined
     @Published var isRequestingPermission = false
     
     private let locationService: LocationService
     
     init(locationService: LocationService = LocationServiceImpl()) {
         self.locationService = locationService
-        self.authorizationStatus = locationService.authorizationStatus
     }
     
     func requestPermission(type: LocationPermissionType) async {
@@ -193,7 +206,6 @@ class LocationPermissionManager: ObservableObject {
         
         do {
             try await locationService.requestLocationPermission()
-            authorizationStatus = locationService.authorizationStatus
         } catch {
             print("Failed to request location permission: \(error)")
         }
