@@ -45,6 +45,7 @@ struct ProfileView: View {
                         }
                         .padding(.vertical, 8)
                     }
+                    .listRowBackground(Color.white.opacity(0.1))
                     
                     Section("Account") {
                         NavigationLink(destination: ProfileEditView()) {
@@ -55,6 +56,7 @@ struct ProfileView: View {
                             Label("Settings", systemImage: "gear")
                         }
                     }
+                    .listRowBackground(Color.white.opacity(0.1))
                     
                     Section {
                         Button("Sign Out") {
@@ -62,6 +64,7 @@ struct ProfileView: View {
                         }
                         .foregroundColor(.red)
                     }
+                    .listRowBackground(Color.white.opacity(0.1))
                     
                 } else {
                     // Guest user section
@@ -104,8 +107,10 @@ struct ProfileView: View {
                             Label("Order History", systemImage: "bag")
                         }
                     }
+                    .listRowBackground(Color.white.opacity(0.1))
                 }
             }
+            .scrollContentBackground(.hidden)
             .navigationTitle("Profile")
             .refreshable {
                 await checkAuthenticationState()

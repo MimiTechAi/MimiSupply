@@ -116,17 +116,6 @@ struct PremiumLoadingView: View {
     var body: some View {
         ZStack {
             // Premium gradient background
-            LinearGradient(
-                colors: [
-                    Color(red: 0.31, green: 0.78, blue: 0.47),
-                    Color(red: 0.25, green: 0.85, blue: 0.55),
-                    Color(red: 0.35, green: 0.75, blue: 0.65)
-                ],
-                startPoint: .topLeading,
-                endPoint: .bottomTrailing
-            )
-            .ignoresSafeArea()
-            
             VStack(spacing: 32) {
                 // Animated Logo
                 ZStack {
@@ -181,6 +170,7 @@ struct PremiumLoadingView: View {
                 .opacity(animationOpacity)
             }
         }
+        .premiumBackground()
         .onAppear {
             withAnimation(.spring(response: 0.8, dampingFraction: 0.8)) {
                 animationOffset = 0

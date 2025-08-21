@@ -194,7 +194,7 @@ struct OrderCard: View {
                 }
             }
             .padding()
-            .background(Color(.systemBackground))
+            .background(.ultraThinMaterial)
             .cornerRadius(12)
             .shadow(color: .black.opacity(0.1), radius: 2, x: 0, y: 1)
         }
@@ -269,7 +269,7 @@ struct OrderCardSkeleton: View {
             }
         }
         .padding()
-        .background(Color(.systemBackground))
+        .background(.ultraThinMaterial)
         .cornerRadius(12)
         .shadow(color: .black.opacity(0.1), radius: 2, x: 0, y: 1)
     }

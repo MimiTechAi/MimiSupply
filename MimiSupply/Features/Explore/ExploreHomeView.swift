@@ -118,7 +118,7 @@ struct ExploreHomeView: View {
             }
             .padding(.horizontal, Spacing.md)
             .padding(.top, Spacing.md)
-            .background(Color.chalk)
+            .background(Color.clear)
         }
     }
     
@@ -188,7 +188,7 @@ struct ExploreHomeView: View {
             .padding(.horizontal, Spacing.md)
             .padding(.top, Spacing.sm)
         }
-        .background(Color.chalk)
+        .background(Color.clear)
     }
     
     private var searchSection: some View {
@@ -212,7 +212,7 @@ struct ExploreHomeView: View {
                     .foregroundColor(.emerald)
                     .font(.title2)
                     .frame(width: 44, height: 44)
-                    .background(Color.white)
+                    .background(.ultraThinMaterial)
                     .cornerRadius(8)
                     .shadow(color: .black.opacity(0.1), radius: 2, x: 0, y: 1)
             }
@@ -279,7 +279,7 @@ struct ExploreHomeView: View {
                     .multilineTextAlignment(.center)
             }
             .frame(width: 80, height: 80)
-            .background(viewModel.selectedCategory == category ? Color.blue.opacity(0.2) : Color(.systemBackground))
+            .background(viewModel.selectedCategory == category ? Color.blue.opacity(0.2) : Color.clear)
             .cornerRadius(12)
             .shadow(radius: 1)
         }

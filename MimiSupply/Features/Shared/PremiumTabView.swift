@@ -54,6 +54,7 @@ struct PremiumTabView: View {
                 .offset(y: animationOffset)
                 .opacity(animationOpacity)
         }
+        .premiumBackground()
         .ignoresSafeArea(.keyboard, edges: .bottom)
         .onAppear {
             withAnimation(.spring(response: 0.8, dampingFraction: 0.8).delay(0.2)) {
