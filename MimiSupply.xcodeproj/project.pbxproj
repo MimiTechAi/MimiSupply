@@ -231,6 +231,9 @@
 			);
 			mainGroup = 22653D672E4CBA89006F76C2;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				22C4158B2E57E63E00744393 /* XCRemoteSwiftPackageReference "ios-places-sdk" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 22653D712E4CBA89006F76C2 /* Products */;
 			projectDirPath = "";
@@ -618,6 +621,17 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		22C4158B2E57E63E00744393 /* XCRemoteSwiftPackageReference "ios-places-sdk" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/googlemaps/ios-places-sdk";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 10.1.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
 	};
 	rootObject = 22653D682E4CBA89006F76C2 /* Project object */;
 }

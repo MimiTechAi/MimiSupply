@@ -7,14 +7,13 @@
 
 import SwiftUI
 import CloudKit
-import UserNotifications
-import BackgroundTasks
+import GooglePlaces
 
 @main
 struct MimiSupplyApp: App {
     
     @StateObject private var container = AppContainer.shared
-    @StateObject private var appState = AppState.shared
+    @StateObject private var appState = AppState()
     @StateObject private var router = AppContainer.shared.appRouter
     @StateObject private var navigationManager = NavigationManager()
     @StateObject private var analyticsManager = AnalyticsManager.shared
@@ -30,6 +29,11 @@ struct MimiSupplyApp: App {
     @StateObject private var memoryManager = MemoryManager.shared
     @StateObject private var backgroundTaskManager = BackgroundTaskManager.shared
     
+    init() {
+        // Configure Google Places API Key
+        GMSPlacesClient.provideAPIKey(APIKeyManager.getGooglePlacesAPIKey())
+    }
+
     var body: some Scene {
         WindowGroup {
             RootView()
