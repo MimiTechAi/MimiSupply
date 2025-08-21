@@ -162,7 +162,7 @@ struct DemoAccounts {
 }
 
 // MARK: - Demo User Model
-struct DemoUser: Identifiable, Codable {
+struct DemoUser: Identifiable, Codable, Equatable {
     let id: String
     let email: String
     let password: String
@@ -197,10 +197,15 @@ struct DemoUser: Identifiable, Codable {
         self.businessCategory = businessCategory
         self.driverInfo = driverInfo
     }
+    
+    // Equatable conformance
+    static func == (lhs: DemoUser, rhs: DemoUser) -> Bool {
+        return lhs.id == rhs.id
+    }
 }
 
 // MARK: - Demo Driver Info
-struct DemoDriverInfo: Codable {
+struct DemoDriverInfo: Codable, Equatable {
     let licenseNumber: String
     let vehicleType: String
     let vehiclePlate: String

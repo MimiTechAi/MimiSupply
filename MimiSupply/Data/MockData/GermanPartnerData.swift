@@ -212,10 +212,97 @@ struct GermanPartnerData {
             estimatedDeliveryTime: 60
         )
     ]
+
+    static let bakeryPartners: [Partner] = [
+        Partner(
+            id: "baeckerei_kamps",
+            name: "Bäckerei Kamps",
+            category: .bakery,
+            description: "Traditionsbäckerei mit frischen Brötchen, Broten und feinem Gebäck.",
+            address: Address(
+                street: "Brotstraße 7",
+                city: "Berlin",
+                state: "Berlin",
+                postalCode: "10115",
+                country: "Deutschland"
+            ),
+            location: CLLocationCoordinate2D(latitude: 52.5205, longitude: 13.4095),
+            phoneNumber: "+49 30 90207500",
+            email: "mitte@kamps.de",
+            heroAssetName: "hero_kamps",
+            logoAssetName: "logo_kamps",
+            isVerified: true,
+            isActive: true,
+            rating: 4.6,
+            reviewCount: 302,
+            openingHours: createStandardBusinessHours(),
+            deliveryRadius: 2.5,
+            minimumOrderAmount: 300,
+            estimatedDeliveryTime: 25
+        )
+    ]
+
+    static let caféPartners: [Partner] = [
+        Partner(
+            id: "cafe_musik",
+            name: "Café Musik",
+            category: .coffee,
+            description: "Gemütliches Café mit Spezialitätenkaffee, Kuchen und Live-Musik.",
+            address: Address(
+                street: "Kaffeegasse 3",
+                city: "Berlin",
+                state: "Berlin",
+                postalCode: "10117",
+                country: "Deutschland"
+            ),
+            location: CLLocationCoordinate2D(latitude: 52.5185, longitude: 13.3911),
+            phoneNumber: "+49 30 90110202",
+            email: "info@cafemusik.de",
+            heroAssetName: "hero_cafemusik",
+            logoAssetName: "logo_cafemusik",
+            isVerified: true,
+            isActive: true,
+            rating: 4.8,
+            reviewCount: 150,
+            openingHours: createStandardBusinessHours(),
+            deliveryRadius: 2.0,
+            minimumOrderAmount: 200,
+            estimatedDeliveryTime: 20
+        )
+    ]
+
+    static let flowerPartners: [Partner] = [
+        Partner(
+            id: "blumenfee_berlin",
+            name: "Blumenfee Berlin",
+            category: .flowers,
+            description: "Regionale Floristik mit täglich frischen Blumensträußen und Gestecken.",
+            address: Address(
+                street: "Blumengasse 16",
+                city: "Berlin",
+                state: "Berlin",
+                postalCode: "10119",
+                country: "Deutschland"
+            ),
+            location: CLLocationCoordinate2D(latitude: 52.5303, longitude: 13.4001),
+            phoneNumber: "+49 30 90482010",
+            email: "info@blumenfee.de",
+            heroAssetName: "hero_blumenfee",
+            logoAssetName: "logo_blumenfee",
+            isVerified: true,
+            isActive: true,
+            rating: 4.9,
+            reviewCount: 109,
+            openingHours: createStandardBusinessHours(),
+            deliveryRadius: 4.0,
+            minimumOrderAmount: 500,
+            estimatedDeliveryTime: 40
+        )
+    ]
     
     // MARK: - All Partners
     static var allPartners: [Partner] {
-        return restaurantPartners + groceryPartners + pharmacyPartners + electronicsPartners
+        return restaurantPartners + groceryPartners + pharmacyPartners + electronicsPartners + bakeryPartners + caféPartners + flowerPartners
     }
     
     // MARK: - Helper Methods
@@ -334,18 +421,14 @@ extension PartnerCategory {
             return GermanPartnerData.pharmacyPartners
         case .electronics:
             return GermanPartnerData.electronicsPartners
-        case .retail:
-            return GermanPartnerData.electronicsPartners
-        case .convenience:
-            return []
         case .bakery:
-            return []
+            return GermanPartnerData.bakeryPartners
         case .coffee:
-            return []
-        case .alcohol:
-            return []
+            return GermanPartnerData.caféPartners
         case .flowers:
-            return []
+            return GermanPartnerData.flowerPartners
+        case .retail, .convenience, .alcohol:
+            return [] // No German partners defined for these categories yet
         }
     }
 }

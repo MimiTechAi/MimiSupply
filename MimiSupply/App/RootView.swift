@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-/// Root view that handles main app navigation and authentication state
+/// Root view that handles main app navigation and authentication state with role-based dashboards
 struct RootView: View {
     
     @EnvironmentObject private var container: AppContainer
@@ -20,14 +20,18 @@ struct RootView: View {
         Group {
             if isLoading {
                 PremiumLoadingView()
-            } else if demoAuth.isAuthenticated {
-                // Authenticated user with main tab navigation
+            } else if demoAuth.isAuthenticated, let user = demoAuth.currentUser {
+                // Authenticated user with role-based main tab navigation
                 PremiumTabView()
                     .environmentObject(container)
                     .environmentObject(router)
                     .environmentObject(demoAuth)
+                    .onAppear {
+                        // Navigate to appropriate home based on user role
+                        router.navigateToRoleBasedHome(for: user.role)
+                    }
             } else {
-                // Unauthenticated user - show premium sign-in
+                // Unauthenticated user - show premium sign-in with role selection
                 PremiumSignInView()
                     .environmentObject(demoAuth)
             }
@@ -37,6 +41,12 @@ struct RootView: View {
             try? await Task.sleep(nanoseconds: 1_500_000_000) // 1.5 seconds
             withAnimation(.spring(response: 0.8, dampingFraction: 0.8)) {
                 isLoading = false
+            }
+        }
+        .onChange(of: demoAuth.currentUserRole) { _, newRole in
+            // Update navigation when user role changes
+            if let role = newRole {
+                router.navigateToRoleBasedHome(for: role)
             }
         }
     }

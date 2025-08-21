@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-/// Premium tab view with stunning design and smooth animations
+/// Premium tab view with stunning design and role-based navigation
 struct PremiumTabView: View {
     @EnvironmentObject private var router: AppRouter
     @EnvironmentObject private var container: AppContainer
@@ -16,41 +16,40 @@ struct PremiumTabView: View {
     @State private var animationOffset: CGFloat = 100
     @State private var animationOpacity: Double = 0
     
+    // Get role-specific tabs
+    private var availableTabs: [PremiumTab] {
+        guard let user = demoAuth.currentUser else { return [.explore, .orders, .profile] }
+        
+        switch user.role {
+        case .customer:
+            return [.explore, .orders, .profile]
+        case .driver:
+            return [.dashboard, .orders, .profile]
+        case .partner:
+            return [.dashboard, .orders, .analytics, .profile]
+        case .admin:
+            return [.explore, .dashboard, .orders, .analytics, .profile]
+        }
+    }
+    
     var body: some View {
         ZStack(alignment: .bottom) {
-            // Main Content
+            // Main Content with role-based tabs
             TabView(selection: $selectedTab) {
-                // Explore Tab
-                NavigationStack(path: $router.navigationPath) {
-                    PremiumExploreView()
-                        .navigationDestination(for: AppRoute.self) { route in
-                            destinationView(for: route)
-                        }
+                ForEach(availableTabs, id: \.self) { tab in
+                    NavigationStack(path: $router.navigationPath) {
+                        contentView(for: tab)
+                            .navigationDestination(for: AppRoute.self) { route in
+                                destinationView(for: route)
+                            }
+                    }
+                    .tag(tab)
                 }
-                .tag(PremiumTab.explore)
-                
-                // Map Tab
-                NavigationStack {
-                    PremiumMapView()
-                }
-                .tag(PremiumTab.map)
-                
-                // Orders Tab
-                NavigationStack {
-                    PremiumOrdersView()
-                }
-                .tag(PremiumTab.orders)
-                
-                // Profile Tab
-                NavigationStack {
-                    PremiumProfileView()
-                }
-                .tag(PremiumTab.profile)
             }
             .tabViewStyle(PageTabViewStyle(indexDisplayMode: .never))
             
-            // Custom Premium Tab Bar
-            PremiumTabBar(selectedTab: $selectedTab)
+            // Custom Premium Tab Bar with role-specific tabs
+            PremiumTabBar(selectedTab: $selectedTab, availableTabs: availableTabs)
                 .offset(y: animationOffset)
                 .opacity(animationOpacity)
         }
@@ -61,6 +60,68 @@ struct PremiumTabView: View {
                 animationOffset = 0
                 animationOpacity = 1
             }
+            
+            // Set initial tab based on user role
+            if let user = demoAuth.currentUser {
+                switch user.role {
+                case .customer:
+                    selectedTab = .explore
+                case .driver, .partner:
+                    selectedTab = .dashboard
+                case .admin:
+                    selectedTab = .dashboard
+                }
+            }
+        }
+        .onChange(of: demoAuth.currentUser) { _, newUser in
+            // Update selected tab when user changes
+            if let user = newUser {
+                switch user.role {
+                case .customer:
+                    selectedTab = availableTabs.contains(.explore) ? .explore : availableTabs.first ?? .profile
+                case .driver, .partner:
+                    selectedTab = availableTabs.contains(.dashboard) ? .dashboard : availableTabs.first ?? .profile
+                case .admin:
+                    selectedTab = availableTabs.contains(.dashboard) ? .dashboard : availableTabs.first ?? .profile
+                }
+            }
+        }
+    }
+    
+    @ViewBuilder
+    private func contentView(for tab: PremiumTab) -> some View {
+        switch tab {
+        case .explore:
+            PremiumExploreView()
+        case .dashboard:
+            // Show appropriate dashboard based on user role
+            if let user = demoAuth.currentUser {
+                switch user.role {
+                case .driver:
+                    DriverDashboardView()
+                case .partner:
+                    PartnerDashboardView()
+                case .admin:
+                    PartnerDashboardView() // Admin can see partner dashboard
+                default:
+                    PremiumExploreView() // Fallback
+                }
+            } else {
+                PremiumExploreView()
+            }
+        case .map:
+            PremiumMapView()
+        case .orders:
+            PremiumOrdersView()
+        case .analytics:
+            // Only available for partners and admins
+            if let user = demoAuth.currentUser, [.partner, .admin].contains(user.role) {
+                AnalyticsDashboardView()
+            } else {
+                PremiumOrdersView() // Fallback
+            }
+        case .profile:
+            PremiumProfileView()
         }
     }
     
@@ -77,18 +138,22 @@ struct PremiumTabView: View {
     }
 }
 
-// MARK: - Premium Tab Enum
+// MARK: - Premium Tab Enum (Enhanced with role-specific tabs)
 enum PremiumTab: String, CaseIterable {
     case explore = "explore"
+    case dashboard = "dashboard"
     case map = "map"
     case orders = "orders"
+    case analytics = "analytics"
     case profile = "profile"
     
     var title: String {
         switch self {
         case .explore: return "Entdecken"
+        case .dashboard: return "Dashboard"
         case .map: return "Karte"
         case .orders: return "Bestellungen"
+        case .analytics: return "Analytics"
         case .profile: return "Profil"
         }
     }
@@ -96,8 +161,10 @@ enum PremiumTab: String, CaseIterable {
     var icon: String {
         switch self {
         case .explore: return "magnifyingglass"
+        case .dashboard: return "square.grid.2x2"
         case .map: return "map"
         case .orders: return "bag"
+        case .analytics: return "chart.bar"
         case .profile: return "person"
         }
     }
@@ -105,21 +172,42 @@ enum PremiumTab: String, CaseIterable {
     var selectedIcon: String {
         switch self {
         case .explore: return "magnifyingglass.circle.fill"
+        case .dashboard: return "square.grid.2x2.fill"
         case .map: return "map.fill"
         case .orders: return "bag.fill"
+        case .analytics: return "chart.bar.fill"
         case .profile: return "person.fill"
+        }
+    }
+    
+    // Which roles can access this tab
+    var allowedRoles: Set<UserRole> {
+        switch self {
+        case .explore:
+            return [.customer, .admin]
+        case .dashboard:
+            return [.driver, .partner, .admin]
+        case .map:
+            return [.customer, .driver, .admin]
+        case .orders:
+            return [.customer, .driver, .partner, .admin]
+        case .analytics:
+            return [.partner, .admin]
+        case .profile:
+            return [.customer, .driver, .partner, .admin]
         }
     }
 }
 
-// MARK: - Premium Tab Bar
+// MARK: - Premium Tab Bar (Enhanced for role-based tabs)
 struct PremiumTabBar: View {
     @Binding var selectedTab: PremiumTab
+    let availableTabs: [PremiumTab]
     @Namespace private var tabIndicator
     
     var body: some View {
         HStack(spacing: 0) {
-            ForEach(PremiumTab.allCases, id: \.self) { tab in
+            ForEach(availableTabs, id: \.self) { tab in
                 PremiumTabBarItem(
                     tab: tab,
                     isSelected: selectedTab == tab,
@@ -199,7 +287,7 @@ struct PremiumTabBarItem: View {
     }
 }
 
-// MARK: - Premium Views (Placeholders for now)
+// MARK: - Premium Views
 struct PremiumExploreView: View {
     var body: some View {
         ExploreHomeView()

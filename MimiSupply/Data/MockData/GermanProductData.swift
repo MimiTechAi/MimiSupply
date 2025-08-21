@@ -18,6 +18,7 @@ struct GermanProductData {
             description: "Zwei Rindfleisch-Patties, Spezialsoße, Salat, Käse, Gurken, Zwiebeln auf einem Sesam-Brötchen",
             priceCents: 549,
             category: .food,
+            imageAssetName: "bigmac",
             nutritionalInfo: NutritionInfo(
                 calories: 563,
                 protein: 25.0,
@@ -28,8 +29,7 @@ struct GermanProductData {
                 sodium: 1040.0
             ),
             allergens: [.wheat, .milk],
-            tags: ["burger", "bestseller"],
-            imageAssetName: "bigmac"
+            tags: ["burger", "bestseller"]
         ),
         createProduct(
             partnerId: "mcdonalds_berlin_mitte",
@@ -37,6 +37,7 @@ struct GermanProductData {
             description: "Zarte Hähnchen-Nuggets mit knuspriger Panade, serviert mit Ihrer Wahl der Soße",
             priceCents: 399,
             category: .food,
+            imageAssetName: "mcnuggets",
             nutritionalInfo: NutritionInfo(
                 calories: 259,
                 protein: 13.0,
@@ -47,8 +48,7 @@ struct GermanProductData {
                 sodium: 540.0
             ),
             allergens: [.wheat],
-            tags: ["chicken", "popular"],
-            imageAssetName: "mcnuggets"
+            tags: ["chicken", "popular"]
         ),
         createProduct(
             partnerId: "mcdonalds_berlin_mitte",
@@ -56,6 +56,7 @@ struct GermanProductData {
             description: "Cremiges Softeis mit knusprigen Oreo-Keksstückchen",
             priceCents: 279,
             category: .food,
+            imageAssetName: "mcflurry",
             nutritionalInfo: NutritionInfo(
                 calories: 327,
                 protein: 8.0,
@@ -66,8 +67,7 @@ struct GermanProductData {
                 sodium: 180.0
             ),
             allergens: [.milk, .wheat],
-            tags: ["dessert", "ice cream"],
-            imageAssetName: "mcflurry"
+            tags: ["dessert", "ice cream"]
         ),
         createProduct(
             partnerId: "mcdonalds_berlin_mitte",
@@ -75,6 +75,7 @@ struct GermanProductData {
             description: "Goldgelbe, knusprige Pommes frites mit Meersalz",
             priceCents: 249,
             category: .food,
+            imageAssetName: "fries",
             nutritionalInfo: NutritionInfo(
                 calories: 365,
                 protein: 4.0,
@@ -85,8 +86,7 @@ struct GermanProductData {
                 sodium: 246.0
             ),
             allergens: [],
-            tags: ["side", "popular"],
-            imageAssetName: "fries"
+            tags: ["side", "popular"]
         )
     ]
     
@@ -285,10 +285,10 @@ struct GermanProductData {
         description: String,
         priceCents: Int,
         category: ProductCategory,
+        imageAssetName: String? = nil,
         nutritionalInfo: NutritionInfo? = nil,
         allergens: [Allergen] = [],
-        tags: [String] = [],
-        imageAssetName: String? = nil
+        tags: [String] = []
     ) -> Product {
         return Product(
             id: id,
@@ -297,10 +297,10 @@ struct GermanProductData {
             description: description,
             priceCents: priceCents,
             category: category,
+            imageAssetName: imageAssetName,
             nutritionInfo: nutritionalInfo,
             allergens: allergens,
-            tags: tags,
-            imageAssetName: imageAssetName
+            tags: tags
         )
     }
 }

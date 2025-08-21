@@ -77,13 +77,13 @@ struct PartnerDetailView: View {
             VStack(alignment: .leading, spacing: Spacing.xs) {
                 HStack {
                     if let logoURL = partner.logoURL {
-                        AsyncImage(url: logoURL) { image in
-                            image.resizable().aspectRatio(contentMode: .fit).clipShape(Circle())
-                        } placeholder: {
-                            ProgressView()
-                        }
-                        .frame(width: 44, height: 44)
-                        .background(Color.white.opacity(0.25)).clipShape(Circle())
+                        HybridImageView(
+                            assetName: partner.logoAssetName,
+                            url: partner.logoURL,
+                            contentMode: .fit
+                        )
+                        .frame(width: 64, height: 64)
+                        .clipShape(Circle())
                     }
                     Text(partner.name)
                         .font(.headlineSmall)
