@@ -16,16 +16,19 @@ final class AnalyticsManager: ObservableObject {
         analyticsService = AnalyticsServiceImpl()
         
         // Initialize feature flag service
-        let cloudKitService: CloudKitService = CloudKitServiceImpl.shared
         if let analytics = analyticsService {
+            let cloudKitService: CloudKitService = CloudKitServiceImpl.shared
             featureFlagService = FeatureFlagServiceImpl(
                 cloudKitService: cloudKitService,
                 analyticsService: analytics
             )
-            
-            // Configure feature flag manager
+        }
+        
+        // Configure feature flag manager
+        if let featureFlagService = featureFlagService, let analytics = analyticsService {
             FeatureFlagManager.shared.configure(
-                cloudKitService: cloudKitService,
+                cloudKitService: CloudKitServiceImpl.shared,
+                featureFlagService: featureFlagService,
                 analyticsService: analytics
             )
         }
