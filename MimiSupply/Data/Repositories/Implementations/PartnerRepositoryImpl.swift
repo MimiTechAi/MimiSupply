@@ -35,7 +35,7 @@ final class PartnerRepositoryImpl: PartnerRepository, Sendable {
             .map { $0 }
     }
     
-    func fetchPartners(by category: PartnerCategory, in region: MKCoordinateRegion) async throws -> [Partner] {
+    func fetchPartnersByCategory(_ category: PartnerCategory, in region: MKCoordinateRegion) async throws -> [Partner] {
         let categoryPartners = category.germanPartners
         return filterPartnersByRegion(categoryPartners, region: region)
     }
@@ -44,7 +44,6 @@ final class PartnerRepositoryImpl: PartnerRepository, Sendable {
         let searchResults = germanPartners.filter { partner in
             partner.name.localizedCaseInsensitiveContains(query) ||
             partner.description.localizedCaseInsensitiveContains(query) ||
-            partner.tags.contains { $0.localizedCaseInsensitiveContains(query) } ||
             partner.category.displayName.localizedCaseInsensitiveContains(query)
         }
         
@@ -84,30 +83,30 @@ final class PartnerRepositoryImpl: PartnerRepository, Sendable {
         
         return partners.filter { partner in
             let partnerLocation = CLLocation(
-                latitude: partner.coordinate.latitude,
-                longitude: partner.coordinate.longitude
+                latitude: partner.location.latitude,
+                longitude: partner.location.longitude
             )
             
             // Check if partner is within region bounds
-            let latitudeDiff = abs(partner.coordinate.latitude - region.center.latitude)
-            let longitudeDiff = abs(partner.coordinate.longitude - region.center.longitude)
+            let latitudeDiff = abs(partner.location.latitude - region.center.latitude)
+            let longitudeDiff = abs(partner.location.longitude - region.center.longitude)
             
             return latitudeDiff <= (latitudeDelta / 2) && longitudeDiff <= (longitudeDelta / 2)
         }
-        .sorted { partner1, partner2 in
+        .sorted(by: { partner1, partner2 in
             // Sort by distance from region center
             let distance1 = CLLocation(
-                latitude: partner1.coordinate.latitude,
-                longitude: partner1.coordinate.longitude
+                latitude: partner1.location.latitude,
+                longitude: partner1.location.longitude
             ).distance(from: centerLocation)
             
             let distance2 = CLLocation(
-                latitude: partner2.coordinate.latitude,
-                longitude: partner2.coordinate.longitude
+                latitude: partner2.location.latitude,
+                longitude: partner2.location.longitude
             ).distance(from: centerLocation)
             
             return distance1 < distance2
-        }
+        })
     }
 }
 
@@ -117,12 +116,10 @@ extension PartnerRepositoryImpl {
     
     /// Get partners for a specific German city
     func getPartnersForCity(_ cityName: String) -> [Partner] {
-        guard let cityCoordinate = GermanPartnerData.germanCities[cityName] else {
-            return []
-        }
-        
+        // For now, return all Berlin partners since we don't have the germanCities data
+        let berlinCenter = CLLocationCoordinate2D(latitude: 52.5200, longitude: 13.4050)
         let region = MKCoordinateRegion(
-            center: cityCoordinate,
+            center: berlinCenter,
             span: MKCoordinateSpan(latitudeDelta: 0.1, longitudeDelta: 0.1)
         )
         
@@ -136,7 +133,7 @@ extension PartnerRepositoryImpl {
             GermanPartnerData.restaurantPartners.first!,
             GermanPartnerData.groceryPartners.first!,
             GermanPartnerData.pharmacyPartners.first!,
-            GermanPartnerData.retailPartners.first!
+            GermanPartnerData.electronicsPartners.first!
         ]
         
         return samplePartners

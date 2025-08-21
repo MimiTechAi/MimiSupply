@@ -90,6 +90,12 @@ enum ProductCategory: String, CaseIterable, Codable, Sendable {
     case electronics
     case clothing
     case books
+    case healthcare
+    case fashion
+    case homeAndGarden
+    case sports
+    case beauty
+    case toys
     case other
     
     var displayName: String {
@@ -110,6 +116,18 @@ enum ProductCategory: String, CaseIterable, Codable, Sendable {
             return "Clothing"
         case .books:
             return "Books"
+        case .healthcare:
+            return "Healthcare"
+        case .fashion:
+            return "Fashion"
+        case .homeAndGarden:
+            return "Home & Garden"
+        case .sports:
+            return "Sports"
+        case .beauty:
+            return "Beauty"
+        case .toys:
+            return "Toys"
         case .other:
             return "Other"
         }
@@ -133,8 +151,34 @@ enum ProductCategory: String, CaseIterable, Codable, Sendable {
             return "tshirt"
         case .books:
             return "book"
+        case .healthcare:
+            return "cross.case"
+        case .fashion:
+            return "shirt"
+        case .homeAndGarden:
+            return "leaf"
+        case .sports:
+            return "figure.run"
+        case .beauty:
+            return "sparkles"
+        case .toys:
+            return "gamecontroller"
         case .other:
             return "tag"
+        }
+    }
+    
+    /// German products for this category
+    var germanProducts: [Product] {
+        switch self {
+        case .food:
+            return GermanProductData.mcdonaldsProducts + GermanProductData.reweProducts
+        case .healthcare, .medicine:
+            return GermanProductData.docMorrisProducts
+        case .electronics:
+            return GermanProductData.mediaMarktProducts
+        default:
+            return []
         }
     }
 }

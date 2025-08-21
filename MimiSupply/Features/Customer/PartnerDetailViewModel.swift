@@ -32,8 +32,7 @@ class PartnerDetailViewModel: ObservableObject {
     init(
         partner: Partner,
         productRepository: ProductRepository = ProductRepositoryImpl(
-            cloudKitService: CloudKitServiceImpl(),
-            coreDataStack: CoreDataStack.shared
+            cloudKitService: CloudKitServiceImpl()
         ),
         cartService: CartService? = nil
     ) {

@@ -2,425 +2,299 @@
 //  GermanProductData.swift
 //  MimiSupply
 //
-//  Created by Alex on 15.08.25.
+//  Created by MimiTech Ai on 15.08.25.
 //
 
 import Foundation
 
-/// Realistic German product data for MimiSupply partners
+/// German product data for realistic demo experience
 struct GermanProductData {
     
     // MARK: - McDonald's Products
     static let mcdonaldsProducts: [Product] = [
-        Product(
-            partnerId: "mcdonalds-berlin-alexanderplatz",
+        createProduct(
+            partnerId: "mcdonalds_berlin_mitte",
             name: "Big Mac",
-            description: "Zwei Rindfleisch-Patties, Spezialsoße, Salat, Käse, Gurken, Zwiebeln im Sesam-Bun",
-            priceCents: 549, // €5.49
+            description: "Zwei Rindfleisch-Patties, Spezialsoße, Salat, Käse, Gurken, Zwiebeln auf einem Sesam-Brötchen",
+            priceCents: 549,
             category: .food,
-            imageURLs: [
-                URL(string: "https://cdn.mcdonalds.com/content/dam/sites/de/nfl/pdf/nutrition/big-mac-menu.jpg")!
-            ],
-            isAvailable: true,
-            preparationTime: 8,
-            tags: ["Burger", "Klassiker", "Rindfleisch"],
-            nutritionalInfo: NutritionalInfo(
+            nutritionalInfo: NutritionInfo(
                 calories: 563,
-                protein: 25.2,
-                carbs: 44.3,
-                fat: 33.2,
-                fiber: 3.5
-            )
+                protein: 25.0,
+                carbohydrates: 45.0,
+                fat: 33.0,
+                fiber: 3.0,
+                sugar: 5.0,
+                sodium: 1040.0
+            ),
+            allergens: [.wheat, .milk],
+            tags: ["burger", "bestseller"]
         ),
-        
-        Product(
-            partnerId: "mcdonalds-berlin-alexanderplatz",
-            name: "McNuggets 9er",
-            description: "9 knusprige Hähnchen McNuggets aus 100% Hähnchenbrust",
-            priceCents: 499, // €4.99
+        createProduct(
+            partnerId: "mcdonalds_berlin_mitte",
+            name: "McNuggets 6 Stück",
+            description: "Zarte Hähnchen-Nuggets mit knuspriger Panade, serviert mit Ihrer Wahl der Soße",
+            priceCents: 399,
             category: .food,
-            imageURLs: [
-                URL(string: "https://cdn.mcdonalds.com/content/dam/sites/de/nfl/nutrition/mcnuggets-9.jpg")!
-            ],
-            isAvailable: true,
-            preparationTime: 5,
-            tags: ["Hähnchen", "Nuggets", "Knusprig"],
-            nutritionalInfo: NutritionalInfo(
-                calories: 385,
-                protein: 23.0,
-                carbs: 24.0,
-                fat: 24.0,
-                fiber: 0.0
-            )
+            nutritionalInfo: NutritionInfo(
+                calories: 259,
+                protein: 13.0,
+                carbohydrates: 16.0,
+                fat: 16.0,
+                fiber: 1.0,
+                sugar: 0.0,
+                sodium: 540.0
+            ),
+            allergens: [.wheat],
+            tags: ["chicken", "popular"]
         ),
-        
-        Product(
-            partnerId: "mcdonalds-berlin-alexanderplatz",
-            name: "McCafé Latte",
-            description: "Cremiger Milchkaffee mit Arabica-Bohnen",
-            priceCents: 289, // €2.89
-            category: .beverages,
-            imageURLs: [
-                URL(string: "https://cdn.mcdonalds.com/content/dam/sites/de/nfl/nutrition/mccafe-latte.jpg")!
-            ],
-            isAvailable: true,
-            preparationTime: 3,
-            tags: ["Kaffee", "McCafé", "Heiß"],
-            nutritionalInfo: NutritionalInfo(
-                calories: 142,
-                protein: 8.1,
-                carbs: 11.7,
-                fat: 7.2,
-                fiber: 0.0
-            )
-        ),
-        
-        Product(
-            partnerId: "mcdonalds-berlin-alexanderplatz",
-            name: "Pommes Frites große Portion",
-            description: "Goldgelbe, knusprige Pommes Frites - große Portion",
-            priceCents: 279, // €2.79
+        createProduct(
+            partnerId: "mcdonalds_berlin_mitte",
+            name: "McFlurry Oreo",
+            description: "Cremiges Softeis mit knusprigen Oreo-Keksstückchen",
+            priceCents: 279,
             category: .food,
-            imageURLs: [
-                URL(string: "https://cdn.mcdonalds.com/content/dam/sites/de/nfl/nutrition/pommes-gross.jpg")!
-            ],
-            isAvailable: true,
-            preparationTime: 4,
-            tags: ["Pommes", "Beilage", "Klassiker"],
-            nutritionalInfo: NutritionalInfo(
+            nutritionalInfo: NutritionInfo(
+                calories: 327,
+                protein: 8.0,
+                carbohydrates: 51.0,
+                fat: 11.0,
+                fiber: 1.0,
+                sugar: 45.0,
+                sodium: 180.0
+            ),
+            allergens: [.milk, .wheat],
+            tags: ["dessert", "ice cream"]
+        ),
+        createProduct(
+            partnerId: "mcdonalds_berlin_mitte",
+            name: "Pommes Frites groß",
+            description: "Goldgelbe, knusprige Pommes frites mit Meersalz",
+            priceCents: 249,
+            category: .food,
+            nutritionalInfo: NutritionInfo(
                 calories: 365,
-                protein: 4.9,
-                carbs: 43.7,
+                protein: 4.0,
+                carbohydrates: 43.0,
                 fat: 19.0,
-                fiber: 4.6
-            )
+                fiber: 4.0,
+                sugar: 0.0,
+                sodium: 246.0
+            ),
+            allergens: [],
+            tags: ["side", "popular"]
         )
     ]
     
     // MARK: - REWE Products
     static let reweProducts: [Product] = [
         Product(
-            partnerId: "rewe-berlin-friedrichshain",
-            name: "REWE Bio Vollmilch 3,5%",
-            description: "Frische Bio-Vollmilch aus regionaler Erzeugung, 1 Liter",
-            priceCents: 129, // €1.29
+            partnerId: "rewe_alexanderplatz",
+            name: "REWE Bio Vollmilch 3,8%",
+            description: "Frische Bio-Vollmilch aus kontrolliert biologischer Erzeugung, 1 Liter",
+            priceCents: 129,
             category: .food,
-            imageURLs: [
-                URL(string: "https://img.rewe.de/products/123456/bio-vollmilch-35.jpg")!
-            ],
-            isAvailable: true,
-            stockQuantity: 25,
-            tags: ["Bio", "Milch", "Regional"],
-            nutritionalInfo: NutritionalInfo(
+            nutritionInfo: NutritionInfo(
                 calories: 64,
-                protein: 3.3,
-                carbs: 4.8,
-                fat: 3.5,
-                fiber: 0.0
+                protein: 3.4,
+                carbohydrates: 4.8,
+                fat: 3.8,
+                fiber: 0.0,
+                sugar: 4.8,
+                sodium: 50.0
             ),
-            unit: "1L"
+            allergens: [.milk],
+            tags: ["bio", "dairy", "fresh"]
         ),
-        
         Product(
-            partnerId: "rewe-berlin-friedrichshain",
-            name: "REWE Beste Wahl Bananen",
-            description: "Süße, reife Bananen aus fairem Handel, 1kg",
-            priceCents: 199, // €1.99
+            partnerId: "rewe_alexanderplatz",
+            name: "Bananen",
+            description: "Frische Bananen aus fairem Handel, perfekt für Smoothies oder als Snack",
+            priceCents: 189,
             category: .food,
-            imageURLs: [
-                URL(string: "https://img.rewe.de/products/123457/bananen-fair-trade.jpg")!
-            ],
-            isAvailable: true,
-            stockQuantity: 40,
-            tags: ["Obst", "Fair Trade", "Frisch"],
-            nutritionalInfo: NutritionalInfo(
+            nutritionInfo: NutritionInfo(
                 calories: 89,
                 protein: 1.1,
-                carbs: 22.8,
+                carbohydrates: 23.0,
                 fat: 0.3,
-                fiber: 2.6
+                fiber: 2.6,
+                sugar: 12.0,
+                sodium: 1.0
             ),
-            unit: "1kg"
+            allergens: [],
+            tags: ["fruit", "healthy", "fairtrade"]
         ),
-        
         Product(
-            partnerId: "rewe-berlin-friedrichshain",
-            name: "REWE Bio Hähnchenbrust",
-            description: "Frische Bio-Hähnchenbrust aus Deutschland, 500g",
-            priceCents: 699, // €6.99
+            partnerId: "rewe_alexanderplatz",
+            name: "REWE Bio Haferflocken",
+            description: "Kernige Bio-Haferflocken aus deutschem Anbau, ideal für Müsli und Porridge",
+            priceCents: 199,
             category: .food,
-            imageURLs: [
-                URL(string: "https://img.rewe.de/products/123458/bio-haehnchenbrust.jpg")!
-            ],
-            isAvailable: true,
-            stockQuantity: 15,
-            tags: ["Bio", "Fleisch", "Hähnchen", "Deutschland"],
-            nutritionalInfo: NutritionalInfo(
-                calories: 165,
-                protein: 31.0,
-                carbs: 0.0,
-                fat: 3.6,
-                fiber: 0.0
+            nutritionInfo: NutritionInfo(
+                calories: 379,
+                protein: 11.7,
+                carbohydrates: 60.0,
+                fat: 7.7,
+                fiber: 10.0,
+                sugar: 1.3,
+                sodium: 6.0
             ),
-            unit: "500g"
+            allergens: [],
+            tags: ["bio", "breakfast", "healthy"]
         ),
-        
         Product(
-            partnerId: "rewe-berlin-friedrichshain",
-            name: "REWE Beste Wahl Vollkornbrot",
-            description: "Herzhaftes Vollkornbrot aus der REWE-Bäckerei, 500g",
-            priceCents: 189, // €1.89
+            partnerId: "rewe_alexanderplatz",
+            name: "REWE Beste Wahl Joghurt Natur",
+            description: "Cremiger Naturjoghurt 1,5% Fett, ohne Zusätze, 500g Becher",
+            priceCents: 79,
             category: .food,
-            imageURLs: [
-                URL(string: "https://img.rewe.de/products/123459/vollkornbrot-baeckerei.jpg")!
-            ],
-            isAvailable: true,
-            stockQuantity: 30,
-            tags: ["Brot", "Vollkorn", "Bäckerei"],
-            nutritionalInfo: NutritionalInfo(
-                calories: 247,
-                protein: 8.5,
-                carbs: 41.4,
-                fat: 4.2,
-                fiber: 7.4
+            nutritionInfo: NutritionInfo(
+                calories: 62,
+                protein: 4.3,
+                carbohydrates: 4.7,
+                fat: 1.5,
+                fiber: 0.0,
+                sugar: 4.7,
+                sodium: 60.0
             ),
-            unit: "500g"
+            allergens: [.milk],
+            tags: ["dairy", "healthy", "natural"]
         )
     ]
     
     // MARK: - DocMorris Products
     static let docMorrisProducts: [Product] = [
         Product(
-            partnerId: "docmorris-online",
-            name: "Aspirin Plus C Brausetabletten",
-            description: "Schnelle Hilfe bei Kopfschmerzen und Erkältung, 20 Brausetabletten",
-            priceCents: 649, // €6.49
+            id: "docmorris_aspirin_001",
+            partnerId: "docmorris_berlin",
+            name: "Aspirin 500mg",
+            description: "Bewährtes Schmerzmittel gegen Kopfschmerzen und Fieber, 20 Tabletten",
+            priceCents: 459,
             category: .healthcare,
-            imageURLs: [
-                URL(string: "https://cdn.docmorris.com/products/aspirin-plus-c-brausetabletten.jpg")!
-            ],
-            isAvailable: true,
-            stockQuantity: 50,
-            tags: ["Kopfschmerzen", "Erkältung", "Brausetabletten"],
-            requiresPrescription: false,
-            unit: "20 Tabletten"
-        ),
-        
-        Product(
-            partnerId: "docmorris-online",
-            name: "Bepanthen Wund- und Heilsalbe",
-            description: "Zur Behandlung oberflächlicher Wunden und Hautverletzungen, 30g",
-            priceCents: 899, // €8.99
-            category: .healthcare,
-            imageURLs: [
-                URL(string: "https://cdn.docmorris.com/products/bepanthen-wund-heilsalbe.jpg")!
-            ],
             isAvailable: true,
             stockQuantity: 25,
-            tags: ["Wundheilung", "Salbe", "Haut"],
-            requiresPrescription: false,
-            unit: "30g"
+            tags: ["pain relief", "otc", "headache"]
         ),
-        
         Product(
-            partnerId: "docmorris-online",
-            name: "Ibuprofen 400mg Tabletten",
-            description: "Rezeptpflichtiges Schmerzmittel gegen starke Schmerzen, 20 Tabletten",
-            priceCents: 1249, // €12.49
+            id: "docmorris_ibuprofen_001",
+            partnerId: "docmorris_berlin",
+            name: "Ibuprofen 400mg",
+            description: "Entzündungshemmendes Schmerzmittel, 20 Filmtabletten",
+            priceCents: 389,
             category: .healthcare,
-            imageURLs: [
-                URL(string: "https://cdn.docmorris.com/products/ibuprofen-400-tabletten.jpg")!
-            ],
-            isAvailable: true,
-            stockQuantity: 100,
-            tags: ["Schmerzmittel", "Rezeptpflichtig", "Stark"],
-            requiresPrescription: true,
-            unit: "20 Tabletten"
-        ),
-        
-        Product(
-            partnerId: "docmorris-online",
-            name: "Eucerin Sun Face Creme LSF 50+",
-            description: "Hoher Sonnenschutz für das Gesicht, wasserfest, 50ml",
-            priceCents: 1599, // €15.99
-            category: .healthcare,
-            imageURLs: [
-                URL(string: "https://cdn.docmorris.com/products/eucerin-sun-face-creme.jpg")!
-            ],
             isAvailable: true,
             stockQuantity: 30,
-            tags: ["Sonnenschutz", "Gesicht", "Wasserfest"],
-            requiresPrescription: false,
-            unit: "50ml"
+            tags: ["pain relief", "anti-inflammatory", "otc"]
+        ),
+        Product(
+            id: "docmorris_vitamind_001",
+            partnerId: "docmorris_berlin",
+            name: "Vitamin D3 1000 I.E.",
+            description: "Nahrungsergänzungsmittel zur Unterstützung des Immunsystems, 60 Kapseln",
+            priceCents: 899,
+            category: .healthcare,
+            isAvailable: true,
+            stockQuantity: 15,
+            tags: ["vitamins", "immune support", "supplement"]
+        ),
+        Product(
+            id: "docmorris_cough_001",
+            partnerId: "docmorris_berlin",
+            name: "Hustensaft Efeu",
+            description: "Pflanzlicher Hustensaft mit Efeu-Extrakt, 100ml Flasche",
+            priceCents: 679,
+            category: .healthcare,
+            isAvailable: true,
+            stockQuantity: 12,
+            tags: ["cough", "herbal", "natural"]
         )
     ]
     
     // MARK: - MediaMarkt Products
     static let mediaMarktProducts: [Product] = [
         Product(
-            partnerId: "mediamarkt-berlin-alexanderplatz",
-            name: "Apple iPhone 15 Pro 128GB",
-            description: "Das neueste iPhone mit A17 Pro Chip, Titanium Design und Pro Kamera-System",
-            priceCents: 119900, // €1.199,00
+            partnerId: "mediamarkt_alexanderplatz",
+            name: "iPhone 15 128GB",
+            description: "Das neueste iPhone mit A17 Pro Chip, fortschrittlicher Kamera und USB-C",
+            priceCents: 94900,
             category: .electronics,
-            imageURLs: [
-                URL(string: "https://cdn.mediamarkt.de/products/iphone-15-pro-titanium.jpg")!
-            ],
             isAvailable: true,
             stockQuantity: 5,
-            tags: ["iPhone", "Apple", "Smartphone", "Premium"],
-            unit: "1 Stück"
+            tags: ["smartphone", "apple", "premium"]
         ),
-        
         Product(
-            partnerId: "mediamarkt-berlin-alexanderplatz",
-            name: "Samsung 65\" Neo QLED 4K TV",
-            description: "65 Zoll Neo QLED 4K Smart TV mit Quantum Dot Technologie",
-            priceCents: 149900, // €1.499,00
+            partnerId: "mediamarkt_alexanderplatz",
+            name: "Samsung Galaxy Buds Pro",
+            description: "Kabellose In-Ear-Kopfhörer mit aktiver Geräuschunterdrückung",
+            priceCents: 19900,
             category: .electronics,
-            imageURLs: [
-                URL(string: "https://cdn.mediamarkt.de/products/samsung-neo-qled-65.jpg")!
-            ],
-            isAvailable: true,
-            stockQuantity: 3,
-            tags: ["TV", "Samsung", "4K", "65 Zoll"],
-            unit: "1 Stück"
-        ),
-        
-        Product(
-            partnerId: "mediamarkt-berlin-alexanderplatz",
-            name: "Sony WH-1000XM5 Kopfhörer",
-            description: "Premium Noise Cancelling Over-Ear Kopfhörer mit 30h Akkulaufzeit",
-            priceCents: 39900, // €399,00
-            category: .electronics,
-            imageURLs: [
-                URL(string: "https://cdn.mediamarkt.de/products/sony-wh1000xm5.jpg")!
-            ],
             isAvailable: true,
             stockQuantity: 12,
-            tags: ["Kopfhörer", "Sony", "Noise Cancelling", "Premium"],
-            unit: "1 Stück"
+            tags: ["headphones", "wireless", "samsung"]
         ),
-        
         Product(
-            partnerId: "mediamarkt-berlin-alexanderplatz",
+            partnerId: "mediamarkt_alexanderplatz",
             name: "Nintendo Switch OLED",
-            description: "Nintendo Switch mit verbessertem OLED-Display und 64GB Speicher",
-            priceCents: 34900, // €349,00
+            description: "Gaming-Konsole mit 7-Zoll OLED-Display für Zuhause und unterwegs",
+            priceCents: 34900,
             category: .electronics,
-            imageURLs: [
-                URL(string: "https://cdn.mediamarkt.de/products/nintendo-switch-oled.jpg")!
-            ],
             isAvailable: true,
             stockQuantity: 8,
-            tags: ["Nintendo", "Gaming", "Switch", "OLED"],
-            unit: "1 Stück"
+            tags: ["gaming", "nintendo", "portable"]
+        ),
+        Product(
+            partnerId: "mediamarkt_alexanderplatz",
+            name: "Sony WH-1000XM5",
+            description: "Premium Over-Ear-Kopfhörer mit branchenführender Geräuschunterdrückung",
+            priceCents: 39900,
+            category: .electronics,
+            isAvailable: true,
+            stockQuantity: 6,
+            tags: ["headphones", "sony", "premium", "noise-cancelling"]
         )
     ]
     
-    // MARK: - All Products by Partner
-    static let productsByPartner: [String: [Product]] = [
-        "mcdonalds-berlin-alexanderplatz": mcdonaldsProducts,
-        "mcdonalds-hamburg-hauptbahnhof": mcdonaldsProducts,
-        "rewe-berlin-friedrichshain": reweProducts,
-        "edeka-hamburg-eppendorf": reweProducts, // Similar products
-        "docmorris-online": docMorrisProducts,
-        "shop-apotheke-online": docMorrisProducts, // Similar products
-        "mediamarkt-berlin-alexanderplatz": mediaMarktProducts,
-        "saturn-hamburg-europa-passage": mediaMarktProducts // Similar products
-    ]
-    
-    // MARK: - Helper Methods
-    
-    /// Get products for a specific partner
-    static func getProducts(for partnerId: String) -> [Product] {
-        return productsByPartner[partnerId] ?? []
+    // MARK: - All Products
+    static var allProducts: [Product] {
+        return mcdonaldsProducts + reweProducts + docMorrisProducts + mediaMarktProducts
     }
     
-    /// Get all products across all partners
-    static let allProducts: [Product] = Array(productsByPartner.values.flatMap { $0 })
+    // MARK: - Helper Methods
+    static func getProducts(for partnerId: String) -> [Product] {
+        return allProducts.filter { $0.partnerId == partnerId }
+    }
     
-    /// Search products by name or description
     static func searchProducts(_ query: String) -> [Product] {
+        let lowercaseQuery = query.lowercased()
         return allProducts.filter { product in
-            product.name.localizedCaseInsensitiveContains(query) ||
-            product.description.localizedCaseInsensitiveContains(query) ||
-            product.tags.contains { $0.localizedCaseInsensitiveContains(query) }
+            product.name.lowercased().contains(lowercaseQuery) ||
+            product.description.lowercased().contains(lowercaseQuery) ||
+            product.tags.contains { $0.lowercased().contains(lowercaseQuery) }
         }
     }
     
-    /// Get products by category
-    static func getProducts(for category: ProductCategory) -> [Product] {
-        return allProducts.filter { $0.category == category }
-    }
-}
-
-// MARK: - Nutritional Info Extension
-
-extension Product {
-    /// Create a product with German nutritional information
-    init(
+    // MARK: - Private Helper
+    private static func createProduct(
+        id: String = UUID().uuidString,
         partnerId: String,
         name: String,
         description: String,
         priceCents: Int,
         category: ProductCategory,
-        imageURLs: [URL] = [],
-        isAvailable: Bool = true,
-        stockQuantity: Int? = nil,
-        preparationTime: Int? = nil,
-        tags: [String] = [],
-        nutritionalInfo: NutritionalInfo? = nil,
-        requiresPrescription: Bool = false,
-        unit: String? = nil
-    ) {
-        self.init(
+        nutritionalInfo: NutritionInfo? = nil,
+        allergens: [Allergen] = [],
+        tags: [String] = []
+    ) -> Product {
+        return Product(
+            id: id,
             partnerId: partnerId,
             name: name,
             description: description,
             priceCents: priceCents,
             category: category,
-            imageURLs: imageURLs,
-            isAvailable: isAvailable,
-            stockQuantity: stockQuantity,
-            preparationTime: preparationTime,
+            nutritionInfo: nutritionalInfo,
+            allergens: allergens,
             tags: tags
         )
-        // Note: Additional properties would be set if Product model supports them
-    }
-}
-
-// MARK: - German Product Categories
-
-extension ProductCategory {
-    /// Get German products for this category
-    var germanProducts: [Product] {
-        return GermanProductData.getProducts(for: self)
-    }
-    
-    /// German category display names
-    var germanDisplayName: String {
-        switch self {
-        case .food:
-            return "Lebensmittel"
-        case .beverages:
-            return "Getränke"
-        case .healthcare:
-            return "Gesundheit"
-        case .electronics:
-            return "Elektronik"
-        case .fashion:
-            return "Mode"
-        case .homeAndGarden:
-            return "Haus & Garten"
-        case .books:
-            return "Bücher"
-        case .sports:
-            return "Sport"
-        case .beauty:
-            return "Schönheit"
-        case .toys:
-            return "Spielzeug"
-        }
     }
 }

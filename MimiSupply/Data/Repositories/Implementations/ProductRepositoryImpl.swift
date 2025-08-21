@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import MapKit
 
 /// Implementation of ProductRepository using CloudKit with German product data
 final class ProductRepositoryImpl: ProductRepository, Sendable {
@@ -23,16 +24,28 @@ final class ProductRepositoryImpl: ProductRepository, Sendable {
         return GermanProductData.getProducts(for: partnerId)
     }
     
-    func fetchProducts(by category: ProductCategory) async throws -> [Product] {
+    func fetchProduct(by id: String) async throws -> Product? {
+        return GermanProductData.allProducts.first { $0.id == id }
+    }
+    
+    func searchProducts(query: String, in region: MKCoordinateRegion) async throws -> [Product] {
+        // For now, we ignore the region parameter and search in all German products
+        return GermanProductData.searchProducts(query)
+    }
+    
+    func fetchProductsByCategory(_ category: ProductCategory, for partnerId: String) async throws -> [Product] {
+        let partnerProducts = GermanProductData.getProducts(for: partnerId)
+        return partnerProducts.filter { $0.category == category }
+    }
+    
+    // MARK: - Additional Methods (Not in Protocol)
+    
+    func fetchProductsByCategory(_ category: ProductCategory) async throws -> [Product] {
         return category.germanProducts
     }
     
     func searchProducts(query: String) async throws -> [Product] {
         return GermanProductData.searchProducts(query)
-    }
-    
-    func fetchProduct(by id: String) async throws -> Product? {
-        return GermanProductData.allProducts.first { $0.id == id }
     }
     
     func createProduct(_ product: Product) async throws -> Product {
