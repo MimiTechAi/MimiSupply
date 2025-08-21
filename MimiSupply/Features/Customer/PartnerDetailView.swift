@@ -59,55 +59,56 @@ struct PartnerDetailView: View {
     
     private var heroSection: some View {
         ZStack(alignment: .bottomLeading) {
-            AsyncImage(url: partner.heroImageURL) { image in
-                image
-                    .resizable()
-                    .aspectRatio(contentMode: .fill)
-            } placeholder: {
+            if let imgURL = partner.heroImageURL {
+                AsyncImage(url: imgURL) { image in
+                    image
+                        .resizable()
+                        .aspectRatio(contentMode: .fill)
+                } placeholder: {
+                    Rectangle()
+                        .fill(Color.gray200)
+                }
+            } else {
                 Rectangle()
-                    .fill(Color.gray200)
-                    .overlay(
-                        VStack(spacing: Spacing.sm) {
-                            Image(systemName: partner.category.iconName)
-                                .foregroundColor(.gray400)
-                                .font(.system(size: 48))
-                            Text(partner.category.displayName)
-                                .font(.titleMedium)
-                                .foregroundColor(.gray500)
-                        }
-                    )
+                    .fill(LinearGradient(colors: [Color.gray300, partner.category == .restaurant ? Color.red.opacity(0.6) : Color.green.opacity(0.5)], startPoint: .top, endPoint: .bottom))
             }
-            .frame(height: 200)
-            .clipped()
-            
-            // Gradient overlay
-            LinearGradient(
-                colors: [Color.clear, Color.black.opacity(0.6)],
-                startPoint: .top,
-                endPoint: .bottom
-            )
-            
-            // Partner name and basic info
+            // Glassmorphism/Blurred card bottom
+            LinearGradient(colors: [Color.clear, Color.black.opacity(0.65)], startPoint: .top, endPoint: .bottom)
             VStack(alignment: .leading, spacing: Spacing.xs) {
                 HStack {
+                    if let logoURL = partner.logoURL {
+                        AsyncImage(url: logoURL) { image in
+                            image.resizable().aspectRatio(contentMode: .fit).clipShape(Circle())
+                        } placeholder: {
+                            ProgressView()
+                        }
+                        .frame(width: 44, height: 44)
+                        .background(Color.white.opacity(0.25)).clipShape(Circle())
+                    }
                     Text(partner.name)
                         .font(.headlineSmall)
                         .foregroundColor(.white)
                         .fontWeight(.bold)
-                    
                     if partner.isVerified {
-                        Image(systemName: "checkmark.seal.fill")
-                            .foregroundColor(.success)
-                            .font(.title3)
+                        Image(systemName: "checkmark.seal.fill").foregroundColor(.success).font(.title3)
                     }
                 }
-                
                 Text(partner.category.displayName)
                     .font(.bodyMedium)
                     .foregroundColor(.white.opacity(0.9))
             }
             .padding(Spacing.md)
+            .background(
+                BlurView(style: .systemUltraThinMaterialDark)
+                    .clipShape(RoundedRectangle(cornerRadius: 22))
+                    .opacity(0.76)
+            )
+            .padding(.bottom, 12)
+            .padding(.horizontal, 12)
         }
+        .frame(height: 230)
+        .clipShape(RoundedRectangle(cornerRadius: 20))
+        .shadow(radius: 8)
     }
     
     private var partnerInfoSection: some View {
@@ -320,23 +321,37 @@ struct ProductRow: View {
     var body: some View {
         Button(action: onTap) {
             HStack(spacing: Spacing.md) {
-                // Product image
-                AsyncImage(url: product.imageURLs.first) { image in
-                    image
-                        .resizable()
-                        .aspectRatio(contentMode: .fill)
-                } placeholder: {
+                // Produktbild (Premium)
+                if let url = product.imageURLs.first {
+                    AsyncImage(url: url) { image in
+                        image.resizable()
+                            .aspectRatio(contentMode: .fill)
+                            .frame(width: 80, height: 80)
+                            .cornerRadius(12)
+                            .shadow(radius: 4)
+                    } placeholder: {
+                        Rectangle()
+                            .fill(Color.gray200)
+                            .frame(width: 80, height: 80)
+                            .cornerRadius(12)
+                            .overlay(
+                                Image(systemName: product.category.iconName)
+                                    .foregroundColor(.gray400)
+                                    .font(.title2)
+                            )
+                    }
+                } else {
                     Rectangle()
-                        .fill(Color.gray200)
+                        .fill(Color.gray100)
+                        .frame(width: 80, height: 80)
+                        .cornerRadius(12)
                         .overlay(
                             Image(systemName: product.category.iconName)
-                                .foregroundColor(.gray400)
                                 .font(.title2)
+                                .foregroundColor(.gray400)
                         )
                 }
-                .frame(width: 80, height: 80)
-                .cornerRadius(8)
-                
+
                 VStack(alignment: .leading, spacing: Spacing.xs) {
                     // Product name
                     Text(product.name)

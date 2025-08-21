@@ -245,8 +245,20 @@ struct ExploreHomeView: View {
                             }
                         }) {
                             VStack {
-                                Text("🍽️")
-                                    .font(.largeTitle)
+                                if let premiumImageURL = category.premiumIconURL {
+                                    // KI-generiertes Bild/Icon für die Kategorie
+                                    AsyncImage(url: premiumImageURL) { image in
+                                        image.resizable().aspectRatio(contentMode: .fill)
+                                            .frame(width: 38, height: 38)
+                                            .clipShape(RoundedRectangle(cornerRadius: 10))
+                                    } placeholder: {
+                                        ProgressView()
+                                            .frame(width: 38, height: 38)
+                                    }
+                                } else {
+                                    Text("🍽️") // Standard-Emoji bzw. Symbol
+                                        .font(.largeTitle)
+                                }
                                 Text(category.displayName)
                                     .font(.caption)
                                     .multilineTextAlignment(.center)
@@ -483,19 +495,34 @@ struct PartnerRowCard: View {
     
     @ViewBuilder
     private var partnerIcon: some View {
-        switch partner.id {
-        case "mcdonalds_berlin_mitte":
-            Image(systemName: "m.circle.fill")
-        case "rewe_alexanderplatz":
-            Image(systemName: "cart.fill")
-        case "docmorris_berlin":
-            Image(systemName: "cross.case.fill")
-        case "mediamarkt_alexanderplatz":
-            Image(systemName: "tv.fill")
-        case "edeka_prenzlauer_berg":
-            Image(systemName: "leaf.fill")
-        default:
-            Image(systemName: partner.category.iconName)
+        if let logoURL = partner.logoURL {
+            // Premium: Show partner logo from URL, cropped in a circle
+            AsyncImage(url: logoURL) { image in
+                image
+                    .resizable()
+                    .aspectRatio(contentMode: .fit)
+                    .clipShape(Circle())
+                    .frame(width: 48, height: 48)
+            } placeholder: {
+                ProgressView()
+                    .frame(width: 48, height: 48)
+            }
+        } else {
+            // Fallback: Symbolic icon
+            switch partner.id {
+            case "mcdonalds_berlin_mitte":
+                Image(systemName: "m.circle.fill")
+            case "rewe_alexanderplatz":
+                Image(systemName: "cart.fill")
+            case "docmorris_berlin":
+                Image(systemName: "cross.case.fill")
+            case "mediamarkt_alexanderplatz":
+                Image(systemName: "tv.fill")
+            case "edeka_prenzlauer_berg":
+                Image(systemName: "leaf.fill")
+            default:
+                Image(systemName: partner.category.iconName)
+            }
         }
     }
     
@@ -580,4 +607,66 @@ struct PartnerCardSkeleton: View {
 
 #Preview {
     ExploreHomeView()
+}
+
+// Suche nach PremiumPartnerCard(partner: ...) oder erstelle Component falls sie fehlt, sonst ändere analog PartnerRowCard:
+
+struct PremiumPartnerCard: View {
+    let partner: Partner
+    let onTap: () -> Void
+
+    var body: some View {
+        Button(action: onTap) {
+            ZStack(alignment: .bottomLeading) {
+                // Background: Hero image bevorzugt, sonst Farbtint
+                if let heroURL = partner.heroImageURL {
+                    AsyncImage(url: heroURL) { image in
+                        image
+                            .resizable()
+                            .aspectRatio(contentMode: .fill)
+                            .frame(height: 160)
+                            .clipped()
+                    } placeholder: {
+                        Rectangle()
+                            .fill(Color.gray200)
+                            .frame(height: 160)
+                            .overlay(ProgressView())
+                    }
+                } else {
+                    partnerBackgroundGradient
+                        .frame(height: 160)
+                }
+                // Gradient Overlay
+                LinearGradient(colors: [Color.clear, Color.black.opacity(0.6)], startPoint: .top, endPoint: .bottom)
+                    .frame(height: 160)
+
+                // Logo links unten, Name, Kategorie
+                HStack(alignment: .center, spacing: 12) {
+                    if let logoURL = partner.logoURL {
+                        AsyncImage(url: logoURL) { image in
+                            image.resizable().aspectRatio(contentMode: .fit)
+                        } placeholder: {
+                            ProgressView()
+                        }
+                        .frame(width: 42, height: 42)
+                        .clipShape(Circle())
+                        .shadow(radius: 4)
+                    }
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text(partner.name)
+                            .font(.headlineSmall)
+                            .foregroundColor(.white)
+                            .fontWeight(.bold)
+                        Text(partner.category.displayName)
+                            .font(.caption)
+                            .foregroundColor(.white.opacity(0.85))
+                    }
+                }
+                .padding(14)
+            }
+            .clipShape(RoundedRectangle(cornerRadius: 22))
+            .shadow(color: Color.black.opacity(0.13), radius: 8, x: 0, y: 3)
+        }
+        .frame(width: 280, height: 170)
+    }
 }
