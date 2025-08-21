@@ -111,7 +111,7 @@ struct ProfileView: View {
                 await checkAuthenticationState()
             }
             .sheet(isPresented: $showingSignIn) {
-                SignInView()
+                DemoSignInView()
                     .environmentObject(AuthenticationManager())
             }
             .task {

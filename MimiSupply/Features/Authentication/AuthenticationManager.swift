@@ -136,7 +136,7 @@ struct AuthenticationGate<Content: View>: View {
         Group {
             switch authManager.authenticationState {
             case .unauthenticated, .authenticating:
-                SignInView()
+                DemoSignInView()
                     .environmentObject(authManager)
                 
             case .authenticated:
@@ -151,7 +151,7 @@ struct AuthenticationGate<Content: View>: View {
                 }
                 
             case .error:
-                SignInView()
+                DemoSignInView()
                     .environmentObject(authManager)
             }
         }
@@ -190,91 +190,5 @@ struct AuthenticationGate<Content: View>: View {
                 }
             }
         }
-    }
-}
-
-// MARK: - Authentication View
-
-/// Main authentication view with Sign in with Apple
-struct SignInView: View {
-    @EnvironmentObject private var authManager: AuthenticationManager
-    @State private var isSigningIn = false
-    
-    var body: some View {
-        VStack(spacing: Spacing.xl) {
-            Spacer()
-            
-            // App Logo and Title
-            VStack(spacing: Spacing.lg) {
-                Image(systemName: "bag.fill")
-                    .font(.system(size: 80))
-                    .foregroundColor(.emerald)
-                
-                Text("MimiSupply")
-                    .font(.displayMedium)
-                    .foregroundColor(.graphite)
-                
-                Text("Your local marketplace")
-                    .font(.titleMedium)
-                    .foregroundColor(.gray600)
-            }
-            
-            Spacer()
-            
-            // Sign in Button
-            VStack(spacing: Spacing.md) {
-                Button(action: {
-                    isSigningIn = true
-                    Task {
-                        await authManager.signInWithApple()
-                        isSigningIn = false
-                    }
-                }) {
-                    HStack {
-                        if isSigningIn {
-                            ProgressView()
-                                .progressViewStyle(CircularProgressViewStyle(tint: .white))
-                                .scaleEffect(0.8)
-                        } else {
-                            Image(systemName: "applelogo")
-                                .font(.title3)
-                        }
-                        
-                        Text(isSigningIn ? "Signing In..." : "Sign in with Apple")
-                            .font(.labelLarge)
-                    }
-                    .foregroundColor(.white)
-                    .frame(maxWidth: .infinity)
-                    .frame(height: 50)
-                    .background(Color.black)
-                    .cornerRadius(8)
-                }
-                .disabled(isSigningIn)
-                .accessibilityLabel("Sign in with Apple")
-                .accessibilityHint("Authenticate using your Apple ID")
-                
-                Text("Secure authentication with your Apple ID")
-                    .font(.bodySmall)
-                    .foregroundColor(.gray500)
-                    .multilineTextAlignment(.center)
-            }
-            .padding(.horizontal, Spacing.md)
-            .padding(.bottom, Spacing.xl)
-        }
-        .padding(.horizontal, Spacing.md)
-    }
-}
-
-// MARK: - Preview
-
-#Preview("Authentication View") {
-    SignInView()
-        .environmentObject(AuthenticationManager())
-}
-
-#Preview("Authentication Gate") {
-    AuthenticationGate {
-        Text("Protected Content")
-            .font(.title)
     }
 }

@@ -258,6 +258,12 @@
     "Animation Performance" : {
 
     },
+    "Anmelden" : {
+
+    },
+    "Anmelden..." : {
+
+    },
     "Apple Pay" : {
 
     },
@@ -274,9 +280,6 @@
 
     },
     "Are you sure you want to sign out? You'll need to sign in again to access your account." : {
-
-    },
-    "Authenticate using your Apple ID" : {
 
     },
     "Authentication Error" : {
@@ -667,6 +670,9 @@
     "Decline" : {
 
     },
+    "Dein lokaler Marktplatz" : {
+
+    },
     "Delete" : {
 
     },
@@ -706,6 +712,18 @@
     "Delivery Time" : {
 
     },
+    "Demo Login" : {
+
+    },
+    "Demo-Rolle auswählen" : {
+
+    },
+    "Demo-Zugangsdaten" : {
+
+    },
+    "demo@test.de" : {
+
+    },
     "Description" : {
 
     },
@@ -740,6 +758,9 @@
 
     },
     "Dropped Frames" : {
+
+    },
+    "E-Mail" : {
 
     },
     "Earnings" : {
@@ -791,6 +812,12 @@
 
     },
     "Export Report" : {
+
+    },
+    "Fahrer:" : {
+
+    },
+    "fahrer1@test.de / fahrer123" : {
 
     },
     "Featured Partners" : {
@@ -862,6 +889,12 @@
     "Key Metrics" : {
 
     },
+    "kunde@test.de / kunde123" : {
+
+    },
+    "Kunden:" : {
+
+    },
     "Label Small" : {
 
     },
@@ -886,6 +919,9 @@
     "Location Settings" : {
 
     },
+    "Login Fehler" : {
+
+    },
     "Manage Business" : {
 
     },
@@ -907,6 +943,9 @@
     "Marketing Updates" : {
 
     },
+    "mcdonalds@partner.de / partner123" : {
+
+    },
     "Memory" : {
 
     },
@@ -919,10 +958,16 @@
     "MimiSupply" : {
 
     },
+    "MimiSupply Demo" : {
+
+    },
     "Minimum Order" : {
 
     },
     "Minimum Order Amount" : {
+
+    },
+    "Mit Apple anmelden" : {
 
     },
     "Navigate back to previous screen" : {
@@ -971,6 +1016,9 @@
 
     },
     "Nutrition Information" : {
+
+    },
+    "oder" : {
 
     },
     "Offline" : {
@@ -1060,7 +1108,13 @@
     "Partner Dashboard" : {
 
     },
+    "Partner:" : {
+
+    },
     "Password must be at least 8 characters long and contain a mix of letters, numbers, and symbols." : {
+
+    },
+    "Passwort" : {
 
     },
     "Pay %@ with Apple Pay" : {
@@ -1216,13 +1270,16 @@
     "Schedule Report" : {
 
     },
+    "Schließen" : {
+
+    },
+    "Schneller Demo-Zugang:" : {
+
+    },
     "Search bar" : {
 
     },
     "Section content" : {
-
-    },
-    "Secure authentication with your Apple ID" : {
 
     },
     "See All" : {
@@ -1258,13 +1315,7 @@
     "Sign in to access your profile" : {
 
     },
-    "Sign in with Apple" : {
-
-    },
     "Sign Out" : {
-
-    },
-    "Signing In..." : {
 
     },
     "Skip" : {
@@ -1456,6 +1507,12 @@
     "Value" : {
 
     },
+    "Verfügbare Demo-Konten" : {
+
+    },
+    "Verfügbare Demo-Konten:" : {
+
+    },
     "Verification" : {
 
     },
@@ -1466,6 +1523,9 @@
 
     },
     "View Available Jobs" : {
+
+    },
+    "Wähle deinen Demo-Zugang" : {
 
     },
     "Website" : {
@@ -1493,9 +1553,6 @@
 
     },
     "Your completed orders will appear here" : {
-
-    },
-    "Your local marketplace" : {
 
     },
     "Your order has been placed successfully and is being prepared with care." : {

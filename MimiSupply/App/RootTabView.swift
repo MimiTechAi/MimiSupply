@@ -122,7 +122,7 @@ struct RootTabView: View {
             }
         case .authentication:
             NavigationView {
-                SignInView()
+                DemoSignInView()
                     .environmentObject(AuthenticationManager())
             }
         case .profile:

@@ -73,7 +73,7 @@ struct RootView: View {
                 onCancel: { }
             )
         case .authentication:
-            SignInView()
+            DemoSignInView()
                 .environmentObject(AuthenticationManager())
         default:
             EmptyView()
@@ -103,7 +103,7 @@ struct RootView: View {
             }
         case .authentication:
             NavigationView {
-                SignInView()
+                DemoSignInView()
                     .environmentObject(AuthenticationManager())
             }
         case .roleSelection(let user):
