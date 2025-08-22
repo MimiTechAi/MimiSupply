@@ -1003,15 +1003,23 @@ final class EnhancedCloudKitService: CloudKitService {
             }
         })
     }
+
+    func fetchOrder(by orderId: String) async throws -> Order? {
+        return nil
+    }
+    
+    func fetchOrderHistory() async throws -> [Order] {
+        return []
+    }
 }
 
-// MARK: - Concurrency
+// MARK: - Extensions
 extension EnhancedCloudKitService: @unchecked Sendable {}
 
 // MARK: - Helper Methods
 
 extension EnhancedCloudKitService {
-    
+        
     private func createLocationPredicate(for region: MKCoordinateRegion) -> NSPredicate {
         let center = region.center
         let radius = max(region.span.latitudeDelta, region.span.longitudeDelta) * 111000 / 2 // Convert to meters
@@ -1025,11 +1033,11 @@ extension EnhancedCloudKitService {
             radius
         )
     }
-    
+        
     // MARK: - Record Conversion Methods
     // These would be implemented to convert between domain models and CloudKit records
     // For brevity, I'm not implementing all of them here, but they would follow similar patterns
-    
+        
     private func convertRecordToPartner(_ record: CKRecord) throws -> Partner {
         guard let name = record[CloudKitSchema.Partner.name] as? String,
               let categoryString = record[CloudKitSchema.Partner.category] as? String,
@@ -1075,7 +1083,7 @@ extension EnhancedCloudKitService {
             createdAt: createdAt
         )
     }
-    
+        
     private func convertRecordToProduct(_ record: CKRecord) throws -> Product {
         guard let partnerId = record[CloudKitSchema.Product.partnerId] as? String,
               let name = record[CloudKitSchema.Product.name] as? String,
@@ -1119,7 +1127,7 @@ extension EnhancedCloudKitService {
             updatedAt: updatedAt
         )
     }
-    
+        
     private func convertOrderToRecord(_ order: Order) throws -> CKRecord {
         let record = CKRecord(recordType: CloudKitSchema.Order.recordType, recordID: CKRecord.ID(recordName: order.id))
         record[CloudKitSchema.Order.customerId] = order.customerId
@@ -1144,7 +1152,7 @@ extension EnhancedCloudKitService {
         record[CloudKitSchema.Order.deliveryAddress] = try encoder.encode(order.deliveryAddress)
         return record
     }
-    
+        
     private func convertRecordToOrder(_ record: CKRecord) throws -> Order {
         guard let customerId = record[CloudKitSchema.Order.customerId] as? String,
               let partnerId = record[CloudKitSchema.Order.partnerId] as? String,
@@ -1191,7 +1199,7 @@ extension EnhancedCloudKitService {
             updatedAt: updatedAt
         )
     }
-    
+        
     private func convertUserProfileToRecord(_ user: UserProfile) throws -> CKRecord {
         let record = CKRecord(recordType: CloudKitSchema.UserProfile.recordType, recordID: CKRecord.ID(recordName: user.id))
         record[CloudKitSchema.UserProfile.appleUserID] = user.appleUserID
@@ -1207,7 +1215,7 @@ extension EnhancedCloudKitService {
         }
         return record
     }
-    
+        
     private func convertRecordToUserProfile(_ record: CKRecord) throws -> UserProfile {
         guard let appleUserID = record[CloudKitSchema.UserProfile.appleUserID] as? String,
               let roleString = record[CloudKitSchema.UserProfile.role] as? String,
@@ -1235,7 +1243,7 @@ extension EnhancedCloudKitService {
             partnerProfile: nil
         )
     }
-    
+        
     private func convertDriverToRecord(_ driver: Driver) throws -> CKRecord {
         let record = CKRecord(recordType: CloudKitSchema.Driver.recordType, recordID: CKRecord.ID(recordName: driver.id))
         record[CloudKitSchema.Driver.userId] = driver.userId
@@ -1255,7 +1263,7 @@ extension EnhancedCloudKitService {
         }
         return record
     }
-    
+        
     private func convertRecordToDriver(_ record: CKRecord) throws -> Driver {
         guard let userId = record[CloudKitSchema.Driver.userId] as? String,
               let name = record[CloudKitSchema.Driver.name] as? String,
@@ -1294,7 +1302,7 @@ extension EnhancedCloudKitService {
             createdAt: createdAt
         )
     }
-    
+        
     private func convertDriverLocationToRecord(_ location: DriverLocation) throws -> CKRecord {
         let recordID = CKRecord.ID(recordName: "\(location.driverId)-\(Int(location.timestamp.timeIntervalSince1970))")
         let record = CKRecord(recordType: CloudKitSchema.DriverLocation.recordType, recordID: recordID)
@@ -1307,7 +1315,7 @@ extension EnhancedCloudKitService {
         record[CloudKitSchema.DriverLocation.timestamp] = location.timestamp
         return record
     }
-    
+        
     private func convertRecordToDriverLocation(_ record: CKRecord) throws -> DriverLocation {
         guard let driverId = record[CloudKitSchema.DriverLocation.driverId] as? String,
               let latitude = record[CloudKitSchema.DriverLocation.latitude] as? Double,
@@ -1326,7 +1334,7 @@ extension EnhancedCloudKitService {
             timestamp: timestamp
         )
     }
-    
+        
     private func convertDeliveryCompletionToRecord(_ completion: DeliveryCompletionData) throws -> CKRecord {
         let record = CKRecord(recordType: CloudKitSchema.DeliveryCompletion.recordType, recordID: CKRecord.ID(recordName: completion.id))
         record[CloudKitSchema.DeliveryCompletion.orderId] = completion.orderId
@@ -1342,9 +1350,9 @@ extension EnhancedCloudKitService {
         }
         return record
     }
-    
+        
     // MARK: - Missing Protocol Methods
-    
+        
     func fetchPartnerAnalytics(partnerId: String, timeRange: TimeRange) async throws -> PartnerAnalytics {
         // Mock implementation for now
         let totalRevenue = Double.random(in: 1000...10000)
@@ -1366,7 +1374,7 @@ extension EnhancedCloudKitService {
             ratingChangePercent: Double.random(in: -0.5...0.5)
         )
     }
-    
+        
     func fetchRevenueChartData(partnerId: String, timeRange: TimeRange) async throws -> [RevenueDataPoint] {
         // Mock implementation for now
         let calendar = Calendar.current
@@ -1388,17 +1396,17 @@ extension EnhancedCloudKitService {
         
         return dataPoints
     }
-    
+        
     func fetchOrdersChartData(partnerId: String, timeRange: TimeRange) async throws -> [OrdersDataPoint] {
         // Mock implementation for now
         return []
     }
-    
+        
     func fetchTopProducts(partnerId: String, timeRange: TimeRange, limit: Int) async throws -> [TopProductData] {
         // Mock implementation for now
         return []
     }
-    
+        
     func fetchPerformanceInsights(partnerId: String, timeRange: TimeRange) async throws -> PartnerInsightData {
         // Mock implementation for now
         return PartnerInsightData(
@@ -1415,5 +1423,4 @@ extension EnhancedCloudKitService {
             topProductName: "Pizza Margherita"
         )
     }
-    
 }

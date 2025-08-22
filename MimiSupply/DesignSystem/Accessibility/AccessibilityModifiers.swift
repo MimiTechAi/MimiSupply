@@ -325,6 +325,7 @@ class AccessibilityManager: ObservableObject {
 
 extension Font {
     /// Returns a font that scales with Dynamic Type and supports accessibility sizes
+    @MainActor
     func scaledFont(for category: UIContentSizeCategory = UIApplication.shared.preferredContentSizeCategory) -> Font {
         let scaleFactor = category.scaleFactor
         
@@ -426,7 +427,7 @@ extension Color {
 // MARK: - Focus Management
 
 struct AccessibilityFocusState {
-    static var currentFocusedElement: String?
+    nonisolated(unsafe) static var currentFocusedElement: String?
     
     static func setFocus(to element: String) {
         currentFocusedElement = element

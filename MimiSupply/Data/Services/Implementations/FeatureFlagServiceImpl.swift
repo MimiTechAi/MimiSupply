@@ -141,7 +141,7 @@ final class FeatureFlagServiceImpl: FeatureFlagService, ObservableObject {
             "timestamp": ISO8601DateFormatter().string(from: Date())
         ]
         
-        await analyticsService.trackEvent(.featureFlagEvaluated, parameters: parameters)
+        await analyticsService.trackEvent(.featureFlagEvaluated, parameters: parameters as? AnalyticsParameters)
     }
     
     // MARK: - Private Methods

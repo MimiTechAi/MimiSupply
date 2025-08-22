@@ -8,7 +8,7 @@
 import Foundation
 
 extension Bundle {
-    private static var bundle: Bundle!
+    nonisolated(unsafe) private static var bundle: Bundle!
     
     public static func localizedBundle() -> Bundle! {
         if Bundle.bundle == nil {

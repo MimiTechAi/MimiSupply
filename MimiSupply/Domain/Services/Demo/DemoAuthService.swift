@@ -9,8 +9,9 @@ import Foundation
 import Combine
 
 /// Demo authentication service for testing different user roles
+@MainActor
 class DemoAuthService: ObservableObject {
-    static let shared = DemoAuthService()
+    nonisolated(unsafe) static let shared = DemoAuthService()
     
     @Published var currentUser: DemoUser?
     @Published var isAuthenticated = false

@@ -142,7 +142,10 @@ struct RootTabView: View {
     private func fullScreenContent(for fullScreen: FullScreenRoute) -> some View {
         switch fullScreen {
         case .onboarding:
-            OnboardingView()
+            OnboardingView {
+                // Handle onboarding completion
+                // Set user as onboarded or navigate to main app
+            }
         case .orderTracking(let order):
             OrderTrackingView(
                 order: order,

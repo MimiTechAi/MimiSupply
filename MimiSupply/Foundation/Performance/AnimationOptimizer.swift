@@ -193,7 +193,7 @@ struct SmoothScrollView<Content: View>: View {
 // MARK: - Preference Key for Scroll Offset
 
 private struct ScrollOffsetPreferenceKey: PreferenceKey {
-    static var defaultValue: CGPoint = .zero
+    nonisolated(unsafe) static var defaultValue: CGPoint = .zero
     
     static func reduce(value: inout CGPoint, nextValue: () -> CGPoint) {
         value = nextValue()

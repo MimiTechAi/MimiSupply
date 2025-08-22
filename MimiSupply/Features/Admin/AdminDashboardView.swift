@@ -101,7 +101,11 @@ struct SystemStatusCard: View {
                 
                 Spacer()
                 
-                StatusIndicator(status: systemHealth)
+                StatusIndicator(
+                    title: systemHealth.description,
+                    value: "System",
+                    color: systemHealth.color
+                )
             }
             
             Divider()
@@ -318,11 +322,24 @@ struct RecentActivitySection: View {
                 .foregroundColor(.primary)
             
             if activities.isEmpty {
-                EmptyStateView(
-                    title: "No Recent Activity",
-                    message: "System activities will appear here",
-                    icon: "calendar.badge.clock"
-                )
+                VStack(spacing: 12) {
+                    Image(systemName: "calendar.badge.clock")
+                        .font(.title)
+                        .foregroundColor(.secondary)
+                    
+                    Text("No Recent Activity")
+                        .font(.headline)
+                        .foregroundColor(.primary)
+                    
+                    Text("System activities will appear here")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                        .multilineTextAlignment(.center)
+                }
+                .frame(maxWidth: .infinity)
+                .padding()
+                .background(Color(.systemBackground))
+                .cornerRadius(12)
             } else {
                 ForEach(activities) { activity in
                     ActivityItem(activity: activity)

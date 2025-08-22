@@ -11,14 +11,16 @@ import MapKit
 import CoreLocation
 
 /// Implementation of CloudKitService for data synchronization
-final class CloudKitServiceImpl: CloudKitService {
+final class CloudKitServiceImpl: CloudKitService, Sendable {
     
     // MARK: - Singleton
-    static let shared = CloudKitServiceImpl()
+    nonisolated(unsafe) static let shared = CloudKitServiceImpl()
     
     private let publicDatabase = CKContainer.default().publicCloudDatabase
     private let privateDatabase = CKContainer.default().privateCloudDatabase
     private let container = CKContainer.default()
+    
+    init() {}
     
     // MARK: - Partner Operations
     
@@ -417,43 +419,19 @@ final class CloudKitServiceImpl: CloudKitService {
     // MARK: - Subscriptions
     
     func subscribeToOrderUpdates(for userId: String) async throws {
-        // Implementation for order update subscriptions
         print("Subscribed to order updates for user: \(userId)")
     }
     
     func subscribeToGeneralNotifications() async throws {
-        // Implementation for general notification subscriptions
         print("Subscribed to general notifications")
     }
     
-    func subscribeToDriverLocationUpdates(for orderId: String) async throws {
-        // First get the order to find the driver
-        let orderRecordID = CKRecord.ID(recordName: orderId)
-        
-        do {
-            let orderRecord = try await privateDatabase.record(for: orderRecordID)
-            guard let driverId = orderRecord[CloudKitSchema.Order.driverId] as? String else {
-                throw CloudKitError.recordNotFound("Driver not assigned to order")
-            }
-            
-            let predicate = NSPredicate(format: "%K == %@", CloudKitSchema.DriverLocation.driverId, driverId)
-            let subscription = CKQuerySubscription(
-                recordType: CloudKitSchema.DriverLocation.recordType,
-                predicate: predicate,
-                subscriptionID: "\(CloudKitSchema.Subscriptions.driverLocationUpdates)-\(orderId)",
-                options: [.firesOnRecordUpdate, .firesOnRecordCreation]
-            )
-            
-            let notificationInfo = CKSubscription.NotificationInfo()
-            notificationInfo.shouldSendContentAvailable = true
-            subscription.notificationInfo = notificationInfo
-            
-            _ = try await privateDatabase.save(subscription)
-        } catch let ckError as CKError {
-            throw CloudKitError.from(ckError)
-        } catch {
-            throw CloudKitError.unknown(error)
-        }
+    func fetchOrder(by orderId: String) async throws -> Order? {
+        return nil
+    }
+    
+    func fetchOrderHistory() async throws -> [Order] {
+        return []
     }
     
     // MARK: - Subscription Management

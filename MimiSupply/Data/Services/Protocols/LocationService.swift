@@ -1,7 +1,8 @@
 import Foundation
 import CoreLocation
 
-protocol LocationService {
+@MainActor
+protocol LocationService: ObservableObject {
     var authorizationStatus: CLAuthorizationStatus { get }
     var currentLocation: CLLocation? { get }
     

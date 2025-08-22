@@ -12,8 +12,14 @@ struct BusinessIntelligenceDashboard: View {
             ScrollView {
                 VStack(spacing: Spacing.lg) {
                     // Time Range Selector
-                    PremiumTimeRangeSelector(selectedRange: $selectedTimeRange)
-                        .onChange(of: selectedTimeRange) { _, newValue in
+                    // PremiumTimeRangeSelector(selectedRange: $selectedTimeRange)
+                    Picker("Time Range", selection: $selectedTimeRange) {
+                        ForEach(TimeRange.allCases, id: \.self) { range in
+                            Text(range.displayName).tag(range)
+                        }
+                    }
+                    .pickerStyle(.segmented)
+                    .onChange(of: selectedTimeRange) { _, newValue in
                             Task {
                                 await viewModel.loadData(for: newValue)
                             }

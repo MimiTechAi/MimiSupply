@@ -1,0 +1,312 @@
+name: iOS CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+env:
+  XCODE_VERSION: '16.0'
+  IOS_SIMULATOR: 'iPhone 16'
+  IOS_VERSION: '18.0'
+
+jobs:
+  # Quality Gates - Run in parallel for speed
+  lint-and-format:
+    name: 🔍 Lint & Format
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Select Xcode version
+        run: sudo xcode-select -s /Applications/Xcode_${{ env.XCODE_VERSION }}.app/Contents/Developer
+      
+      - name: Cache SwiftLint
+        uses: actions/cache@v4
+        with:
+          path: ~/.swiftlint
+          key: ${{ runner.os }}-swiftlint-${{ hashFiles('**/.swiftlint.yml') }}
+      
+      - name: Install SwiftLint
+        run: |
+          if ! command -v swiftlint &> /dev/null; then
+            brew install swiftlint
+          fi
+      
+      - name: Run SwiftLint
+        run: swiftlint lint --reporter github-actions-logging
+      
+      - name: Check Swift formatting
+        run: |
+          if ! command -v swift-format &> /dev/null; then
+            brew install swift-format
+          fi
+          swift-format lint --recursive MimiSupply/
+
+  privacy-manifest-check:
+    name: 🔒 Privacy Manifest Validation
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Validate Privacy Manifest exists
+        run: |
+          if [ ! -f "MimiSupply/PrivacyInfo.xcprivacy" ]; then
+            echo "❌ Privacy Manifest missing"
+            exit 1
+          fi
+          echo "✅ Privacy Manifest found"
+      
+      - name: Validate Privacy Manifest structure
+        run: |
+          plutil -lint MimiSupply/PrivacyInfo.xcprivacy
+          echo "✅ Privacy Manifest is valid XML"
+
+  build-and-test:
+    name: 🏗️ Build & Test
+    runs-on: macos-15
+    needs: [lint-and-format, privacy-manifest-check]
+    
+    strategy:
+      matrix:
+        scheme: [MimiSupply]
+        destination: 
+          - 'platform=iOS Simulator,name=iPhone 16,OS=18.0'
+          - 'platform=iOS Simulator,name=iPad Pro (12.9-inch) (6th generation),OS=18.0'
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Select Xcode version
+        run: sudo xcode-select -s /Applications/Xcode_${{ env.XCODE_VERSION }}.app/Contents/Developer
+      
+      - name: Cache DerivedData
+        uses: actions/cache@v4
+        with:
+          path: ~/Library/Developer/Xcode/DerivedData
+          key: ${{ runner.os }}-deriveddata-${{ hashFiles('**/*.pbxproj') }}
+          restore-keys: |
+            ${{ runner.os }}-deriveddata-
+      
+      - name: Cache SPM dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/Library/Caches/org.swift.swiftpm
+            ~/Library/org.swift.swiftpm
+          key: ${{ runner.os }}-spm-${{ hashFiles('**/Package.resolved') }}
+          restore-keys: |
+            ${{ runner.os }}-spm-
+      
+      - name: Build for testing
+        run: |
+          xcodebuild build-for-testing \
+            -scheme ${{ matrix.scheme }} \
+            -destination '${{ matrix.destination }}' \
+            -derivedDataPath ~/Library/Developer/Xcode/DerivedData \
+            CODE_SIGNING_ALLOWED=NO
+      
+      - name: Run Unit Tests
+        run: |
+          xcodebuild test-without-building \
+            -scheme ${{ matrix.scheme }} \
+            -destination '${{ matrix.destination }}' \
+            -derivedDataPath ~/Library/Developer/Xcode/DerivedData \
+            -only-testing:MimiSupplyTests \
+            -resultBundlePath TestResults-Unit.xcresult
+      
+      - name: Run UI Tests
+        run: |
+          xcodebuild test-without-building \
+            -scheme ${{ matrix.scheme }} \
+            -destination '${{ matrix.destination }}' \
+            -derivedDataPath ~/Library/Developer/Xcode/DerivedData \
+            -only-testing:MimiSupplyUITests \
+            -resultBundlePath TestResults-UI.xcresult
+      
+      - name: Upload test results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: test-results-${{ matrix.scheme }}-${{ strategy.job-index }}
+          path: |
+            TestResults-*.xcresult
+          retention-days: 7
+
+  concurrency-check:
+    name: 🔄 Swift 6 Concurrency Check
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Select Xcode version
+        run: sudo xcode-select -s /Applications/Xcode_${{ env.XCODE_VERSION }}.app/Contents/Developer
+      
+      - name: Check for concurrency warnings
+        run: |
+          xcodebuild build \
+            -scheme MimiSupply \
+            -destination 'platform=iOS Simulator,name=${{ env.IOS_SIMULATOR }},OS=${{ env.IOS_VERSION }}' \
+            CODE_SIGNING_ALLOWED=NO \
+            2>&1 | tee build.log
+          
+          # Check for concurrency warnings
+          if grep -i "concurrency" build.log | grep -i "warning"; then
+            echo "❌ Concurrency warnings found:"
+            grep -i "concurrency" build.log | grep -i "warning"
+            exit 1
+          fi
+          echo "✅ No concurrency warnings found"
+
+  performance-smoke-test:
+    name: 🚀 Performance Smoke Test
+    runs-on: macos-15
+    needs: [build-and-test]
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Select Xcode version
+        run: sudo xcode-select -s /Applications/Xcode_${{ env.XCODE_VERSION }}.app/Contents/Developer
+      
+      - name: Run Performance Tests
+        run: |
+          xcodebuild test \
+            -scheme MimiSupply \
+            -destination 'platform=iOS Simulator,name=${{ env.IOS_SIMULATOR }},OS=${{ env.IOS_VERSION }}' \
+            -only-testing:MimiSupplyTests/Performance \
+            -resultBundlePath PerformanceResults.xcresult
+      
+      - name: Upload performance results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: performance-results
+          path: PerformanceResults.xcresult
+          retention-days: 30
+
+  snapshot-tests:
+    name: 📸 Snapshot Tests (Light/Dark/Accessibility)
+    runs-on: macos-15
+    needs: [build-and-test]
+    
+    strategy:
+      matrix:
+        appearance: [light, dark]
+        accessibility: [default, large-text, high-contrast]
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Select Xcode version
+        run: sudo xcode-select -s /Applications/Xcode_${{ env.XCODE_VERSION }}.app/Contents/Developer
+      
+      - name: Run Snapshot Tests
+        run: |
+          xcodebuild test \
+            -scheme MimiSupply \
+            -destination 'platform=iOS Simulator,name=${{ env.IOS_SIMULATOR }},OS=${{ env.IOS_VERSION }}' \
+            -only-testing:MimiSupplyTests/Snapshots \
+            -resultBundlePath SnapshotResults-${{ matrix.appearance }}-${{ matrix.accessibility }}.xcresult
+        env:
+          SNAPSHOT_APPEARANCE: ${{ matrix.appearance }}
+          SNAPSHOT_ACCESSIBILITY: ${{ matrix.accessibility }}
+      
+      - name: Upload snapshot results
+        uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: snapshot-failures-${{ matrix.appearance }}-${{ matrix.accessibility }}
+          path: SnapshotResults-*.xcresult
+          retention-days: 7
+
+  # Archive for TestFlight (only on main branch)
+  archive-and-distribute:
+    name: 📦 Archive & Distribute
+    runs-on: macos-15
+    needs: [concurrency-check, performance-smoke-test, snapshot-tests]
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Select Xcode version
+        run: sudo xcode-select -s /Applications/Xcode_${{ env.XCODE_VERSION }}.app/Contents/Developer
+      
+      - name: Import Code-Signing Certificates
+        uses: Apple-Actions/import-codesign-certs@v2
+        with:
+          p12-file-base64: ${{ secrets.CERTIFICATES_P12 }}
+          p12-password: ${{ secrets.CERTIFICATES_P12_PASSWORD }}
+      
+      - name: Download Provisioning Profiles
+        uses: Apple-Actions/download-provisioning-profiles@v2
+        with:
+          bundle-id: com.mimisupply.app
+          issuer-id: ${{ secrets.APPSTORE_ISSUER_ID }}
+          api-key-id: ${{ secrets.APPSTORE_KEY_ID }}
+          api-private-key: ${{ secrets.APPSTORE_PRIVATE_KEY }}
+      
+      - name: Archive app
+        run: |
+          xcodebuild archive \
+            -scheme MimiSupply \
+            -destination 'generic/platform=iOS' \
+            -archivePath MimiSupply.xcarchive \
+            -configuration Release \
+            CODE_SIGN_STYLE=Manual
+      
+      - name: Export IPA
+        run: |
+          xcodebuild -exportArchive \
+            -archivePath MimiSupply.xcarchive \
+            -exportPath . \
+            -exportOptionsPlist ExportOptions.plist
+      
+      - name: Upload to TestFlight
+        uses: Apple-Actions/upload-testflight-build@v1
+        with:
+          app-path: MimiSupply.ipa
+          issuer-id: ${{ secrets.APPSTORE_ISSUER_ID }}
+          api-key-id: ${{ secrets.APPSTORE_KEY_ID }}
+          api-private-key: ${{ secrets.APPSTORE_PRIVATE_KEY }}
+      
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-artifacts
+          path: |
+            MimiSupply.xcarchive
+            MimiSupply.ipa
+          retention-days: 30
+
+  # Quality Gate Summary
+  quality-gate:
+    name: ✅ Quality Gate Summary
+    runs-on: macos-15
+    needs: [lint-and-format, privacy-manifest-check, build-and-test, concurrency-check, performance-smoke-test, snapshot-tests]
+    if: always()
+    
+    steps:
+      - name: Check Quality Gate Status
+        run: |
+          echo "## 🎯 Quality Gate Results" >> $GITHUB_STEP_SUMMARY
+          echo "| Check | Status |" >> $GITHUB_STEP_SUMMARY
+          echo "|-------|--------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Lint & Format | ${{ needs.lint-and-format.result == 'success' && '✅ Passed' || '❌ Failed' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Privacy Manifest | ${{ needs.privacy-manifest-check.result == 'success' && '✅ Passed' || '❌ Failed' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Build & Test | ${{ needs.build-and-test.result == 'success' && '✅ Passed' || '❌ Failed' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Concurrency Check | ${{ needs.concurrency-check.result == 'success' && '✅ Passed' || '❌ Failed' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Performance Smoke | ${{ needs.performance-smoke-test.result == 'success' && '✅ Passed' || '❌ Failed' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Snapshot Tests | ${{ needs.snapshot-tests.result == 'success' && '✅ Passed' || '❌ Failed' }} |" >> $GITHUB_STEP_SUMMARY
+          
+          # Fail if any critical check failed
+          if [[ "${{ needs.lint-and-format.result }}" != "success" || 
+                "${{ needs.privacy-manifest-check.result }}" != "success" || 
+                "${{ needs.build-and-test.result }}" != "success" || 
+                "${{ needs.concurrency-check.result }}" != "success" ]]; then
+            echo "❌ Quality Gate FAILED - Critical checks failed"
+            exit 1
+          fi
+          
+          echo "✅ Quality Gate PASSED - All critical checks successful"

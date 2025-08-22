@@ -2,68 +2,94 @@ import Foundation
 import os.log
 import os.signpost
 import CloudKit
+import CommonCrypto
+// Assuming AnalyticsParameterValue and AnalyticsParameters are defined in the shared AnalyticsService module or imported implicitly
 
 // MARK: - Analytics Service Implementation
-@MainActor
+/// `AnalyticsServiceImpl` does not conform to `Sendable` because it contains multiple mutable properties
+/// such as `eventBuffer`, `isFlushingEvents`, and `flushTimer` which are accessed in a non-concurrent-safe manner.
+/// The class uses `UserDefaults` and timers which are not `Sendable` and concurrency is managed by restricting
+/// access to these mutable properties on the main actor or specific queues. This avoids data races without requiring `Sendable`.
 final class AnalyticsServiceImpl: AnalyticsService, ObservableObject {
     
     // MARK: - Properties
     private let logger = Logger(subsystem: "com.mimisupply.app", category: "Analytics")
     private let performanceLog = OSLog(subsystem: "com.mimisupply.app", category: "Performance")
     private let eventQueue = DispatchQueue(label: "com.mimisupply.analytics", qos: .utility)
-    private let userDefaults = UserDefaults.standard
+    @MainActor private let userDefaults = UserDefaults.standard
     
-    private var eventBuffer: [AnalyticsEventData] = []
-    private var isFlushingEvents = false
+    /// Access to `eventBuffer` is confined to the main actor to prevent data races.
+    @MainActor private var eventBuffer: [AnalyticsEventData] = []
+    @MainActor private var isFlushingEvents = false
     private let maxBufferSize = 100
     private let flushInterval: TimeInterval = 30.0
     
-    private var flushTimer: Timer?
-    private var sessionStartTime: Date?
-    private var currentSessionID: String?
+    /// `flushTimer` is only used on the main actor.
+    @MainActor private var flushTimer: Timer?
+    /// Not Sendable, confined to main actor
+    @MainActor private var sessionStartTime: Date?
+    
+    /// Confined to main actor to avoid concurrency issues
+    @MainActor private var currentSessionID: String?
     
     // Privacy settings
-    private var analyticsEnabled: Bool {
-        userDefaults.bool(forKey: "analytics_enabled")
+    @MainActor private var analyticsEnabled: Bool {
+        get async {
+            userDefaults.bool(forKey: "analytics_enabled")
+        }
     }
     
-    private var crashReportingEnabled: Bool {
-        userDefaults.bool(forKey: "crash_reporting_enabled")
+    @MainActor private var crashReportingEnabled: Bool {
+        get async {
+            userDefaults.bool(forKey: "crash_reporting_enabled")
+        }
     }
     
     // MARK: - Initialization
     init() {
-        setupAnalytics()
-        startSession()
-        schedulePeriodicFlush()
+        Task { [weak self] in
+            await self?.setupAnalytics()
+            await self?.startSession()
+            await self?.schedulePeriodicFlush()
+        }
     }
     
     deinit {
-        Task { @MainActor in
-            endSession()
+        Task { [weak self] in
+            await self?.endSession()
         }
-        flushTimer?.invalidate()
+        Task { @MainActor [weak self] in
+            self?.flushTimer?.invalidate()
+        }
     }
     
     // MARK: - Public Methods
-    func trackEvent(_ event: AnalyticsEvent, parameters: [String: Any]?) async {
-        guard analyticsEnabled else { return }
+
+    func trackEvent(_ event: AnalyticsEvent, parameters: AnalyticsParameters? = nil) async {
+        guard await analyticsEnabled else { return }
+        
+        let sanitizedParameters = sanitizeParameters(parameters)
+        
+        let userId = await getCurrentUserID()
+        let sessionId = await MainActor.run { currentSessionID }
         
         let eventData = AnalyticsEventData(
             event: event,
-            parameters: sanitizeParameters(parameters),
-            sessionID: currentSessionID,
-            userID: await getCurrentUserID()
+            parameters: sanitizedParameters,
+            sessionID: sessionId,
+            userID: userId
         )
         
         await addEventToBuffer(eventData)
         logger.info("Event tracked: \(event.name)")
     }
     
-    func trackScreenView(_ screenName: String, parameters: [String: Any]?) async {
+    func trackScreenView(_ screenName: String, parameters: AnalyticsParameters? = nil) async {
         var params = parameters ?? [:]
-        params["screen_name"] = screenName
-        params["timestamp"] = ISO8601DateFormatter().string(from: Date())
+        // Wrap screenName as AnalyticsParameterValue
+        params["screen_name"] = .string(screenName)
+        // Add timestamp as ISO8601 string wrapped in AnalyticsParameterValue
+        params["timestamp"] = .string(ISO8601DateFormatter().string(from: Date()))
         
         await trackEvent(.screenView, parameters: params)
         
@@ -76,47 +102,72 @@ final class AnalyticsServiceImpl: AnalyticsService, ObservableObject {
     }
     
     func setUserProperty(_ property: String, value: String?) async {
-        guard analyticsEnabled else { return }
+        guard await analyticsEnabled else { return }
         guard isPropertyAllowed(property) else {
             logger.warning("User property '\(property)' not allowed - may contain PII")
             return
         }
         
-        userDefaults.set(value, forKey: "user_property_\(property)")
+        await MainActor.run { @MainActor in
+            userDefaults.set(value, forKey: "user_property_\(property)")
+        }
         logger.info("User property set: \(property)")
     }
     
     func trackPerformanceMetric(_ metric: PerformanceMetric) async {
-        guard analyticsEnabled else { return }
+        guard await analyticsEnabled else { return }
+        
+        // Map metric properties to AnalyticsParameters
+        var params: AnalyticsParameters = [
+            "metric_name": .string(metric.name),
+            "value": .double(metric.value),
+            "unit": .string(metric.unit)
+        ]
+        if let metadata = metric.metadata {
+            // Wrap metadata dictionary values to AnalyticsParameterValue as strings (lossy fallback)
+            var metadataParams: AnalyticsParameters = [:]
+            for (key, value) in metadata {
+                metadataParams[key] = .string(String(describing: value)) // lossy fallback for unknown types
+            }
+            if !metadataParams.isEmpty {
+                for (metaKey, metaValue) in metadataParams {
+                    params["metadata_\(metaKey)"] = metaValue
+                }
+            }
+        }
+        
+        let sessionId = await MainActor.run { currentSessionID }
+        let userId = await getCurrentUserID()
         
         let eventData = AnalyticsEventData(
             event: AnalyticsEvent(name: "performance_metric", category: .performance),
-            parameters: [
-                "metric_name": metric.name,
-                "value": metric.value,
-                "unit": metric.unit,
-                "metadata": metric.metadata ?? [:]
-            ],
-            sessionID: currentSessionID,
-            userID: await getCurrentUserID()
+            parameters: sanitizeParameters(params),
+            sessionID: sessionId,
+            userID: userId
         )
         
         await addEventToBuffer(eventData)
         
         // Log to unified logging for debugging
-        os_signpost(.event, log: performanceLog, name: "Performance Metric", 
-                   "%{public}s: %{public}f %{public}s", 
+        os_signpost(.event, log: performanceLog, name: "Performance Metric",
+                   "%{public}s: %{public}f %{public}s",
                    metric.name, metric.value, metric.unit)
         
         logger.info("Performance metric tracked: \(metric.name) = \(metric.value) \(metric.unit)")
     }
     
-    func trackError(_ error: Error, context: [String: Any]?) async {
-        guard crashReportingEnabled else { return }
+    func trackError(_ error: Error, context: AnalyticsParameters? = nil) async {
+        guard await crashReportingEnabled else { return }
         
         let errorInfo = extractErrorInfo(error)
         var params = context ?? [:]
-        params.merge(errorInfo) { _, new in new }
+        // Map errorInfo dictionary [String: Any] to AnalyticsParameters by wrapping values as .string(String(describing: value))
+        let errorInfoParams: AnalyticsParameters = errorInfo.reduce(into: AnalyticsParameters()) { partialResult, pair in
+            partialResult[pair.key] = .string(String(describing: pair.value))
+        }
+        for (k, v) in errorInfoParams {
+            params[k] = v
+        }
         
         await trackEvent(.errorOccurred, parameters: params)
         
@@ -128,10 +179,10 @@ final class AnalyticsServiceImpl: AnalyticsService, ObservableObject {
     }
     
     func trackFeatureFlag(_ flag: String, variant: String) async {
-        let parameters = [
-            "flag_name": flag,
-            "variant": variant,
-            "timestamp": ISO8601DateFormatter().string(from: Date())
+        let parameters: AnalyticsParameters = [
+            "flag_name": .string(flag),
+            "variant": .string(variant),
+            "timestamp": .string(ISO8601DateFormatter().string(from: Date()))
         ]
         
         await trackEvent(.featureFlagEvaluated, parameters: parameters)
@@ -139,23 +190,32 @@ final class AnalyticsServiceImpl: AnalyticsService, ObservableObject {
     }
     
     func trackEngagement(_ engagement: UserEngagement) async {
-        guard analyticsEnabled else { return }
+        guard await analyticsEnabled else { return }
         
-        var parameters: [String: Any] = [
-            "engagement_type": engagement.type.rawValue,
-            "timestamp": ISO8601DateFormatter().string(from: engagement.timestamp)
+        var parameters: AnalyticsParameters = [
+            "engagement_type": .string(engagement.type.rawValue),
+            "timestamp": .string(ISO8601DateFormatter().string(from: engagement.timestamp))
         ]
         
         if let duration = engagement.duration {
-            parameters["duration"] = duration
+            parameters["duration"] = .double(duration)
         }
         
         if let value = engagement.value {
-            parameters["value"] = value
+            parameters["value"] = .string(String(describing: value)) // lossy fallback for unknown types
         }
         
         if let metadata = engagement.metadata {
-            parameters["metadata"] = metadata
+            // Wrap metadata dictionary values to AnalyticsParameterValue as strings (lossy fallback)
+            var metadataParams: AnalyticsParameters = [:]
+            for (key, value) in metadata {
+                metadataParams[key] = .string(String(describing: value)) // lossy fallback
+            }
+            if !metadataParams.isEmpty {
+                for (metaKey, metaValue) in metadataParams {
+                    parameters["metadata_\(metaKey)"] = metaValue
+                }
+            }
         }
         
         let event = AnalyticsEvent(name: "user_engagement", category: .engagement)
@@ -167,14 +227,16 @@ final class AnalyticsServiceImpl: AnalyticsService, ObservableObject {
     }
     
     // MARK: - Private Methods
-    private func setupAnalytics() {
-        // Set default values if not already set
-        if userDefaults.object(forKey: "analytics_enabled") == nil {
-            userDefaults.set(true, forKey: "analytics_enabled")
-        }
-        
-        if userDefaults.object(forKey: "crash_reporting_enabled") == nil {
-            userDefaults.set(true, forKey: "crash_reporting_enabled")
+    private func setupAnalytics() async {
+        await MainActor.run { @MainActor in
+            // Set default values if not already set
+            if userDefaults.object(forKey: "analytics_enabled") == nil {
+                userDefaults.set(true, forKey: "analytics_enabled")
+            }
+            
+            if userDefaults.object(forKey: "crash_reporting_enabled") == nil {
+                userDefaults.set(true, forKey: "crash_reporting_enabled")
+            }
         }
         
         // Setup crash handler
@@ -192,21 +254,21 @@ final class AnalyticsServiceImpl: AnalyticsService, ObservableObject {
     }
     
     private static let uncaughtExceptionHandler: @convention(c) (NSException) -> Void = { exception in
-        // Log crash without capturing context
+        // Log crash without capturing context or referencing self
         print("Uncaught exception: \(exception)")
     }
     
     private static let signalHandler: @convention(c) (Int32) -> Void = { signal in
-        // Log signal without capturing context
+        // Log signal without capturing context or referencing self
         print("Signal received: \(signal)")
     }
     
     private func handleCrash(exception: NSException) async {
-        let crashData = [
-            "crash_type": "exception",
-            "name": exception.name.rawValue,
-            "reason": exception.reason ?? "Unknown",
-            "stack_trace": exception.callStackSymbols.joined(separator: "\n")
+        let crashData: AnalyticsParameters = [
+            "crash_type": .string("exception"),
+            "name": .string(exception.name.rawValue),
+            "reason": .string(exception.reason ?? "Unknown"),
+            "stack_trace": .string(exception.callStackSymbols.joined(separator: "\n"))
         ]
         
         await trackEvent(.crashReported, parameters: crashData)
@@ -214,49 +276,52 @@ final class AnalyticsServiceImpl: AnalyticsService, ObservableObject {
     }
     
     private func handleCrash(signal: String) async {
-        let crashData = [
-            "crash_type": "signal",
-            "signal": signal,
-            "timestamp": ISO8601DateFormatter().string(from: Date())
+        let crashData: AnalyticsParameters = [
+            "crash_type": .string("signal"),
+            "signal": .string(signal),
+            "timestamp": .string(ISO8601DateFormatter().string(from: Date()))
         ]
         
         await trackEvent(.crashReported, parameters: crashData)
         await flushEvents() // Immediate flush for crashes
     }
     
-    private func startSession() {
-        sessionStartTime = Date()
-        currentSessionID = UUID().uuidString
-        
-        Task {
-            let engagement = UserEngagement(type: .sessionStart)
-            await trackEngagement(engagement)
+    private func startSession() async {
+        await MainActor.run { @MainActor in
+            sessionStartTime = Date()
+            currentSessionID = UUID().uuidString
         }
+        
+        let engagement = UserEngagement(type: .sessionStart)
+        await trackEngagement(engagement)
     }
     
-    private func endSession() {
-        guard let startTime = sessionStartTime else { return }
+    private func endSession() async {
+        let startTime: Date? = await MainActor.run { sessionStartTime }
+        guard let startTimeUnwrapped = startTime else { return }
         
-        let sessionDuration = Date().timeIntervalSince(startTime)
+        let sessionDuration = Date().timeIntervalSince(startTimeUnwrapped)
         
-        Task {
-            let engagement = UserEngagement(
-                type: .sessionEnd,
-                duration: sessionDuration
-            )
-            await trackEngagement(engagement)
-            await flushEvents()
-        }
+        let engagement = UserEngagement(
+            type: .sessionEnd,
+            duration: sessionDuration
+        )
+        await trackEngagement(engagement)
+        await flushEvents()
     }
     
-    private func schedulePeriodicFlush() {
-        flushTimer = Timer.scheduledTimer(withTimeInterval: flushInterval, repeats: true) { _ in
-            Task { @MainActor in
-                await self.flushEvents()
+    private func schedulePeriodicFlush() async {
+        await MainActor.run { @MainActor [weak self] in
+            guard let self = self else { return }
+            self.flushTimer = Timer.scheduledTimer(withTimeInterval: self.flushInterval, repeats: true) { [weak self] _ in
+                Task { @MainActor [weak self] in
+                    await self?.flushEvents()
+                }
             }
         }
     }
     
+    @MainActor
     private func addEventToBuffer(_ eventData: AnalyticsEventData) async {
         eventBuffer.append(eventData)
         
@@ -265,6 +330,7 @@ final class AnalyticsServiceImpl: AnalyticsService, ObservableObject {
         }
     }
     
+    @MainActor
     private func flushEvents() async {
         guard !isFlushingEvents && !eventBuffer.isEmpty else { return }
         
@@ -287,7 +353,6 @@ final class AnalyticsServiceImpl: AnalyticsService, ObservableObject {
     }
     
     private func persistEvents(_ events: [AnalyticsEventData]) async throws {
-        // Store events locally for debugging and offline support
         let documentsPath = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
         let analyticsPath = documentsPath.appendingPathComponent("analytics")
         
@@ -312,9 +377,9 @@ final class AnalyticsServiceImpl: AnalyticsService, ObservableObject {
         let files = try FileManager.default.contentsOfDirectory(at: directory, includingPropertiesForKeys: [.creationDateKey])
         
         let sortedFiles = files.sorted { file1, file2 in
-            let date1 = try? file1.resourceValues(forKeys: [.creationDateKey]).creationDate ?? Date.distantPast
-            let date2 = try? file2.resourceValues(forKeys: [.creationDateKey]).creationDate ?? Date.distantPast
-            return date1! > date2!
+            let date1 = (try? file1.resourceValues(forKeys: [.creationDateKey]).creationDate) ?? Date.distantPast
+            let date2 = (try? file2.resourceValues(forKeys: [.creationDateKey]).creationDate) ?? Date.distantPast
+            return date1 > date2
         }
         
         // Keep only the 10 most recent files
@@ -323,10 +388,10 @@ final class AnalyticsServiceImpl: AnalyticsService, ObservableObject {
         }
     }
     
-    private func sanitizeParameters(_ parameters: [String: Any]?) -> [String: Any]? {
+    private func sanitizeParameters(_ parameters: AnalyticsParameters?) -> AnalyticsParameters? {
         guard let params = parameters else { return nil }
         
-        var sanitized: [String: Any] = [:]
+        var sanitized: AnalyticsParameters = [:]
         
         for (key, value) in params {
             // Remove potentially sensitive data
@@ -334,41 +399,17 @@ final class AnalyticsServiceImpl: AnalyticsService, ObservableObject {
                 continue
             }
             
-            // Ensure values are JSON serializable
-            if let jsonValue = makeJSONSerializable(value) {
-                sanitized[key] = jsonValue
-            }
+            sanitized[key] = value
         }
         
         return sanitized.isEmpty ? nil : sanitized
     }
     
-    private func isPotentiallyPII(key: String, value: Any) -> Bool {
+    private func isPotentiallyPII(key: String, value: AnalyticsParameterValue) -> Bool {
         let piiKeys = ["email", "phone", "address", "name", "password", "token", "id"]
         let lowercaseKey = key.lowercased()
         
         return piiKeys.contains { lowercaseKey.contains($0) }
-    }
-    
-    private func makeJSONSerializable(_ value: Any) -> Any? {
-        switch value {
-        case is String, is Int, is Double, is Bool:
-            return value
-        case let date as Date:
-            return ISO8601DateFormatter().string(from: date)
-        case let array as [Any]:
-            return array.compactMap { makeJSONSerializable($0) }
-        case let dict as [String: Any]:
-            var result: [String: Any] = [:]
-            for (k, v) in dict {
-                if let serializable = makeJSONSerializable(v) {
-                    result[k] = serializable
-                }
-            }
-            return result
-        default:
-            return String(describing: value)
-        }
     }
     
     private func isPropertyAllowed(_ property: String) -> Bool {
@@ -413,12 +454,12 @@ final class AnalyticsServiceImpl: AnalyticsService, ObservableObject {
 // MARK: - Analytics Event Data
 private struct AnalyticsEventData: Codable {
     let event: AnalyticsEvent
-    let parameters: [String: Any]?
+    let parameters: AnalyticsParameters?
     let sessionID: String?
     let userID: String?
     let timestamp: Date
     
-    init(event: AnalyticsEvent, parameters: [String: Any]?, sessionID: String?, userID: String?) {
+    init(event: AnalyticsEvent, parameters: AnalyticsParameters?, sessionID: String?, userID: String?) {
         self.event = event
         self.parameters = parameters
         self.sessionID = sessionID
@@ -426,7 +467,6 @@ private struct AnalyticsEventData: Codable {
         self.timestamp = Date()
     }
     
-    // Custom coding to handle Any values
     enum CodingKeys: String, CodingKey {
         case event, parameters, sessionID, userID, timestamp
     }
@@ -438,11 +478,7 @@ private struct AnalyticsEventData: Codable {
         try container.encodeIfPresent(userID, forKey: .userID)
         try container.encode(timestamp, forKey: .timestamp)
         
-        if let params = parameters {
-            let jsonData = try JSONSerialization.data(withJSONObject: params)
-            let jsonString = String(data: jsonData, encoding: .utf8)
-            try container.encodeIfPresent(jsonString, forKey: .parameters)
-        }
+        try container.encodeIfPresent(parameters, forKey: .parameters)
     }
     
     init(from decoder: Decoder) throws {
@@ -451,13 +487,7 @@ private struct AnalyticsEventData: Codable {
         sessionID = try container.decodeIfPresent(String.self, forKey: .sessionID)
         userID = try container.decodeIfPresent(String.self, forKey: .userID)
         timestamp = try container.decode(Date.self, forKey: .timestamp)
-        
-        if let jsonString = try container.decodeIfPresent(String.self, forKey: .parameters),
-           let jsonData = jsonString.data(using: .utf8) {
-            parameters = try JSONSerialization.jsonObject(with: jsonData) as? [String: Any]
-        } else {
-            parameters = nil
-        }
+        parameters = try container.decodeIfPresent(AnalyticsParameters.self, forKey: .parameters)
     }
 }
 
@@ -465,7 +495,7 @@ private struct AnalyticsEventData: Codable {
 private extension String {
     var sha256Hash: String {
         let data = Data(self.utf8)
-        let hash = data.withUnsafeBytes { bytes in
+        let hash = data.withUnsafeBytes { bytes -> [UInt8] in
             var hash = [UInt8](repeating: 0, count: Int(CC_SHA256_DIGEST_LENGTH))
             CC_SHA256(bytes.bindMemory(to: UInt8.self).baseAddress, CC_LONG(data.count), &hash)
             return hash
@@ -474,5 +504,3 @@ private extension String {
     }
 }
 
-// Import CommonCrypto for hashing
-import CommonCrypto

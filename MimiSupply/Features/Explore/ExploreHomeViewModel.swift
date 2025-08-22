@@ -143,6 +143,12 @@ class ExploreHomeViewModel: ObservableObject {
         return ["restaurant", "cafe", "bakery", "grocery_or_supermarket", "pharmacy", "store"]
     }
     
+    func loadMoreIfNeeded() async {
+        // Implementation for loading more partners (pagination)
+        // For now, do nothing
+        print("Load more partners requested")
+    }
+    
     func getPartnerCount(for category: PartnerCategory) -> Int {
         // This can be adapted if needed, for now, it's less relevant with dynamic data
         return partners.filter { $0.category == category }.count

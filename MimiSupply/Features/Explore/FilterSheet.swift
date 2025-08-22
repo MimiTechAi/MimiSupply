@@ -50,6 +50,7 @@ struct FilterSheet: View {
                                 )
                             }
                         }
+                        .padding(.horizontal)
                         .padding(.vertical, 8)
                     }
                 }
@@ -66,14 +67,40 @@ struct FilterSheet: View {
                 
                 // Price Range Section
                 Section(header: Text("Price Range")) {
-                    // Custom slider implementation or a simple text display
-                    Text("Price range filter not implemented yet.")
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text("$\(Int(tempPriceRange.lowerBound)) - $\(Int(tempPriceRange.upperBound))")
+                            .font(.subheadline)
+                            .foregroundColor(.secondary)
+                        
+                        // Simple implementation - can be enhanced later
+                        HStack {
+                            Text("$0")
+                            Spacer()
+                            Text("$100")
+                        }
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                    }
+                    .padding(.vertical, 4)
                 }
                 
                 // Delivery Time Section
                 Section(header: Text("Max. Delivery Time")) {
-                    // Custom slider implementation or a simple text display
-                    Text("Delivery time filter not implemented yet.")
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text("\(Int(tempDeliveryTimeRange.upperBound)) minutes")
+                            .font(.subheadline)
+                            .foregroundColor(.secondary)
+                        
+                        // Simple implementation - can be enhanced later
+                        HStack {
+                            Text("0 min")
+                            Spacer()
+                            Text("60 min")
+                        }
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                    }
+                    .padding(.vertical, 4)
                 }
             }
             .navigationTitle("Filters")
@@ -118,19 +145,25 @@ struct CategoryFilterButton: View {
     
     var body: some View {
         Button(action: action) {
-            VStack {
-                Text(category.icon)
+            VStack(spacing: 4) {
+                Image(systemName: category.iconName)
                     .font(.title2)
+                    .foregroundColor(isSelected ? .white : .primary)
+                
                 Text(category.displayName)
                     .font(.caption)
                     .lineLimit(1)
+                    .foregroundColor(isSelected ? .white : .primary)
             }
-            .padding(8)
-            .frame(width: 80, height: 60)
-            .foregroundColor(isSelected ? .white : .primary)
-            .background(isSelected ? Color.blue : Color(.systemGray6))
-            .cornerRadius(10)
+            .padding(.vertical, 8)
+            .padding(.horizontal, 12)
+            .frame(minWidth: 80, minHeight: 60)
+            .background(
+                RoundedRectangle(cornerRadius: 10)
+                    .fill(isSelected ? Color.blue : Color(.systemGray6))
+            )
         }
+        .buttonStyle(.plain)
     }
 }
 

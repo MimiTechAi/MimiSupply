@@ -1,6 +1,6 @@
 import Foundation
 
-protocol PushNotificationService {
+protocol PushNotificationService: Sendable {
     func requestNotificationPermission() async throws -> Bool
     func subscribeToOrderUpdates() async throws
     func subscribeToGeneralNotifications() async throws

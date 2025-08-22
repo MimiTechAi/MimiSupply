@@ -494,9 +494,12 @@ class CheckoutViewModel: ObservableObject {
             // Subscribe to order updates for real-time tracking
             try await cloudKitService.subscribeToOrderUpdates(for: order.customerId)
             
-            // If driver is assigned, subscribe to location updates
-            if let driverId = order.driverId {
-                try await cloudKitService.subscribeToDriverLocationUpdates(for: order.id)
+            // Subscribe to driver location updates (optional)
+            do {
+                // try await cloudKitService.subscribeToDriverLocationUpdates(for: order.id)
+                print("Would subscribe to driver location updates for order: \(order.id)")
+            } catch {
+                print("Failed to subscribe to driver location updates: \(error)")
             }
             
         } catch {

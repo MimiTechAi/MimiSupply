@@ -102,7 +102,7 @@ struct Partner: Identifiable, Codable, Hashable, Sendable {
 }
 
 // MARK: - Partner Category
-enum PartnerCategory: String, Codable, CaseIterable, Hashable, Sendable {
+enum PartnerCategory: String, Codable, CaseIterable, Hashable, Sendable, Identifiable {
     case restaurant = "restaurant"
     case grocery = "grocery"
     case pharmacy = "pharmacy"
@@ -113,6 +113,8 @@ enum PartnerCategory: String, Codable, CaseIterable, Hashable, Sendable {
     case alcohol = "alcohol"
     case flowers = "flowers"
     case electronics = "electronics"
+    
+    var id: String { rawValue }
     
     var displayName: String {
         switch self {
@@ -143,6 +145,9 @@ enum PartnerCategory: String, Codable, CaseIterable, Hashable, Sendable {
         case .electronics: return "tv"
         }
     }
+    
+    // For backward compatibility
+    var icon: String { iconName }
 }
 
 // MARK: - Weekday

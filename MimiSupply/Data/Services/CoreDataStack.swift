@@ -9,10 +9,11 @@ import Foundation
 import CoreData
 import CloudKit
 
-/// CoreData stack with CloudKit synchronization for offline-first functionality
+// @MainActor ensures that global mutable Core Data policies and context are only accessed from the main thread, making merge policy assignments concurrency safe.
+@MainActor
 @preconcurrency final class CoreDataStack: ObservableObject, @unchecked Sendable {
     
-    static let shared = CoreDataStack()
+    nonisolated(unsafe) static let shared = CoreDataStack()
     
     // MARK: - Thread Safety
     private let queue = DispatchQueue(label: "com.mimisupply.coredata", qos: .userInitiated)
@@ -43,7 +44,12 @@ import CloudKit
         container.viewContext.automaticallyMergesChangesFromParent = true
         
         // Set merge policy for conflict resolution
-        container.viewContext.mergePolicy = NSMergeByPropertyObjectTrumpMergePolicy
+        if #available(iOS 16.0, *) {
+            container.viewContext.mergePolicy = NSMergeByPropertyObjectTrumpMergePolicy
+        } else {
+            // For iOS < 16, use the constant directly
+            container.viewContext.mergePolicy = NSMergeByPropertyObjectTrumpMergePolicy
+        }
         
         return container
     }()

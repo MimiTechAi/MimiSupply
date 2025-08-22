@@ -9,9 +9,9 @@ import Foundation
 import CloudKit
 
 /// Service for handling CloudKit record conflicts with intelligent resolution strategies
-final class ConflictResolutionService {
+final class ConflictResolutionService: Sendable {
     
-    static let shared = ConflictResolutionService()
+    nonisolated(unsafe) static let shared = ConflictResolutionService()
     
     private init() {}
     

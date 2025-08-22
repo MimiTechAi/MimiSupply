@@ -143,7 +143,7 @@ struct MimiSupplyApp: App {
     
     private func setupNotifications() async {
         do {
-            let granted = try await container.pushNotificationService.requestPermission()
+            let granted = try await container.pushNotificationService.requestNotificationPermission()
             if granted {
                 try await container.pushNotificationService.registerForRemoteNotifications()
                 degradationService.reportServiceRecovery(.pushNotifications)
@@ -154,7 +154,7 @@ struct MimiSupplyApp: App {
         } catch {
             errorHandler.handle(error, showToUser: false, context: "setup_notifications")
             degradationService.reportServiceFailure(.pushNotifications, error: error)
-            analyticsManager.trackError(error, context: ["action": "setup_notifications"])
+            analyticsManager.trackError(error, context: ["action": .string("setup_notifications")])
         }
     }
     
@@ -170,7 +170,7 @@ struct MimiSupplyApp: App {
         } catch {
             errorHandler.handle(error, showToUser: false, context: "setup_cloudkit_subscriptions")
             degradationService.reportServiceFailure(.cloudKit, error: error)
-            analyticsManager.trackError(error, context: ["action": "setup_cloudkit_subscriptions"])
+            analyticsManager.trackError(error, context: ["action": .string("setup_cloudkit_subscriptions")])
         }
     }
     

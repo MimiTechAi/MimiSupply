@@ -42,7 +42,7 @@ struct OnboardingView: View {
                         backgroundColor: .purple.opacity(0.1),
                         tag: 3,
                         isLast: true,
-                        onNext: requestLocationPermission
+                        onNext: { requestLocationPermission() }
                     )
                 }
                 .tabViewStyle(PageTabViewStyle(indexDisplayMode: .never))
@@ -95,18 +95,8 @@ struct OnboardingView: View {
         }
     }
     
-    private func handleNext() {
-        if currentPage < 3 {
-            withAnimation {
-                currentPage += 1
-            }
-        } else {
-            viewModel.showingLocationPermission = true
-        }
-    }
-    
-    private func handleComplete() {
-        onComplete()
+    private func requestLocationPermission() {
+        viewModel.requestLocationPermission()
     }
 }
 

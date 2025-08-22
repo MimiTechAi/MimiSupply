@@ -9,6 +9,8 @@ import Foundation
 import SwiftUI
 import OSLog
 import CloudKit
+// Assuming AnalyticsParameterValue and AnalyticsParameters are defined in a shared module or globally accessible
+// import AnalyticsService
 
 /// Global error handler for the MimiSupply app
 @MainActor
@@ -24,14 +26,31 @@ final class ErrorHandler: ObservableObject {
     private init() {}
     
     /// Handle an error with optional user notification
+    /// - Parameters:
+    ///   - error: The error to handle
+    ///   - showToUser: Whether to show error UI to user
+    ///   - context: Optional context string describing the error environment
     func handle(_ error: Error, showToUser: Bool = true, context: String? = nil) {
         let appError = convertToAppError(error)
         
         // Log the error
         logError(appError, context: context)
         
+        // Prepare typed analytics parameters, including context if present
+        var analyticsParams: AnalyticsParameters = [
+            "error_type": .string(String(describing: appError)),
+            "error_description": .string(appError.localizedDescription),
+            "recovery_suggestion": .string(appError.recoverySuggestion ?? "No suggestion"),
+            "timestamp": .double(Date().timeIntervalSince1970),
+            "app_version": .string(Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "Unknown"),
+            "build_number": .string(Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "Unknown")
+        ]
+        if let ctx = context {
+            analyticsParams["context"] = .string(ctx)
+        }
+        
         // Report to analytics/crash reporting
-        errorReporter.report(appError, context: context)
+        errorReporter.report(appError, parameters: analyticsParams)
         
         // Show to user if requested
         if showToUser {
@@ -87,36 +106,31 @@ final class ErrorHandler: ObservableObject {
     }
 }
 
-/// Error reporter for analytics and crash reporting
-final class ErrorReporter {
-    static let shared = ErrorReporter()
+/// Error reporter for analytics and crash reporting services
+final class ErrorReporter: Sendable {
+    nonisolated(unsafe) static let shared = ErrorReporter()
     
     private let logger = Logger(subsystem: "com.mimisupply.app", category: "ErrorReporter")
     
     private init() {}
     
-    /// Report error to analytics/crash reporting services
-    func report(_ error: AppError, context: String? = nil) {
+    /// Report error to analytics/crash reporting services with typed parameters
+    /// - Parameters:
+    ///   - error: The app error to report
+    ///   - parameters: Typed analytics parameters with metadata and context
+    func report(_ error: AppError, parameters: AnalyticsParameters = [:]) {
         // In a real app, this would integrate with services like:
         // - Firebase Crashlytics
         // - Sentry
         // - Bugsnag
         // - Apple's own crash reporting
         
-        let errorData: [String: Any] = [
-            "error_type": String(describing: error),
-            "error_description": error.localizedDescription,
-            "recovery_suggestion": error.recoverySuggestion ?? "No suggestion",
-            "context": context ?? "No context",
-            "timestamp": Date().timeIntervalSince1970,
-            "app_version": Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "Unknown",
-            "build_number": Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "Unknown"
-        ]
-        
-        logger.info("📊 Error reported: \(errorData)")
+        // Log the typed parameters for debugging
+        logger.info("📊 Error reported with parameters: \(parameters)")
         
         // TODO: Integrate with actual error reporting service
         // Example: Crashlytics.crashlytics().record(error: error)
+        // Use parameters to attach metadata/context to the error report
     }
 }
 

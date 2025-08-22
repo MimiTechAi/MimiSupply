@@ -4,9 +4,10 @@ import CoreLocation
 import CloudKit
 import UIKit
 
+// Sendable conformance is omitted because this class is not final and contains mutable state that is not concurrency-safe. All mutable state should be accessed only from the main actor.
 /// Manages background tasks for location updates and data synchronization
 class BackgroundTaskManager: NSObject, ObservableObject {
-    static let shared = BackgroundTaskManager()
+    @MainActor static let shared = BackgroundTaskManager()
     
     // Background task identifiers
     private enum TaskIdentifier {
@@ -15,7 +16,7 @@ class BackgroundTaskManager: NSObject, ObservableObject {
         static let cleanup = "com.mimisupply.cleanup"
     }
     
-    private var backgroundTaskID: UIBackgroundTaskIdentifier = .invalid
+    @MainActor private var backgroundTaskID: UIBackgroundTaskIdentifier = .invalid
     private let locationService: LocationService
     private let cloudKitService: CloudKitService
     
@@ -23,12 +24,12 @@ class BackgroundTaskManager: NSObject, ObservableObject {
         self.locationService = LocationServiceImpl.shared
         self.cloudKitService = CloudKitServiceImpl.shared
         super.init()
-        registerBackgroundTasks()
+        Task { await registerBackgroundTasks() }
     }
     
     // MARK: - Background Task Registration
     
-    private func registerBackgroundTasks() {
+    private func registerBackgroundTasks() async {
         // On iOS 17+, SwiftUI `.backgroundTask` in `MimiSupplyApp` registers handlers.
         // Keep explicit registration only for iOS < 17 to avoid duplicate registrations.
         if #available(iOS 17.0, *) {
@@ -40,7 +41,7 @@ class BackgroundTaskManager: NSObject, ObservableObject {
             forTaskWithIdentifier: TaskIdentifier.locationUpdate,
             using: nil
         ) { task in
-            self.handleLocationUpdateTask(task as! BGAppRefreshTask)
+            Task { await self.handleLocationUpdateTask(task as! BGAppRefreshTask) }
         }
         
         // Register data sync task (iOS < 17)
@@ -48,7 +49,7 @@ class BackgroundTaskManager: NSObject, ObservableObject {
             forTaskWithIdentifier: TaskIdentifier.dataSync,
             using: nil
         ) { task in
-            self.handleDataSyncTask(task as! BGAppRefreshTask)
+            Task { await self.handleDataSyncTask(task as! BGAppRefreshTask) }
         }
         
         // Register cleanup task (iOS < 17)
@@ -56,7 +57,7 @@ class BackgroundTaskManager: NSObject, ObservableObject {
             forTaskWithIdentifier: TaskIdentifier.cleanup,
             using: nil
         ) { task in
-            self.handleCleanupTask(task as! BGProcessingTask)
+            Task { await self.handleCleanupTask(task as! BGProcessingTask) }
         }
     }
     
@@ -279,12 +280,14 @@ class BackgroundTaskManager: NSObject, ObservableObject {
     
     // MARK: - Foreground Background Task
     
+    @MainActor
     func beginBackgroundTask() {
         backgroundTaskID = UIApplication.shared.beginBackgroundTask { [weak self] in
             self?.endBackgroundTask()
         }
     }
     
+    @MainActor
     func endBackgroundTask() {
         if backgroundTaskID != .invalid {
             UIApplication.shared.endBackgroundTask(backgroundTaskID)

@@ -5,7 +5,7 @@
 //  Created by Kiro on 13.08.25.
 //
 
-import Foundation
+@preconcurrency import Foundation
 import AuthenticationServices
 @preconcurrency import Combine
 import CloudKit
@@ -42,7 +42,7 @@ final class AuthenticationServiceImpl: NSObject, @unchecked Sendable, Authentica
     private var presentationContextProvider: PresentationContextProvider?
     
     init(keychainService: KeychainService = KeychainServiceImpl(), 
-         cloudKitService: CloudKitService = CloudKitServiceImpl()) {
+         cloudKitService: CloudKitService = CloudKitServiceImpl.shared) {
         self.keychainService = keychainService
         self.cloudKitService = cloudKitService
         super.init()
@@ -54,9 +54,10 @@ final class AuthenticationServiceImpl: NSObject, @unchecked Sendable, Authentica
     }
     
     deinit {
-        Task {
-            await stopAutomaticStateManagement()
-        }
+        stateManagementTask?.cancel()
+        stateManagementTask = nil
+        credentialRefreshTimer?.invalidate()
+        credentialRefreshTimer = nil
     }
     
     // MARK: - Public Properties
@@ -326,7 +327,7 @@ final class AuthenticationServiceImpl: NSObject, @unchecked Sendable, Authentica
         // Monitor app becoming active to refresh credentials
         #if canImport(UIKit)
         for await _ in NotificationCenter.default.notifications(named: UIApplication.didBecomeActiveNotification) {
-            try? await refreshCredentials()
+            _ = try? await refreshCredentials()
         }
         #endif
     }
@@ -371,6 +372,10 @@ final class AuthenticationServiceImpl: NSObject, @unchecked Sendable, Authentica
                 return .signInFailed("Identity token data missing")
             case .credentialExport:
                 return .signInFailed("Authorization code missing")
+            case .preferSignInWithApple:
+                <#code#>
+            case .deviceNotConfiguredForPasskeyCreation:
+                <#code#>
             @unknown default:
                 return .signInFailed("Password credential error")
             }

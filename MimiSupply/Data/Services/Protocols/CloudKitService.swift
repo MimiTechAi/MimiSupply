@@ -10,7 +10,7 @@ import CloudKit
 import MapKit
 
 /// CloudKit service protocol for data synchronization
-protocol CloudKitService {
+protocol CloudKitService: Sendable {
     // MARK: - Partner Operations
     func fetchPartners(in region: MKCoordinateRegion) async throws -> [Partner]
     func fetchPartner(by id: String) async throws -> Partner?
@@ -43,8 +43,8 @@ protocol CloudKitService {
     func saveDeliveryCompletion(_ completion: DeliveryCompletionData) async throws
     
     // MARK: - Generic Operations
-    func save<T: Codable>(_ object: T) async throws -> T
-    func fetch<T: Codable>(_ type: T.Type, predicate: NSPredicate) async throws -> [T]
+    func save<T: Codable & Sendable>(_ object: T) async throws -> T
+    func fetch<T: Codable & Sendable>(_ type: T.Type, predicate: NSPredicate) async throws -> [T]
     
     // MARK: - Analytics Operations
     func fetchPartnerAnalytics(partnerId: String, timeRange: TimeRange) async throws -> PartnerAnalytics
@@ -59,6 +59,6 @@ protocol CloudKitService {
     // MARK: - Subscriptions
     func subscribeToOrderUpdates(for userId: String) async throws
     func subscribeToGeneralNotifications() async throws
-    func createSubscription(_ subscription: CKSubscription) async throws -> CKSubscription
-    func deleteSubscription(withID subscriptionID: String) async throws
+    func fetchOrder(by orderId: String) async throws -> Order?
+    func fetchOrderHistory() async throws -> [Order]
 }

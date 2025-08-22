@@ -3,6 +3,7 @@ import SwiftUI
 import os.log
 
 /// Optimizes app startup time through lazy initialization and performance monitoring
+@MainActor
 class StartupOptimizer: ObservableObject {
     static let shared = StartupOptimizer()
     
@@ -176,7 +177,7 @@ class StartupOptimizer: ObservableObject {
         
         // Send to analytics if needed
         Task {
-            await AnalyticsManager.shared.trackEvent(.appLaunch, parameters: [
+            await AnalyticsManager.shared.trackEvent(AnalyticsEvent.appLaunch, parameters: [
                 "startup_time": metrics.totalStartupTime,
                 "memory_usage": metrics.memoryUsage
             ])

@@ -48,29 +48,33 @@ class LocationServiceImpl: NSObject, LocationService {
 // MARK: - CLLocationManagerDelegate
 extension LocationServiceImpl: CLLocationManagerDelegate {
     
-    func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
-        if let location = locations.last {
-            self.currentLocation = location
+    nonisolated func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
+        Task { @MainActor in
+            if let location = locations.last {
+                self.currentLocation = location
+            }
         }
     }
     
-    func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
+    nonisolated func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
         print("Location manager failed with error: \(error.localizedDescription)")
     }
     
-    func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {
-        self.authorizationStatus = manager.authorizationStatus
-        
-        switch manager.authorizationStatus {
-        case .authorizedWhenInUse, .authorizedAlways:
-            authorizationContinuation?.resume(returning: true)
-        case .denied, .restricted:
-            authorizationContinuation?.resume(returning: false)
-        case .notDetermined:
-            break // Wait for user action
-        @unknown default:
-            authorizationContinuation?.resume(returning: false)
+    nonisolated func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {
+        Task { @MainActor in
+            self.authorizationStatus = manager.authorizationStatus
+            
+            switch manager.authorizationStatus {
+            case .authorizedWhenInUse, .authorizedAlways:
+                authorizationContinuation?.resume(returning: true)
+            case .denied, .restricted:
+                authorizationContinuation?.resume(returning: false)
+            case .notDetermined:
+                break // Wait for user action
+            @unknown default:
+                authorizationContinuation?.resume(returning: false)
+            }
+            authorizationContinuation = nil
         }
-        authorizationContinuation = nil
     }
 }

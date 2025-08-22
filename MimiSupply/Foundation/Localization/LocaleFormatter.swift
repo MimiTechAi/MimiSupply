@@ -8,11 +8,12 @@
 import Foundation
 
 /// Comprehensive locale-specific formatting utilities
+/// The shared singleton is actor-isolated on the main actor because its properties and dependencies (like LocalizationManager) are main actor-isolated. Always access LocaleFormatter.shared on the main thread.
 final class LocaleFormatter {
     
     // MARK: - Singleton
     
-    static let shared = LocaleFormatter()
+    @MainActor static let shared = LocaleFormatter()
     
     // MARK: - Private Properties
     

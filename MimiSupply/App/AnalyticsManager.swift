@@ -47,19 +47,19 @@ final class AnalyticsManager: ObservableObject {
     }
     
     // MARK: - Convenience Methods
-    func trackScreenView(_ screenName: String, parameters: [String: Any]? = nil) {
+    func trackScreenView(_ screenName: String, parameters: AnalyticsParameters? = nil) {
         Task {
             await analyticsService?.trackScreenView(screenName, parameters: parameters)
         }
     }
     
-    func trackEvent(_ event: AnalyticsEvent, parameters: [String: Any]? = nil) {
+    func trackEvent(_ event: AnalyticsEvent, parameters: AnalyticsParameters? = nil) {
         Task {
             await analyticsService?.trackEvent(event, parameters: parameters)
         }
     }
     
-    func trackError(_ error: Error, context: [String: Any]? = nil) {
+    func trackError(_ error: Error, context: AnalyticsParameters? = nil) {
         Task {
             await analyticsService?.trackError(error, context: context)
         }
@@ -89,9 +89,9 @@ final class AnalyticsManager: ObservableObject {
                 }
                 
                 await self.analyticsService?.trackEvent(.appLaunch, parameters: [
-                    "app_version": Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "unknown",
-                    "os_version": UIDevice.current.systemVersion,
-                    "device_model": UIDevice.current.model
+                    "app_version": AnalyticsParameterValue.string(Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "unknown"),
+                    "os_version": AnalyticsParameterValue.string(UIDevice.current.systemVersion),
+                    "device_model": AnalyticsParameterValue.string(UIDevice.current.model)
                 ])
             }
         }
@@ -113,7 +113,7 @@ extension EnvironmentValues {
 // MARK: - View Modifier for Screen Tracking
 struct ScreenTrackingModifier: ViewModifier {
     let screenName: String
-    let parameters: [String: Any]?
+    let parameters: AnalyticsParameters?
     
     func body(content: Content) -> some View {
         content
@@ -124,7 +124,7 @@ struct ScreenTrackingModifier: ViewModifier {
 }
 
 extension View {
-    func trackScreen(_ screenName: String, parameters: [String: Any]? = nil) -> some View {
+    func trackScreen(_ screenName: String, parameters: AnalyticsParameters? = nil) -> some View {
         modifier(ScreenTrackingModifier(screenName: screenName, parameters: parameters))
     }
 }
@@ -221,3 +221,4 @@ extension View {
         ))
     }
 }
+

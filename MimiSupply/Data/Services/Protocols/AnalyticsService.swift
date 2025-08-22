@@ -1,13 +1,35 @@
 import Foundation
 import os.signpost
 
+// MARK: - Sendable Analytics Parameter Type
+public typealias AnalyticsParameters = [String: AnalyticsParameterValue]
+
+public enum AnalyticsParameterValue: Sendable, Codable {
+    case string(String)
+    case int(Int)
+    case double(Double)
+    case bool(Bool)
+    case date(Date)
+    
+    // Computed property to extract the underlying value
+    public var value: Any {
+        switch self {
+        case .string(let value): return value
+        case .int(let value): return value
+        case .double(let value): return value
+        case .bool(let value): return value
+        case .date(let value): return value
+        }
+    }
+}
+
 // MARK: - Analytics Service Protocol
 protocol AnalyticsService: Sendable {
     /// Track a user event with optional parameters
-    func trackEvent(_ event: AnalyticsEvent, parameters: [String: Any]?) async
+    func trackEvent(_ event: AnalyticsEvent, parameters: AnalyticsParameters?) async
     
     /// Track screen view
-    func trackScreenView(_ screenName: String, parameters: [String: Any]?) async
+    func trackScreenView(_ screenName: String, parameters: AnalyticsParameters?) async
     
     /// Track user property (non-PII only)
     func setUserProperty(_ property: String, value: String?) async
@@ -16,7 +38,7 @@ protocol AnalyticsService: Sendable {
     func trackPerformanceMetric(_ metric: PerformanceMetric) async
     
     /// Track error or crash
-    func trackError(_ error: Error, context: [String: Any]?) async
+    func trackError(_ error: Error, context: AnalyticsParameters?) async
     
     /// Start performance measurement
     nonisolated func startPerformanceMeasurement(_ name: String) -> PerformanceMeasurement
@@ -29,6 +51,98 @@ protocol AnalyticsService: Sendable {
     
     /// Flush pending events
     func flush() async
+}
+
+// MARK: - Convenience Extensions
+extension AnalyticsParameters {
+    // Helper initializers for common parameter types
+    init(stringParams: [String: String]) {
+        self = stringParams.mapValues { .string($0) }
+    }
+    
+    init(intParams: [String: Int]) {
+        self = intParams.mapValues { .int($0) }
+    }
+    
+    init(doubleParams: [String: Double]) {
+        self = doubleParams.mapValues { .double($0) }
+    }
+    
+    init(boolParams: [String: Bool]) {
+        self = boolParams.mapValues { .bool($0) }
+    }
+    
+    // Convert to [String: Any] for legacy APIs
+    var legacyFormat: [String: Any] {
+        return self.mapValues { $0.value }
+    }
+}
+
+// Convenience subscript for easy access
+extension AnalyticsParameters {
+    subscript(key: String, string value: String) -> String? {
+        get {
+            if case .string(let stringValue) = self[key] {
+                return stringValue
+            }
+            return nil
+        }
+        set {
+            if let newValue = newValue {
+                self[key] = .string(newValue)
+            } else {
+                self.removeValue(forKey: key)
+            }
+        }
+    }
+    
+    subscript(key: String, int value: Int) -> Int? {
+        get {
+            if case .int(let intValue) = self[key] {
+                return intValue
+            }
+            return nil
+        }
+        set {
+            if let newValue = newValue {
+                self[key] = .int(newValue)
+            } else {
+                self.removeValue(forKey: key)
+            }
+        }
+    }
+    
+    subscript(key: String, double value: Double) -> Double? {
+        get {
+            if case .double(let doubleValue) = self[key] {
+                return doubleValue
+            }
+            return nil
+        }
+        set {
+            if let newValue = newValue {
+                self[key] = .double(newValue)
+            } else {
+                self.removeValue(forKey: key)
+            }
+        }
+    }
+    
+    subscript(key: String, bool value: Bool) -> Bool? {
+        get {
+            if case .bool(let boolValue) = self[key] {
+                return boolValue
+            }
+            return nil
+        }
+        set {
+            if let newValue = newValue {
+                self[key] = .bool(newValue)
+            } else {
+                self.removeValue(forKey: key)
+            }
+        }
+    }
 }
 
 // MARK: - Analytics Event

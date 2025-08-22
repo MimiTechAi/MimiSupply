@@ -11,8 +11,8 @@ import Network
 import OSLog
 
 /// Manages retry logic for failed operations
-final class RetryManager: ObservableObject {
-    static let shared = RetryManager()
+final class RetryManager: ObservableObject, Sendable {
+    nonisolated(unsafe) static let shared = RetryManager()
     
     private let logger = Logger(subsystem: "com.mimisupply.app", category: "RetryManager")
     private let networkMonitor = NetworkMonitor.shared
@@ -118,11 +118,12 @@ final class RetryManager: ObservableObject {
 }
 
 /// Network connectivity monitor
+// Sendable conformance is omitted because this class contains mutable state that is not concurrency-safe. All mutable state should be accessed only from the main actor.
 final class NetworkMonitor: ObservableObject {
-    static let shared = NetworkMonitor()
+    nonisolated(unsafe) static let shared = NetworkMonitor()
     
-    @Published var isConnected = false
-    @Published var connectionType: NWInterface.InterfaceType?
+    @MainActor @Published var isConnected = false
+    @MainActor @Published var connectionType: NWInterface.InterfaceType?
     
     private let monitor = NWPathMonitor()
     private let queue = DispatchQueue(label: "NetworkMonitor")

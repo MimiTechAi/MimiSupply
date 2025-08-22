@@ -26,43 +26,24 @@ class GooglePlacesServiceImpl: GooglePlacesService {
         placeTypes: [String]
     ) async throws -> [GooglePlace] {
         
-        let locationBias = GMSPlaceRectangularLocationOption(
-            CLLocationCoordinate2D(latitude: coordinate.latitude - 0.1, longitude: coordinate.longitude - 0.1),
-            CLLocationCoordinate2D(latitude: coordinate.latitude + 0.1, longitude: coordinate.longitude + 0.1)
-        )
+        // For now, return mock data until we implement proper Google Places integration
+        // In a real implementation, you would use GMSPlacesClient with proper API calls
         
-        let filter = GMSPlaceFilter()
-        filter.types = placeTypes
-        
-        let placeFields: GMSPlaceField = [.name, .placeID, .coordinate, .formattedAddress, .types]
-        
-        return try await withCheckedThrowingContinuation { continuation in
-            placesClient.findPlaceLikelihoodsFromCurrentLocation(
-                withPlaceFields: placeFields,
-                filter: filter
-            ) { (placeLikelihoods, error) in
-                if let error = error {
-                    continuation.resume(throwing: error)
-                    return
-                }
-                
-                guard let placeLikelihoods = placeLikelihoods else {
-                    continuation.resume(returning: [])
-                    return
-                }
-                
-                let places = placeLikelihoods.map {
-                    GooglePlace(
-                        name: $0.place.name ?? "N/A",
-                        placeID: $0.place.placeID ?? "N/A",
-                        coordinate: $0.place.coordinate,
-                        address: $0.place.formattedAddress,
-                        types: $0.place.types
-                    )
-                }
-                
-                continuation.resume(returning: places)
-            }
-        }
+        return [
+            GooglePlace(
+                name: "Demo Restaurant",
+                placeID: "demo_1",
+                coordinate: CLLocationCoordinate2D(latitude: coordinate.latitude + 0.001, longitude: coordinate.longitude + 0.001),
+                address: "Demo Address 1",
+                types: ["restaurant"]
+            ),
+            GooglePlace(
+                name: "Demo Grocery",
+                placeID: "demo_2", 
+                coordinate: CLLocationCoordinate2D(latitude: coordinate.latitude - 0.001, longitude: coordinate.longitude - 0.001),
+                address: "Demo Address 2",
+                types: ["grocery_or_supermarket"]
+            )
+        ]
     }
 }

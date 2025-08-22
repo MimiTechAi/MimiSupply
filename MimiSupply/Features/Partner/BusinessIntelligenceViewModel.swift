@@ -59,16 +59,16 @@ final class BusinessIntelligenceViewModel: ObservableObject {
             await analyticsService.trackEvent(
                 AnalyticsEvent(name: "business_intelligence_loaded", category: .engagement),
                 parameters: [
-                    "time_range": timeRange.rawValue,
-                    "metrics_count": keyMetrics.count
+                    "time_range": .string(timeRange.rawValue),
+                    "metrics_count": .int(keyMetrics.count)
                 ]
             )
             
         } catch {
             errorMessage = error.localizedDescription
             await analyticsService.trackError(error, context: [
-                "action": "load_business_intelligence",
-                "time_range": timeRange.rawValue
+                "action": .string("load_business_intelligence"),
+                "time_range": .string(timeRange.rawValue)
             ])
         }
         
@@ -89,14 +89,14 @@ final class BusinessIntelligenceViewModel: ObservableObject {
             await analyticsService.trackEvent(
                 AnalyticsEvent(name: "report_exported", category: .engagement),
                 parameters: [
-                    "time_range": currentTimeRange.rawValue,
-                    "report_size": report.count
+                    "time_range": .string(currentTimeRange.rawValue),
+                    "report_size": .int(report.count)
                 ]
             )
             
         } catch {
             errorMessage = "Failed to export report: \(error.localizedDescription)"
-            await analyticsService.trackError(error, context: ["action": "export_report"])
+            await analyticsService.trackError(error, context: ["action": .string("export_report")])
         }
         
         let metric = measurement.end()
