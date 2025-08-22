@@ -1,28 +1,12 @@
 import SwiftUI
 
 struct OnboardingView: View {
-    @State private var currentPage = 0
-    @State private var showingLocationPermission = false
-    @State private var locationPermissionGranted = false
-    @Environment(\.dismiss) private var dismiss
-    
-    let onComplete: () -> Void
-    
-    init(onComplete: @escaping () -> Void = {}) {
-        self.onComplete = onComplete
-    }
-    
+    @EnvironmentObject private var appState: AppState
+    @StateObject private var viewModel = OnboardingViewModel()
+
     var body: some View {
-        ZStack {
-            // Background gradient
-            LinearGradient(
-                colors: [Color.emerald.opacity(0.1), Color.emerald.opacity(0.05)],
-                startPoint: .topLeading,
-                endPoint: .bottomTrailing
-            )
-            .ignoresSafeArea()
-            
-            VStack(spacing: 0) {
+        NavigationStack {
+            VStack {
                 // Skip button
                 HStack {
                     Spacer()
