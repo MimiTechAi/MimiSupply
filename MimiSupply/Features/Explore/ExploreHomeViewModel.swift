@@ -86,7 +86,7 @@ class ExploreHomeViewModel: ObservableObject {
             self.partners = googlePlaces.map { convertGooglePlaceToPartner($0) }
             
         } catch {
-            self.error = .network(.requestFailed)
+            self.error = .network(.connectionFailed) // CORRECTED
             print("Error fetching nearby places: \(error.localizedDescription)")
         }
     }

@@ -28,7 +28,6 @@ final class AnalyticsManager: ObservableObject {
         if let featureFlagService = featureFlagService, let analytics = analyticsService {
             FeatureFlagManager.shared.configure(
                 cloudKitService: CloudKitServiceImpl.shared,
-                featureFlagService: featureFlagService,
                 analyticsService: analytics
             )
         }

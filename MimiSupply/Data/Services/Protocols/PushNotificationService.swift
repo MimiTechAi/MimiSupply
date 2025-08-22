@@ -11,32 +11,11 @@ import CloudKit
 import UIKit
 
 /// Push notification service protocol for managing notifications
-protocol PushNotificationService: Sendable {
-    // MARK: - Permission Management
-    func requestPermission() async throws -> Bool
-    func getAuthorizationStatus() async -> UNAuthorizationStatus
-    
-    // MARK: - Registration
-    func registerForRemoteNotifications() async throws
-    func unregisterFromRemoteNotifications() async
-    
-    // MARK: - Notification Handling
-    func handleNotification(_ notification: UNNotification) async
-    func handleRemoteNotification(_ userInfo: [AnyHashable: Any]) async -> UIBackgroundFetchResult
-    func handleNotificationResponse(_ response: UNNotificationResponse) async
-    
-    // MARK: - Local Notifications
-    func scheduleLocalNotification(_ notification: LocalNotification) async throws
-    func cancelLocalNotification(withId id: String) async
-    func cancelAllLocalNotifications() async
-    
-    // MARK: - CloudKit Subscriptions
-    func setupCloudKitSubscriptions(for userRole: UserRole, userId: String) async throws
-    func removeCloudKitSubscriptions() async throws
-    
-    // MARK: - Badge Management
-    func updateBadgeCount(_ count: Int) async
-    func clearBadge() async
+protocol PushNotificationService {
+    func requestNotificationPermission() async throws -> Bool
+    func subscribeToOrderUpdates() async throws
+    func subscribeToGeneralNotifications() async throws
+    func registerForRemoteNotifications() async
 }
 
 // Note: LocalNotification unified model defined below

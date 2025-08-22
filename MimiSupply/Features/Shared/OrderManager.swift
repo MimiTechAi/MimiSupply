@@ -31,40 +31,14 @@ final class OrderManager: ObservableObject {
     
     // MARK: - Initialization
     init(
-        orderRepository: OrderRepository,
-        driverService: DriverService,
-        paymentService: PaymentService,
-        cloudKitService: CloudKitService,
-        pushNotificationService: PushNotificationService,
+        cloudKitService: CloudKitService = CloudKitServiceImpl.shared,
         locationService: LocationService? = nil
     ) {
-        self.orderRepository = orderRepository
-        self.driverService = driverService
-        self.paymentService = paymentService
         self.cloudKitService = cloudKitService
-        self.pushNotificationService = pushNotificationService
-        self.locationService = locationService ?? LocationServiceImpl()
-        
-        // Define valid order status transitions
-        self.orderStatusTransitions = [
-            .created: [.paymentProcessing, .cancelled],
-            .paymentProcessing: [.paymentConfirmed, .failed, .cancelled],
-            .paymentConfirmed: [.accepted, .cancelled],
-            .accepted: [.preparing, .cancelled],
-            .preparing: [.ready, .cancelled],
-            .ready: [.readyForPickup, .cancelled],
-            .readyForPickup: [.driverAssigned, .cancelled],
-            .driverAssigned: [.pickedUp, .cancelled],
-            .pickedUp: [.enRoute, .cancelled],
-            .enRoute: [.delivering, .cancelled],
-            .delivering: [.delivered, .cancelled],
-            .delivered: [],
-            .cancelled: [],
-            .failed: []
-        ]
-        
-        setupOrderTracking()
+        self.locationService = locationService ?? LocationServiceImpl.shared
     }
+    
+    // MARK: - Public Methods
     
     // MARK: - Order Creation & Management
     

@@ -1,294 +1,114 @@
-//
-//  LocationPermissionView.swift
-//  MimiSupply
-//
-//  Created by Kiro on 14.08.25.
-//
-
 import SwiftUI
 import CoreLocation
 
-/// Location permission request view with clear user prompts and explanations
+/// A view that guides the user through the location permission process.
 struct LocationPermissionView: View {
-    let permissionType: LocationPermissionType
-    let onPermissionGranted: () -> Void
-    let onPermissionDenied: () -> Void
+    @StateObject private var viewModel: LocationPermissionViewModel
+    var onPermissionGranted: () -> Void
     
-    @StateObject private var locationManager = LocationPermissionManager()
-    @State private var showingSettings = false
+    init(onPermissionGranted: @escaping () -> Void) {
+        self.onPermissionGranted = onPermissionGranted
+        self._viewModel = StateObject(wrappedValue: LocationPermissionViewModel())
+    }
     
     var body: some View {
-        VStack(spacing: Spacing.xl) {
+        VStack(spacing: Spacing.lg) {
             Spacer()
             
-            // Icon
-            Image(systemName: permissionType.iconName)
+            // Illustration or Icon
+            Image(systemName: "location.circle.fill")
                 .font(.system(size: 80))
                 .foregroundColor(.emerald)
+                .padding(.bottom, Spacing.md)
             
-            VStack(spacing: Spacing.md) {
-                Text(permissionType.title)
-                    .font(.headlineSmall)
-                    .foregroundColor(.graphite)
-                    .multilineTextAlignment(.center)
-                
-                Text(permissionType.description)
-                    .font(.bodyMedium)
-                    .foregroundColor(.gray600)
-                    .multilineTextAlignment(.center)
-                    .padding(.horizontal, Spacing.lg)
-            }
+            // Title
+            Text("Enable Location Services")
+                .font(.titleLarge)
+                .fontWeight(.bold)
+                .foregroundColor(.graphite)
+                .multilineTextAlignment(.center)
             
-            // Benefits list
-            VStack(alignment: .leading, spacing: Spacing.sm) {
-                ForEach(permissionType.benefits, id: \.self) { benefit in
-                    HStack(spacing: Spacing.sm) {
-                        Image(systemName: "checkmark.circle.fill")
-                            .foregroundColor(.success)
-                            .font(.body)
-                        
-                        Text(benefit)
-                            .font(.bodyMedium)
-                            .foregroundColor(.graphite)
-                        
-                        Spacer()
-                    }
-                }
-            }
-            .padding(.horizontal, Spacing.xl)
+            // Description
+            Text("To discover partners near you, please allow MimiSupply to access your location.")
+                .font(.bodyMedium)
+                .foregroundColor(.gray600)
+                .multilineTextAlignment(.center)
+                .padding(.horizontal, Spacing.lg)
             
             Spacer()
             
-            // Action buttons
+            // Action Buttons
             VStack(spacing: Spacing.md) {
-                PrimaryButton(
-                    title: permissionType.primaryButtonTitle,
-                    action: requestPermission,
-                    isLoading: locationManager.isRequestingPermission,
-                    isDisabled: false
-                )
+                PrimaryButton(title: "Allow Location Access", action: viewModel.requestPermission)
+                    .accessibilityIdentifier("allow-location-button")
                 
-                if locationManager.authorizationStatus == .denied {
-                    SecondaryButton(
-                        title: "Open Settings",
-                        action: { showingSettings = true }
-                    )
-                }
-                
-                Button("Not Now") {
-                    onPermissionDenied()
+                Button("Maybe Later") {
+                    // Handle dismissal or alternative flow
                 }
                 .font(.bodyMedium)
-                .foregroundColor(.gray600)
+                .foregroundColor(.gray500)
             }
-            .padding(.horizontal, Spacing.lg)
-            .padding(.bottom, Spacing.xl)
         }
-        .onChange(of: locationManager.authorizationStatus) { _, status in
-            handleAuthorizationChange(status)
+        .padding(Spacing.xl)
+        .background(Color.white)
+        .cornerRadius(20)
+        .shadow(radius: 10)
+        .onReceive(viewModel.$permissionGranted) { granted in
+            if granted {
+                onPermissionGranted()
+            }
         }
-        .sheet(isPresented: $showingSettings) {
-            SettingsRedirectView()
-        }
-    }
-    
-    private func requestPermission() {
-        Task {
-            await locationManager.requestPermission(type: permissionType)
-        }
-    }
-    
-    private func handleAuthorizationChange(_ status: CLAuthorizationStatus) {
-        switch status {
-        case .authorizedWhenInUse, .authorizedAlways:
-            onPermissionGranted()
-        case .denied, .restricted:
-            // Stay on this view to show settings option
-            break
-        case .notDetermined:
-            // Still waiting for user decision
-            break
-        @unknown default:
-            onPermissionDenied()
+        .alert("Permission Denied", isPresented: $viewModel.showingPermissionDeniedAlert) {
+            Button("Open Settings") {
+                viewModel.openAppSettings()
+            }
+            Button("Cancel", role: .cancel) {}
+        } message: {
+            Text("Location access is required to find nearby partners. Please enable it in Settings.")
         }
     }
 }
 
-/// Types of location permissions we might request
-enum LocationPermissionType {
-    case whenInUse
-    case always
-    
-    var title: String {
-        switch self {
-        case .whenInUse:
-            return "Enable Location Services"
-        case .always:
-            return "Enable Background Location"
-        }
-    }
-    
-    var description: String {
-        switch self {
-        case .whenInUse:
-            return "We use your location to show nearby restaurants and stores, and to provide accurate delivery estimates."
-        case .always:
-            return "To provide real-time delivery tracking and ensure drivers can find you, we need location access even when the app is in the background."
-        }
-    }
-    
-    var benefits: [String] {
-        switch self {
-        case .whenInUse:
-            return [
-                "Find nearby restaurants and stores",
-                "Get accurate delivery estimates",
-                "Automatic address suggestions",
-                "Better search results"
-            ]
-        case .always:
-            return [
-                "Real-time delivery tracking",
-                "Automatic driver updates",
-                "Background location sharing for drivers",
-                "Seamless delivery experience"
-            ]
-        }
-    }
-    
-    var iconName: String {
-        switch self {
-        case .whenInUse:
-            return "location.circle"
-        case .always:
-            return "location.circle.fill"
-        }
-    }
-    
-    var primaryButtonTitle: String {
-        switch self {
-        case .whenInUse:
-            return "Allow Location Access"
-        case .always:
-            return "Allow Background Location"
-        }
-    }
-}
+// MARK: - ViewModel
 
-/// Location permission manager
 @MainActor
 class LocationPermissionViewModel: ObservableObject {
     private let locationService: LocationService
     
-    @MainActor // Add this annotation
+    @Published var permissionGranted = false
+    @Published var showingPermissionDeniedAlert = false
+    
+    @MainActor
     init(locationService: LocationService = LocationServiceImpl.shared) {
         self.locationService = locationService
     }
     
     var authorizationStatus: CLAuthorizationStatus {
-        locationService.authorizationStatus
-    }
-}
-
-/// Location permission manager
-@MainActor
-class LocationPermissionManager: ObservableObject {
-    @Published var isRequestingPermission = false
-    
-    private let locationService: LocationService
-    
-    init(locationService: LocationService = LocationServiceImpl()) {
-        self.locationService = locationService
+        return locationService.authorizationStatus
     }
     
-    func requestPermission(type: LocationPermissionType) async {
-        isRequestingPermission = true
-        
-        do {
-            try await locationService.requestLocationPermission()
-        } catch {
-            print("Failed to request location permission: \(error)")
-        }
-        
-        isRequestingPermission = false
-    }
-}
-
-/// Settings redirect view
-struct SettingsRedirectView: View {
-    @Environment(\.dismiss) private var dismiss
-    
-    var body: some View {
-        NavigationView {
-            VStack(spacing: Spacing.xl) {
-                Spacer()
-                
-                Image(systemName: "gear")
-                    .font(.system(size: 60))
-                    .foregroundColor(.emerald)
-                
-                VStack(spacing: Spacing.md) {
-                    Text("Open Settings")
-                        .font(.headlineSmall)
-                        .foregroundColor(.graphite)
-                    
-                    Text("To enable location services, please go to Settings > Privacy & Security > Location Services and allow access for MimiSupply.")
-                        .font(.bodyMedium)
-                        .foregroundColor(.gray600)
-                        .multilineTextAlignment(.center)
-                        .padding(.horizontal, Spacing.lg)
-                }
-                
-                Spacer()
-                
-                VStack(spacing: Spacing.md) {
-                    PrimaryButton(
-                        title: "Open Settings",
-                        action: openSettings,
-                        isLoading: false,
-                        isDisabled: false
-                    )
-                    
-                    SecondaryButton(
-                        title: "Cancel",
-                        action: { dismiss() }
-                    )
-                }
-                .padding(.horizontal, Spacing.lg)
-                .padding(.bottom, Spacing.xl)
-            }
-            .navigationTitle("Location Settings")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("Done") {
-                        dismiss()
-                    }
+    func requestPermission() {
+        Task {
+            let granted = try await locationService.requestLocationPermission()
+            if granted {
+                permissionGranted = true
+            } else {
+                if authorizationStatus == .denied || authorizationStatus == .restricted {
+                    showingPermissionDeniedAlert = true
                 }
             }
         }
     }
     
-    private func openSettings() {
-        if let settingsUrl = URL(string: UIApplication.openSettingsURLString) {
-            UIApplication.shared.open(settingsUrl)
+    func openAppSettings() {
+        guard let settingsUrl = URL(string: UIApplication.openSettingsURLString),
+              UIApplication.shared.canOpenURL(settingsUrl) else {
+            return
         }
-        dismiss()
+        UIApplication.shared.open(settingsUrl)
     }
 }
 
-#Preview("When In Use Permission") {
-    LocationPermissionView(
-        permissionType: .whenInUse,
-        onPermissionGranted: { print("Permission granted") },
-        onPermissionDenied: { print("Permission denied") }
-    )
-}
-
-#Preview("Always Permission") {
-    LocationPermissionView(
-        permissionType: .always,
-        onPermissionGranted: { print("Permission granted") },
-        onPermissionDenied: { print("Permission denied") }
-    )
+#Preview {
+    LocationPermissionView(onPermissionGranted: {})
 }

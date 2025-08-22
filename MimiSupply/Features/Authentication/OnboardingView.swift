@@ -113,18 +113,10 @@ struct OnboardingView: View {
                 .padding(.bottom, 40)
             }
         }
-        .sheet(isPresented: $showingLocationPermission) {
+        .sheet(isPresented: $viewModel.showingLocationPermission) {
             LocationPermissionView(
-                permissionType: .whenInUse,
                 onPermissionGranted: {
-                    locationPermissionGranted = true
-                    showingLocationPermission = false
-                    completeOnboarding()
-                },
-                onPermissionDenied: {
-                    locationPermissionGranted = false
-                    showingLocationPermission = false
-                    completeOnboarding()
+                    viewModel.handleLocationPermissionGranted()
                 }
             )
         }

@@ -14,15 +14,20 @@ final class AppContainer: ObservableObject {
     let pushNotificationService: PushNotificationService
     let googlePlacesService: GooglePlacesService
     let locationService: LocationService
+    let paymentService: PaymentService
 
     private init() {
         self.appState = AppState()
         self.analytics = AnalyticsServiceImpl()
         self.authenticationService = AuthenticationServiceImpl.shared
         self.cloudKitService = CloudKitServiceImpl.shared
-        self.pushNotificationService = PushNotificationServiceImpl()
+        self.pushNotificationService = PushNotificationServiceImpl(
+            cloudKitService: CloudKitServiceImpl.shared,
+            authenticationService: AuthenticationServiceImpl.shared
+        )
         self.googlePlacesService = GooglePlacesServiceImpl()
         self.locationService = LocationServiceImpl.shared
+        self.paymentService = PaymentServiceImpl() // AND ADD THIS
         
         // Services that depend on other services
         self.featureFlagService = FeatureFlagServiceImpl(cloudKitService: self.cloudKitService, analyticsService: self.analytics)

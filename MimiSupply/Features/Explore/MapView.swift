@@ -1,6 +1,7 @@
 import SwiftUI
 import MapKit
 import CoreLocation
+import Combine
 
 struct MapView: View {
     let partners: [Partner]
