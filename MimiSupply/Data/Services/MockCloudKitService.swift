@@ -184,8 +184,13 @@ final class MockCloudKitService: CloudKitService {
     
     // MARK: - Subscription Operations
     func subscribeToOrderUpdates(for userId: String) async throws {
-        try await Task.sleep(nanoseconds: UInt64(mockDelay * 1_000_000_000))
-        // Mock implementation
+        // Mock implementation - do nothing
+        print("Mock: Subscribed to order updates for user: \(userId)")
+    }
+    
+    func subscribeToGeneralNotifications() async throws {
+        // Mock implementation - do nothing
+        print("Mock: Subscribed to general notifications")
     }
     
     func subscribeToDriverLocationUpdates(for orderId: String) async throws {

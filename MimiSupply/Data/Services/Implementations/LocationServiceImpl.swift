@@ -10,8 +10,8 @@ class LocationServiceImpl: NSObject, LocationService {
     private let locationManager = CLLocationManager()
     private var authorizationContinuation: CheckedContinuation<Bool, Error>?
     
-    @Published private(set) var authorizationStatus: CLAuthorizationStatus
-    @Published private(set) var currentLocation: CLLocation?
+    @Published var authorizationStatus: CLAuthorizationStatus
+    @Published var currentLocation: CLLocation?
     
     override private init() {
         self.authorizationStatus = locationManager.authorizationStatus

@@ -276,10 +276,52 @@ final class OrderManager: ObservableObject {
     
     private func handleStatusTransition(_ order: Order, from oldStatus: OrderStatus, to newStatus: OrderStatus) async {
         switch newStatus {
+        case .accepted:
+            let notification = LocalNotification(
+                title: "Order Confirmed",
+                body: "Your order #\(order.id.prefix(8)) has been confirmed",
+                timeInterval: 5,
+                userInfo: ["orderId": order.id]
+            )
+            try? await pushNotificationService.scheduleLocalNotification(notification)
+            
+        case .driverAssigned:
+            guard let driverId = order.driverId else { break }
+            let message = "Driver \(driverId) is on the way"
+            let notification = LocalNotification(
+                title: "Driver Assigned",
+                body: message,
+                timeInterval: 5,
+                userInfo: ["orderId": order.id]
+            )
+            try? await pushNotificationService.scheduleLocalNotification(notification)
+            
+            let customerNotification = LocalNotification(
+                title: "Driver Assigned",
+                body: "A driver has been assigned to your order",
+                timeInterval: 5,
+                userInfo: ["orderId": order.id]
+            )
+            try? await pushNotificationService.scheduleLocalNotification(customerNotification)
+            
+        case .cancelled(let reason):
+            let notification = LocalNotification(
+                title: "Order Cancelled",
+                body: "Your order has been cancelled. \(reason)",
+                timeInterval: 5,
+                userInfo: ["orderId": order.id]
+            )
+            try? await pushNotificationService.scheduleLocalNotification(notification)
+            
         case .delivered:
-            await handleOrderDelivered(order)
-        case .cancelled:
-            await handleOrderCancelled(order)
+            let notification = LocalNotification(
+                title: "Order Delivered",
+                body: "Your order has been delivered! Please rate your experience.",
+                timeInterval: 5,
+                userInfo: ["orderId": order.id]
+            )
+            try? await pushNotificationService.scheduleLocalNotification(notification)
+            
         default:
             break
         }
@@ -353,7 +395,7 @@ final class OrderManager: ObservableObject {
     private func sendDeliveryConfirmation(_ order: Order) async {
         let notification = LocalNotification(
             title: "Order Delivered",
-            body: "Your order has been delivered! Please rate your experience.",
+            body: "Your order has been delivered! Enjoy!",
             userInfo: ["orderId": order.id, "action": "rate_order"],
             category: .orderUpdate
         )

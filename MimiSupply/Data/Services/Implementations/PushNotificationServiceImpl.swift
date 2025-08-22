@@ -1,7 +1,6 @@
 import CloudKit
 import UserNotifications
 
-@MainActor
 final class PushNotificationServiceImpl: NSObject, PushNotificationService {
     
     private let cloudKitService: CloudKitService

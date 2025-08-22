@@ -4,9 +4,11 @@ import SwiftUI
 class OnboardingViewModel: ObservableObject {
     @Published var showingLocationPermission = false
     
+    var onComplete: (() -> Void)?
+    
     func handleLocationPermissionGranted() {
-        // Handle what happens after permission is granted
         showingLocationPermission = false
+        onComplete?() // CALL COMPLETION
     }
     
     func requestLocationPermission() {

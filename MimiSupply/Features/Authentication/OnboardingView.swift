@@ -3,22 +3,13 @@ import SwiftUI
 struct OnboardingView: View {
     @EnvironmentObject private var appState: AppState
     @StateObject private var viewModel = OnboardingViewModel()
+    @State private var currentPage = 0
+    
+    var onComplete: () -> Void
 
     var body: some View {
         NavigationStack {
             VStack {
-                // Skip button
-                HStack {
-                    Spacer()
-                    Button("Skip") {
-                        completeOnboarding()
-                    }
-                    .font(.bodyMedium)
-                    .foregroundColor(.gray600)
-                    .padding()
-                }
-                
-                // Onboarding pages
                 TabView(selection: $currentPage) {
                     OnboardingPageView(
                         title: "Welcome to MimiSupply",
@@ -93,26 +84,28 @@ struct OnboardingView: View {
                     }
                     .frame(width: currentPage > 0 ? 120 : 200)
                 }
-                .padding(.horizontal, 24)
-                .padding(.bottom, 40)
+            }
+            .sheet(isPresented: $viewModel.showingLocationPermission) {
+                LocationPermissionView(
+                    onPermissionGranted: {
+                        viewModel.handleLocationPermissionGranted()
+                    }
+                )
             }
         }
-        .sheet(isPresented: $viewModel.showingLocationPermission) {
-            LocationPermissionView(
-                onPermissionGranted: {
-                    viewModel.handleLocationPermissionGranted()
-                }
-            )
+    }
+    
+    private func handleNext() {
+        if currentPage < 3 {
+            withAnimation {
+                currentPage += 1
+            }
+        } else {
+            viewModel.showingLocationPermission = true
         }
     }
     
-    private func requestLocationPermission() {
-        showingLocationPermission = true
-    }
-    
-    private func completeOnboarding() {
-        // Mark onboarding as completed
-        UserDefaults.standard.set(true, forKey: "onboarding_completed")
+    private func handleComplete() {
         onComplete()
     }
 }
@@ -184,5 +177,6 @@ struct OnboardingPageView: View {
 }
 
 #Preview {
-    OnboardingView()
+    OnboardingView(onComplete: {})
+        .environmentObject(AppState())
 }
