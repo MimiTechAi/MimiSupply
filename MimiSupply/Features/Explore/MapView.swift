@@ -77,6 +77,107 @@ struct MapView: View {
     }
 }
 
+// MARK: - Supporting Views for MapView
+struct PartnerMapAnnotation: View {
+    let partner: Partner
+    let isSelected: Bool
+    let onTap: () -> Void
+    
+    var body: some View {
+        Button(action: onTap) {
+            ZStack {
+                Circle()
+                    .fill(isSelected ? Color.emerald : Color.white)
+                    .frame(width: isSelected ? 50 : 40, height: isSelected ? 50 : 40)
+                    .shadow(color: .black.opacity(0.3), radius: 4, x: 0, y: 2)
+                
+                Image(systemName: partner.category.iconName)
+                    .font(.system(size: isSelected ? 20 : 16, weight: .medium))
+                    .foregroundColor(isSelected ? .white : .emerald)
+            }
+        }
+        .scaleEffect(isSelected ? 1.2 : 1.0)
+        .animation(.spring(response: 0.3, dampingFraction: 0.7), value: isSelected)
+    }
+}
+
+struct SelectedPartnerCard: View {
+    let partner: Partner
+    let onDismiss: () -> Void
+    let onNavigate: () -> Void
+    
+    var body: some View {
+        AppCard {
+            HStack(spacing: Spacing.md) {
+                AsyncImage(url: partner.logoURL) { image in
+                    image
+                        .resizable()
+                        .aspectRatio(contentMode: .fill)
+                } placeholder: {
+                    Rectangle()
+                        .fill(Color.gray200)
+                        .overlay(
+                            Image(systemName: partner.category.iconName)
+                                .foregroundColor(.gray400)
+                                .font(.title2)
+                        )
+                }
+                .frame(width: 60, height: 60)
+                .cornerRadius(8)
+                
+                VStack(alignment: .leading, spacing: Spacing.xs) {
+                    Text(partner.name)
+                        .font(.titleMedium)
+                        .foregroundColor(.graphite)
+                        .lineLimit(1)
+                    
+                    Text(partner.category.displayName)
+                        .font(.bodySmall)
+                        .foregroundColor(.gray600)
+                    
+                    HStack(spacing: Spacing.md) {
+                        HStack(spacing: Spacing.xs) {
+                            Image(systemName: "star.fill")
+                                .foregroundColor(.warning)
+                                .font(.caption)
+                            Text(String(format: "%.1f", partner.rating))
+                                .font(.bodySmall)
+                                .foregroundColor(.gray600)
+                        }
+                        
+                        HStack(spacing: Spacing.xs) {
+                            Image(systemName: "clock")
+                                .foregroundColor(.gray500)
+                                .font(.caption)
+                            Text("\(partner.estimatedDeliveryTime) min")
+                                .font(.bodySmall)
+                                .foregroundColor(.gray600)
+                        }
+                        
+                        Spacer()
+                    }
+                }
+                
+                Spacer()
+                
+                VStack(spacing: Spacing.sm) {
+                    Button(action: onDismiss) {
+                        Image(systemName: "xmark")
+                            .foregroundColor(.gray500)
+                            .font(.caption)
+                    }
+                    
+                    Button(action: onNavigate) {
+                        Image(systemName: "arrow.right.circle.fill")
+                            .foregroundColor(.emerald)
+                            .font(.title2)
+                    }
+                }
+            }
+        }
+    }
+}
+
 // Subviews bleiben gleich
 
 @MainActor

@@ -43,4 +43,10 @@ final class PushNotificationServiceImpl: NSObject, PushNotificationService {
             UIApplication.shared.registerForRemoteNotifications()
         }
     }
+    
+    func scheduleLocalNotification(_ notification: LocalNotification) async throws {
+        // Implementation for scheduling local notifications would go here.
+        // For now, we can leave it empty to satisfy the protocol.
+        print("Scheduled local notification: \(notification.title)")
+    }
 }
