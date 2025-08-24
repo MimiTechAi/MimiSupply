@@ -286,6 +286,27 @@ final class BusinessIntelligenceViewModel: ObservableObject {
         
         try report.write(to: filePath, atomically: true, encoding: .utf8)
     }
+    
+    // MARK: - Computed Properties for Empty States
+    var hasAnyData: Bool {
+        !keyMetrics.isEmpty || 
+        !revenueData.isEmpty || 
+        orderAnalytics.hasData || 
+        customerInsights.hasData || 
+        !topProducts.isEmpty
+    }
+    
+    var hasRevenueData: Bool {
+        !revenueData.isEmpty
+    }
+    
+    var hasOrderData: Bool {
+        orderAnalytics.hasData
+    }
+    
+    var hasCustomerData: Bool {
+        customerInsights.hasData
+    }
 }
 
 // MARK: - Data Models
@@ -475,4 +496,17 @@ private extension DateFormatter {
         formatter.dateFormat = "yyyy-MM-dd_HH-mm-ss"
         return formatter
     }()
+}
+
+// MARK: - Data Extensions for Empty State Checking
+extension OrderAnalytics {
+    var hasData: Bool {
+        totalOrders > 0
+    }
+}
+
+extension CustomerInsights {
+    var hasData: Bool {
+        totalCustomers > 0
+    }
 }

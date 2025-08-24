@@ -11,8 +11,7 @@ struct BusinessIntelligenceDashboard: View {
         NavigationStack {
             ScrollView {
                 VStack(spacing: Spacing.lg) {
-                    // Time Range Selector
-                    // PremiumTimeRangeSelector(selectedRange: $selectedTimeRange)
+                    // Time Range Selector with Haptic Feedback
                     Picker("Time Range", selection: $selectedTimeRange) {
                         ForEach(TimeRange.allCases, id: \.self) { range in
                             Text(range.displayName).tag(range)
@@ -20,40 +19,23 @@ struct BusinessIntelligenceDashboard: View {
                     }
                     .pickerStyle(.segmented)
                     .onChange(of: selectedTimeRange) { _, newValue in
-                            Task {
-                                await viewModel.loadData(for: newValue)
-                            }
+                        HapticManager.shared.trigger(.selection, context: .analytics)
+                        Task {
+                            await viewModel.loadData(for: newValue)
                         }
+                    }
                     
-                    // Key Metrics Cards
-                    KeyMetricsGrid(metrics: viewModel.keyMetrics)
-                    
-                    // Revenue Chart
-                    RevenueChartCard(
-                        data: viewModel.revenueData,
-                        timeRange: selectedTimeRange
-                    )
-                    
-                    // Order Analytics
-                    OrderAnalyticsCard(
-                        data: viewModel.orderAnalytics,
-                        timeRange: selectedTimeRange
-                    )
-                    
-                    // Customer Insights
-                    CustomerInsightsCard(
-                        data: viewModel.customerInsights
-                    )
-                    
-                    // Performance Metrics
-                    PerformanceMetricsCard(
-                        data: viewModel.performanceMetrics
-                    )
-                    
-                    // Top Products
-                    TopProductsCard(
-                        products: viewModel.topProducts
-                    )
+                    // Show content based on state
+                    if viewModel.loadingState.isAnyLoading {
+                        // Progressive Loading UI
+                        loadingContentView
+                    } else if viewModel.hasAnyData {
+                        // Main content with data
+                        mainContentView
+                    } else {
+                        // Empty state
+                        emptyStateView
+                    }
                 }
                 .padding(.horizontal, Spacing.md)
             }
@@ -61,28 +43,42 @@ struct BusinessIntelligenceDashboard: View {
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Menu {
-                        Button("Export Report") {
+                        Button {
                             Task {
                                 await viewModel.exportReport()
                             }
+                        } label: {
+                            Label("Export Report", systemImage: "square.and.arrow.up")
                         }
-                        Button("Schedule Report") {
+                        .disabled(viewModel.loadingState.isAnyLoading || !viewModel.hasAnyData)
+                        
+                        Button {
                             viewModel.showScheduleReport = true
+                        } label: {
+                            Label("Schedule Report", systemImage: "calendar.badge.plus")
                         }
-                        Button("Share Dashboard") {
+                        .disabled(viewModel.loadingState.isAnyLoading || !viewModel.hasAnyData)
+                        
+                        Button {
                             viewModel.showShareSheet = true
+                        } label: {
+                            Label("Share Dashboard", systemImage: "square.and.arrow.up.on.square")
                         }
+                        .disabled(viewModel.loadingState.isAnyLoading || !viewModel.hasAnyData)
                     } label: {
                         Image(systemName: "ellipsis.circle")
                     }
+                    .onTapHaptic(.buttonTap, context: .analytics) {}
                 }
             }
             .task {
                 await viewModel.loadInitialData()
             }
             .refreshable {
+                HapticManager.shared.trigger(.dashboardRefresh, context: .analytics)
                 await viewModel.refreshData()
             }
+            .hapticFeedback(.dataLoaded, context: .analytics, trigger: viewModel.hasAnyData)
             .sheet(isPresented: $viewModel.showScheduleReport) {
                 ScheduleReportView()
             }
@@ -91,56 +87,355 @@ struct BusinessIntelligenceDashboard: View {
             }
         }
     }
-}
-
-// TimeRangeSelector is defined in Features/Partner/AnalyticsDashboardView.swift
-
-// KeyMetricsGrid is defined in Features/Partner/AnalyticsDashboardView.swift
-
-struct KeyMetricCard: View {
-    let metric: KeyMetric
     
-    var body: some View {
-        VStack(alignment: .leading, spacing: Spacing.sm) {
-            HStack {
-                Image(systemName: metric.icon)
-                    .foregroundColor(.emerald)
-                    .font(.title2)
-                
-                Spacer()
-                
-                if let change = metric.percentageChange {
-                    HStack(spacing: 2) {
-                        Image(systemName: change >= 0 ? "arrow.up" : "arrow.down")
-                            .font(.caption)
-                        Text("\(abs(change), specifier: "%.1f")%")
-                            .font(.caption)
+    // MARK: - Content Views
+    
+    @ViewBuilder
+    private var loadingContentView: some View {
+        VStack(spacing: Spacing.lg) {
+            // Key Metrics Cards with Progressive Loading
+            if viewModel.loadingState.keyMetrics {
+                LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 2), spacing: 16) {
+                    ForEach(0..<4, id: \.self) { _ in
+                        KeyMetricCardSkeleton()
                     }
-                    .foregroundColor(change >= 0 ? .success : .error)
+                }
+            } else {
+                HapticKeyMetricsGrid(metrics: viewModel.keyMetrics)
+            }
+            
+            // Revenue Chart with Loading State
+            if viewModel.loadingState.revenueData {
+                RevenueChartCardSkeleton()
+            } else if !viewModel.revenueData.isEmpty {
+                HapticRevenueChartCard(
+                    data: viewModel.revenueData,
+                    timeRange: selectedTimeRange
+                )
+            }
+            
+            // Order Analytics with Loading State
+            if viewModel.loadingState.orderAnalytics {
+                OrderAnalyticsCardSkeleton()
+            } else if viewModel.orderAnalytics.hasData {
+                HapticOrderAnalyticsCard(
+                    data: viewModel.orderAnalytics,
+                    timeRange: selectedTimeRange
+                )
+            }
+            
+            // Customer Insights with Loading State
+            if viewModel.loadingState.customerInsights {
+                CustomerInsightsCardSkeleton()
+            } else if viewModel.customerInsights.hasData {
+                HapticCustomerInsightsCard(
+                    data: viewModel.customerInsights
+                )
+            }
+            
+            // Performance Metrics with Loading State
+            if viewModel.loadingState.performanceMetrics {
+                PerformanceMetricsCardSkeleton()
+            } else {
+                HapticPerformanceMetricsCard(
+                    data: viewModel.performanceMetrics
+                )
+            }
+            
+            // Top Products with Loading State
+            if viewModel.loadingState.topProducts {
+                TopProductsCardSkeleton()
+            } else if !viewModel.topProducts.isEmpty {
+                HapticTopProductsCard(
+                    products: viewModel.topProducts
+                )
+            }
+        }
+    }
+    
+    @ViewBuilder
+    private var mainContentView: some View {
+        VStack(spacing: Spacing.lg) {
+            // Key Metrics Cards
+            HapticKeyMetricsGrid(metrics: viewModel.keyMetrics)
+            
+            // Revenue Chart
+            if !viewModel.revenueData.isEmpty {
+                HapticRevenueChartCard(
+                    data: viewModel.revenueData,
+                    timeRange: selectedTimeRange
+                )
+            } else {
+                BusinessIntelligenceEmptyStates.noRevenueData {
+                    HapticManager.shared.trigger(.buttonTap, context: .analytics)
+                    // Navigate to partners view
+                    print("Navigate to partners")
                 }
             }
             
-            Text(metric.value)
-                .font(.titleLarge)
-                .fontWeight(.bold)
-                .foregroundColor(.graphite)
+            // Order Analytics
+            if viewModel.orderAnalytics.hasData {
+                HapticOrderAnalyticsCard(
+                    data: viewModel.orderAnalytics,
+                    timeRange: selectedTimeRange
+                )
+            } else {
+                BusinessIntelligenceEmptyStates.noOrdersData {
+                    HapticManager.shared.trigger(.buttonTap, context: .analytics)
+                    // Navigate to partners view
+                    print("Navigate to partners")
+                }
+            }
             
-            Text(metric.title)
-                .font(.bodySmall)
-                .foregroundColor(.gray600)
-                .lineLimit(1)
+            // Customer Insights
+            if viewModel.customerInsights.hasData {
+                HapticCustomerInsightsCard(
+                    data: viewModel.customerInsights
+                )
+            } else {
+                BusinessIntelligenceEmptyStates.noCustomerData {
+                    HapticManager.shared.trigger(.buttonTap, context: .analytics)
+                    // Show analytics tutorial
+                    print("Show analytics tutorial")
+                }
+            }
+            
+            // Performance Metrics
+            HapticPerformanceMetricsCard(
+                data: viewModel.performanceMetrics
+            )
+            
+            // Top Products
+            if !viewModel.topProducts.isEmpty {
+                HapticTopProductsCard(
+                    products: viewModel.topProducts
+                )
+            }
+        }
+    }
+    
+    @ViewBuilder
+    private var emptyStateView: some View {
+        VStack(spacing: Spacing.xl) {
+            Spacer()
+            
+            ContextualEmptyStateView(
+                type: .businessIntelligence(metric: "analytics"),
+                primaryAction: {
+                    HapticManager.shared.trigger(.buttonTap, context: .analytics)
+                    // Navigate to partners or onboarding
+                    print("Get started with analytics")
+                },
+                secondaryAction: {
+                    HapticManager.shared.trigger(.buttonTap, context: .analytics)
+                    // Show help or tutorial
+                    print("Learn about analytics")
+                }
+            )
+            
+            Spacer()
+        }
+    }
+}
+
+// MARK: - Enhanced Cards with Haptic Feedback
+
+struct HapticKeyMetricsGrid: View {
+    let metrics: [KeyMetric]
+    
+    var body: some View {
+        LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 2), spacing: 16) {
+            ForEach(metrics, id: \.title) { metric in
+                KeyMetricCard(metric: metric)
+                    .onTapHaptic(.metricTap, context: .analytics) {
+                        print("Metric tapped: \(metric.title)")
+                    }
+                    .transition(.asymmetric(
+                        insertion: .scale.combined(with: .opacity),
+                        removal: .opacity
+                    ))
+            }
+        }
+        .animation(.easeInOut(duration: 0.3), value: metrics.count)
+    }
+}
+
+struct HapticRevenueChartCard: View {
+    let data: [RevenueDataPoint]
+    let timeRange: TimeRange
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: Spacing.md) {
+            Text("Revenue Trends")
+                .font(.titleMedium)
+                .fontWeight(.semibold)
+            
+            if #available(iOS 16.0, *) {
+                Chart(data, id: \.date) { dataPoint in
+                    LineMark(
+                        x: .value("Date", dataPoint.date),
+                        y: .value("Revenue", dataPoint.amount)
+                    )
+                    .foregroundStyle(.emerald)
+                    .lineStyle(StrokeStyle(lineWidth: 3))
+                    
+                    AreaMark(
+                        x: .value("Date", dataPoint.date),
+                        y: .value("Revenue", dataPoint.amount)
+                    )
+                    .foregroundStyle(
+                        LinearGradient(
+                            colors: [.emerald.opacity(0.3), .clear],
+                            startPoint: .top,
+                            endPoint: .bottom
+                        )
+                    )
+                }
+                .frame(height: 200)
+                .chartYAxis {
+                    AxisMarks(position: .leading)
+                }
+                .chartXAxis {
+                    AxisMarks(values: .stride(by: .day)) { value in
+                        if let date = value.as(Date.self) {
+                            AxisValueLabel {
+                                Text(date, format: .dateTime.month(.abbreviated).day())
+                            }
+                        }
+                    }
+                }
+                .onTapGesture { location in
+                    HapticManager.shared.trigger(.chartInteraction, context: .analytics)
+                    print("Chart tapped at: \(location)")
+                }
+            } else {
+                Rectangle()
+                    .fill(Color.gray.opacity(0.3))
+                    .frame(height: 200)
+                    .overlay(
+                        Text("Chart requires iOS 16+")
+                            .foregroundColor(.secondary)
+                    )
+            }
         }
         .padding(Spacing.md)
         .background(Color.white)
         .cornerRadius(12)
         .shadow(color: .black.opacity(0.1), radius: 4, x: 0, y: 2)
-        .accessibilityElement(children: .combine)
-        .accessibilityLabel("\(metric.title): \(metric.value)")
-        .accessibilityHint(metric.percentageChange.map { "Changed by \($0)%" } ?? "")
+        .transition(.asymmetric(
+            insertion: .scale.combined(with: .opacity),
+            removal: .opacity
+        ))
     }
 }
 
-// RevenueChartCard is defined in Features/Partner/AnalyticsDashboardView.swift
+struct HapticOrderAnalyticsCard: View {
+    let data: OrderAnalytics
+    let timeRange: TimeRange
+    
+    var body: some View {
+        OrderAnalyticsCard(data: data, timeRange: timeRange)
+            .onTapHaptic(.metricTap, context: .analytics) {
+                print("Order analytics tapped")
+            }
+    }
+}
+
+struct HapticCustomerInsightsCard: View {
+    let data: CustomerInsights
+    
+    var body: some View {
+        CustomerInsightsCard(data: data)
+            .onTapHaptic(.metricTap, context: .analytics) {
+                print("Customer insights tapped")
+            }
+    }
+}
+
+struct HapticPerformanceMetricsCard: View {
+    let data: PerformanceMetrics
+    
+    var body: some View {
+        PerformanceMetricsCard(data: data)
+            .onTapHaptic(.metricTap, context: .analytics) {
+                print("Performance metrics tapped")
+            }
+    }
+}
+
+struct HapticTopProductsCard: View {
+    let products: [TopProduct]
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: Spacing.md) {
+            Text("Top Products")
+                .font(.titleMedium)
+                .fontWeight(.semibold)
+            
+            ForEach(Array(products.enumerated()), id: \.offset) { index, product in
+                HapticTopProductRow(product: product, rank: index + 1)
+                    .transition(.asymmetric(
+                        insertion: .slide.combined(with: .opacity),
+                        removal: .opacity
+                    ))
+            }
+        }
+        .padding(Spacing.md)
+        .background(Color.white)
+        .cornerRadius(12)
+        .shadow(color: .black.opacity(0.1), radius: 4, x: 0, y: 2)
+        .animation(.easeInOut(duration: 0.4), value: products.count)
+    }
+}
+
+struct HapticTopProductRow: View {
+    let product: TopProduct
+    let rank: Int
+    
+    var body: some View {
+        HStack(spacing: Spacing.md) {
+            // Rank indicator
+            Text("\(rank)")
+                .font(.caption)
+                .fontWeight(.bold)
+                .foregroundColor(.white)
+                .frame(width: 24, height: 24)
+                .background(rankColor)
+                .clipShape(Circle())
+            
+            VStack(alignment: .leading, spacing: 4) {
+                Text(product.name)
+                    .font(.bodyMedium)
+                    .fontWeight(.medium)
+                    .foregroundColor(.graphite)
+                
+                Text("\(product.orderCount) orders")
+                    .font(.caption)
+                    .foregroundColor(.gray500)
+            }
+            
+            Spacer()
+            
+            Text(String(format: "$%.0f", product.revenue))
+                .font(.labelLarge)
+                .fontWeight(.semibold)
+                .foregroundColor(.graphite)
+        }
+        .padding(.vertical, Spacing.xs)
+        .onTapHaptic(.selection, context: .analytics) {
+            print("Product tapped: \(product.name)")
+        }
+    }
+    
+    private var rankColor: Color {
+        switch rank {
+        case 1: return .yellow
+        case 2: return .gray400
+        case 3: return .orange
+        default: return .emerald
+        }
+    }
+}
 
 // MARK: - Order Analytics Card
 struct OrderAnalyticsCard: View {
