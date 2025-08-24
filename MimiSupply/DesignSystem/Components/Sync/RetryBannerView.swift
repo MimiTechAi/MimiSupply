@@ -390,7 +390,10 @@ enum RetryBannerSeverity: CaseIterable {
                     }
                 )
             }
-            .buttonStyle(.primary)
+            .foregroundColor(.white)
+            .padding()
+            .background(Color.emerald)
+            .cornerRadius(12)
             
             Button("Show Warning Banner") {
                 RetryBannerManager.shared.showRetryBanner(
@@ -402,7 +405,10 @@ enum RetryBannerSeverity: CaseIterable {
                     }
                 )
             }
-            .buttonStyle(.secondary)
+            .foregroundColor(.white)
+            .padding()
+            .background(Color.gray600)
+            .cornerRadius(12)
             
             Button("Show Success Banner") {
                 RetryBannerManager.shared.showInfoBanner(
@@ -411,7 +417,10 @@ enum RetryBannerSeverity: CaseIterable {
                     severity: .success
                 )
             }
-            .buttonStyle(.tertiary)
+            .foregroundColor(.white)
+            .padding()
+            .background(Color.success)
+            .cornerRadius(12)
         }
         .padding()
     }

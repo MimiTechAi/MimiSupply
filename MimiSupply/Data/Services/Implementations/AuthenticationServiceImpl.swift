@@ -373,9 +373,9 @@ final class AuthenticationServiceImpl: NSObject, @unchecked Sendable, Authentica
             case .credentialExport:
                 return .signInFailed("Authorization code missing")
             case .preferSignInWithApple:
-                <#code#>
+                return .signInFailed("Prefer Sign in with Apple")
             case .deviceNotConfiguredForPasskeyCreation:
-                <#code#>
+                return .signInFailed("Device not configured for passkey creation")
             @unknown default:
                 return .signInFailed("Password credential error")
             }

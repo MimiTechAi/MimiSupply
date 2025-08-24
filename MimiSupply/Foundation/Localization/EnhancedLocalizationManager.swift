@@ -385,53 +385,46 @@ struct EnhancedLanguageSelectionView: View {
     }
 }
 
-struct LanguageRow: View {
+struct LocalizationLanguageRow: View {
     let language: SupportedLanguage
-    let isSelected: Bool
-    let action: () -> Void
-    
-    @StateObject private var localizationManager = EnhancedLocalizationManager.shared
+    @Binding var selectedLanguage: SupportedLanguage
+    let onSelect: (SupportedLanguage) -> Void
     
     var body: some View {
-        Button(action: action) {
-            HStack(spacing: Spacing.md) {
-                VStack(alignment: localizationManager.isRightToLeft ? .trailing : .leading, spacing: 4) {
-                    Text(language.nativeName)
-                        .font(.bodyMedium)
-                        .foregroundColor(ColorTokens.Content.textPrimary)
-                        .rtlTextAlignment()
-                    
-                    Text(language.englishName)
-                        .font(.caption)
-                        .foregroundColor(ColorTokens.Content.textSecondary)
-                        .rtlTextAlignment()
-                }
+        HStack(spacing: Spacing.md) {
+            // Flag
+            Text(language.flag)
+                .font(.title2)
+            
+            // Language info
+            VStack(alignment: .leading, spacing: Spacing.xs) {
+                Text(language.displayName)
+                    .font(.body.scaledFont())
+                    .foregroundColor(.primary)
                 
-                Spacer()
-                
-                if language.isRightToLeft {
-                    Image(systemName: "text.alignright")
-                        .font(.caption)
-                        .foregroundColor(ColorTokens.Content.iconSecondary)
-                }
-                
-                Text(language.code.uppercased())
-                    .font(.caption2)
-                    .fontWeight(.medium)
-                    .foregroundColor(ColorTokens.Content.textTertiary)
-                    .padding(.horizontal, 6)
-                    .padding(.vertical, 2)
-                    .background(ColorTokens.UI.surfaceSecondary)
-                    .cornerRadius(4)
-                
-                if isSelected {
-                    Image(systemName: "checkmark.circle.fill")
-                        .foregroundColor(ColorTokens.Status.success)
-                }
+                Text(language.code)
+                    .font(.caption.scaledFont())
+                    .foregroundColor(.secondary)
             }
-            .padding(.vertical, 4)
+            
+            Spacer()
+            
+            // Selection indicator
+            if selectedLanguage == language {
+                Image(systemName: "checkmark")
+                    .foregroundColor(.emerald)
+                    .font(.headline)
+            }
         }
-        .buttonStyle(PlainButtonStyle())
+        .contentShape(Rectangle())
+        .onTapGesture {
+            onSelect(language)
+        }
+        .accessibilityElement(children: .combine)
+        .accessibilityAddTraits(selectedLanguage == language ? .isSelected : [])
+        .accessibilityAction {
+            onSelect(language)
+        }
     }
 }
 

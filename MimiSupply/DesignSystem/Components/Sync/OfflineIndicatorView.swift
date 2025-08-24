@@ -333,5 +333,5 @@ struct OfflineGuideSheet: View {
         OfflineIndicatorView()
         Spacer()
     }
-    .background(Color.surfacePrimary)
+    .background(Color.surfaceSecondary)
 }

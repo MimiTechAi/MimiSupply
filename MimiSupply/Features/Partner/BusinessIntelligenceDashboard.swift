@@ -850,3 +850,85 @@ extension KeyMetric {
         return "\(sign)\(String(format: "%.1f", change))%"
     }
 }
+
+struct BIDashboardMetricRow: View {
+    let title: String
+    let value: String
+    let change: String?
+    let changeColor: Color
+    
+    var body: some View {
+        HStack {
+            VStack(alignment: .leading, spacing: Spacing.xs) {
+                Text(title)
+                    .font(.caption.scaledFont())
+                    .foregroundColor(.secondary)
+                
+                Text(value)
+                    .font(.title3.scaledFont().weight(.semibold))
+                    .foregroundColor(.primary)
+            }
+            
+            Spacer()
+            
+            if let change = change {
+                Text(change)
+                    .font(.caption.scaledFont().weight(.medium))
+                    .foregroundColor(changeColor)
+                    .padding(.horizontal, Spacing.xs)
+                    .padding(.vertical, 2)
+                    .background(changeColor.opacity(0.1))
+                    .clipShape(RoundedRectangle(cornerRadius: 4))
+            }
+        }
+    }
+}
+
+struct BIDashboardKeyMetricsGrid: View {
+    let metrics: [BusinessMetric]
+    
+    struct BusinessMetric: Identifiable {
+        let id = UUID()
+        let title: String
+        let value: String
+        let icon: String
+        let color: Color
+        let change: Double?
+    }
+    
+    var body: some View {
+        LazyVGrid(columns: [
+            GridItem(.flexible()),
+            GridItem(.flexible())
+        ], spacing: Spacing.md) {
+            ForEach(metrics) { metric in
+                VStack(alignment: .leading, spacing: Spacing.sm) {
+                    HStack {
+                        Image(systemName: metric.icon)
+                            .foregroundColor(metric.color)
+                        Text(metric.title)
+                            .font(.caption.scaledFont())
+                            .foregroundColor(.secondary)
+                        Spacer()
+                    }
+                    
+                    Text(metric.value)
+                        .font(.title2.scaledFont().weight(.bold))
+                    
+                    if let change = metric.change {
+                        HStack(spacing: Spacing.xs) {
+                            Image(systemName: change > 0 ? "arrow.up" : "arrow.down")
+                                .font(.caption2)
+                            Text("\(abs(change), specifier: "%.1f")%")
+                                .font(.caption.scaledFont())
+                        }
+                        .foregroundColor(change > 0 ? .success : .error)
+                    }
+                }
+                .padding(Spacing.md)
+                .background(Color.surfaceSecondary.opacity(0.5))
+                .clipShape(RoundedRectangle(cornerRadius: 12))
+            }
+        }
+    }
+}

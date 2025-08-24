@@ -1,6 +1,14 @@
+//
+//  CircuitBreaker.swift
+//  MimiSupply
+//
+//  Created by Alex on 15.08.25.
+//
+
 import Foundation
-import OSLog
+import SwiftUI
 import Combine
+import OSLog
 
 // MARK: - Circuit Breaker States
 enum CircuitBreakerState: String, CaseIterable {
@@ -356,46 +364,52 @@ extension CircuitBreaker {
     }
 }
 
-// MARK: - SwiftUI Integration
+/// SwiftUI view for monitoring circuit breaker status
 struct CircuitBreakerStatusView: View {
     @StateObject private var manager = CircuitBreakerManager.shared
     
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text("Circuit Breaker Status")
-                .font(.headline)
+        VStack(alignment: .leading, spacing: Spacing.md) {
+            Text("Circuit Breakers")
+                .font(.headline.scaledFont())
             
-            ForEach(manager.getAllCircuitBreakers(), id: \.name) { breaker in
-                HStack {
-                    Circle()
-                        .fill(colorForState(breaker.state))
-                        .frame(width: 12, height: 12)
-                    
-                    Text(breaker.name.capitalized)
-                        .font(.body)
-                    
-                    Spacer()
-                    
-                    Text(breaker.state.rawValue.capitalized)
-                        .font(.caption)
-                        .foregroundColor(.secondary)
+            ForEach(Array(manager.circuitBreakers.keys), id: \.self) { service in
+                if let breaker = manager.circuitBreakers[service] {
+                    HStack {
+                        Circle()
+                            .fill(colorForState(breaker.state))
+                            .frame(width: 8, height: 8)
+                        
+                        Text(service)
+                            .font(.body.scaledFont())
+                        
+                        Spacer()
+                        
+                        Text(breaker.state.description)
+                            .font(.caption.scaledFont())
+                            .foregroundColor(.secondary)
+                    }
                 }
             }
         }
-        .padding()
-        .background(Color(.systemBackground))
-        .cornerRadius(12)
+        .padding(Spacing.lg)
+        .background(Color.surfaceSecondary.opacity(0.5))
+        .clipShape(RoundedRectangle(cornerRadius: 12))
     }
     
     private func colorForState(_ state: CircuitBreakerState) -> Color {
         switch state {
-        case .closed: return .green
-        case .halfOpen: return .orange
-        case .open: return .red
+        case .closed:
+            return .success
+        case .open:
+            return .error
+        case .halfOpen:
+            return .warning
         }
     }
 }
 
 #Preview {
     CircuitBreakerStatusView()
+        .padding()
 }

@@ -1,4 +1,12 @@
+//
+//  PerformanceBudgets.swift
+//  MimiSupply
+//
+//  Created by Alex on 15.08.25.
+//
+
 import Foundation
+import SwiftUI
 import OSLog
 
 // MARK: - Performance Budget Configuration
@@ -191,6 +199,31 @@ extension View {
         .onDisappear {
             PerformanceMonitor.shared.endMeasurement(name)
         }
+    }
+}
+
+struct PerformanceBudgetModifier: ViewModifier {
+    let budget: PerformanceMetrics
+    let identifier: String
+    
+    func body(content: Content) -> some View {
+        content
+            .onAppear {
+                PerformanceBudgetManager.shared.startMeasuring(identifier, budget: budget)
+            }
+            .onDisappear {
+                PerformanceBudgetManager.shared.stopMeasuring(identifier)
+            }
+    }
+}
+
+extension View {
+    /// Monitor performance budget for this view
+    func performanceBudget(
+        _ budget: PerformanceMetrics,
+        identifier: String
+    ) -> some View {
+        self.modifier(PerformanceBudgetModifier(budget: budget, identifier: identifier))
     }
 }
 

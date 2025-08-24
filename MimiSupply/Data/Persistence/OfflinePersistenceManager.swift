@@ -537,6 +537,36 @@ struct CachedItem<T: Codable>: Codable {
     let category: CacheCategory
     let createdAt: Date
     let expirationDate: Date
+    
+    init(key: String, data: T, category: CacheCategory, createdAt: Date, expirationDate: Date) {
+        self.key = key
+        self.data = data
+        self.category = category
+        self.createdAt = createdAt
+        self.expirationDate = expirationDate
+    }
+    
+    private enum CodingKeys: String, CodingKey {
+        case key, data, category, createdAt, expirationDate
+    }
+    
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        key = try container.decode(String.self, forKey: .key)
+        data = try container.decode(T.self, forKey: .data)
+        category = try container.decode(CacheCategory.self, forKey: .category)
+        createdAt = try container.decode(Date.self, forKey: .createdAt)
+        expirationDate = try container.decode(Date.self, forKey: .expirationDate)
+    }
+    
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(key, forKey: .key)
+        try container.encode(data, forKey: .data)
+        try container.encode(category, forKey: .category)
+        try container.encode(createdAt, forKey: .createdAt)
+        try container.encode(expirationDate, forKey: .expirationDate)
+    }
 }
 
 struct ImageCacheMetadata: Codable {
@@ -572,4 +602,109 @@ final class BatchCacheOperation<T: Codable>: Operation {
     init(items: [(key: String, data: T)], category: CacheCategory, persistenceManager: OfflinePersistenceManager) {
         self.items = items
         self.category = category
-        self
+        self.persistenceManager = persistenceManager
+        super.init()
+    }
+    
+    override func main() {
+        guard !isCancelled else { return }
+        
+        for (key, data) in items {
+            guard !isCancelled else { break }
+            
+            Task {
+                try? await persistenceManager?.cacheData(data, forKey: key, category: category)
+            }
+        }
+    }
+}
+
+final class CacheCleanupOperation: Operation {
+    private let cacheDirectory: URL
+    private let imagesCacheDirectory: URL
+    private let metadataCacheDirectory: URL
+    private let fileManager: FileManager
+    
+    init(
+        cacheDirectory: URL,
+        imagesCacheDirectory: URL,
+        metadataCacheDirectory: URL,
+        fileManager: FileManager
+    ) {
+        self.cacheDirectory = cacheDirectory
+        self.imagesCacheDirectory = imagesCacheDirectory
+        self.metadataCacheDirectory = metadataCacheDirectory
+        self.fileManager = fileManager
+        super.init()
+    }
+    
+    override func main() {
+        guard !isCancelled else { return }
+        
+        cleanExpiredFiles(in: cacheDirectory)
+        cleanExpiredFiles(in: imagesCacheDirectory)
+        cleanExpiredFiles(in: metadataCacheDirectory)
+    }
+    
+    private func cleanExpiredFiles(in directory: URL) {
+        guard let enumerator = fileManager.enumerator(
+            at: directory,
+            includingPropertiesForKeys: [.creationDateKey],
+            options: [.skipsHiddenFiles]
+        ) else { return }
+        
+        let expirationDate = Date().addingTimeInterval(-7 * 24 * 60 * 60) // 7 days ago
+        
+        for case let fileURL as URL in enumerator {
+            guard !isCancelled else { break }
+            
+            do {
+                let resourceValues = try fileURL.resourceValues(forKeys: [.creationDateKey])
+                if let creationDate = resourceValues.creationDate,
+                   creationDate < expirationDate {
+                    try fileManager.removeItem(at: fileURL)
+                }
+            } catch {
+                // Skip files that can't be processed
+                continue
+            }
+        }
+    }
+}
+
+// MARK: - Extensions
+
+extension OfflinePersistenceManager {
+    /// Convenience method for caching partners
+    func cachePartners(_ partners: [Partner]) async throws {
+        let items = partners.map { (key: "partner_\($0.id)", data: $0) }
+        try await cacheBatch(items, category: .partners)
+    }
+    
+    /// Convenience method for caching products
+    func cacheProducts(_ products: [Product]) async throws {
+        let items = products.map { (key: "product_\($0.id)", data: $0) }
+        try await cacheBatch(items, category: .products)
+    }
+    
+    /// Convenience method for caching orders
+    func cacheOrders(_ orders: [Order]) async throws {
+        let items = orders.map { (key: "order_\($0.id)", data: $0) }
+        try await cacheBatch(items, category: .orders)
+    }
+    
+    /// Retrieve cached partner
+    func getCachedPartner(id: String) async -> Partner? {
+        return try? await retrieveCachedData(Partner.self, forKey: "partner_\(id)", category: .partners)
+    }
+    
+    /// Retrieve cached product
+    func getCachedProduct(id: String) async -> Product? {
+        return try? await retrieveCachedData(Product.self, forKey: "product_\(id)", category: .products)
+    }
+    
+    /// Retrieve cached order
+    func getCachedOrder(id: String) async -> Order? {
+        return try? await retrieveCachedData(Order.self, forKey: "order_\(id)", category: .orders)
+    }
+}

@@ -118,30 +118,30 @@ struct ColorTokens {
 extension Color {
     
     // MARK: - Migration from old color system
-    static let emerald = ColorTokens.Brand.primary
-    static let chalk = ColorTokens.UI.backgroundPrimary
-    static let graphite = ColorTokens.Content.textPrimary
+    static let mimisupplyEmerald = ColorTokens.Brand.primary
+    static let mimisupplyChalk = ColorTokens.UI.backgroundPrimary
+    static let mimisupplyGraphite = ColorTokens.Content.textPrimary
     
     // MARK: - Semantic colors with dark mode support
-    static let success = ColorTokens.Status.success
-    static let warning = ColorTokens.Status.warning
-    static let error = ColorTokens.Status.error
-    static let info = ColorTokens.Status.info
+    static let statusSuccess = ColorTokens.Status.success
+    static let statusWarning = ColorTokens.Status.warning
+    static let statusError = ColorTokens.Status.error
+    static let statusInfo = ColorTokens.Status.info
     
     // MARK: - Neutral grays with dark mode variants
-    static let gray50 = Color("Neutrals/Gray50")
-    static let gray100 = Color("Neutrals/Gray100")
-    static let gray200 = Color("Neutrals/Gray200")
-    static let gray300 = Color("Neutrals/Gray300")
-    static let gray400 = Color("Neutrals/Gray400")
-    static let gray500 = Color("Neutrals/Gray500")
-    static let gray600 = Color("Neutrals/Gray600")
-    static let gray700 = Color("Neutrals/Gray700")
-    static let gray800 = Color("Neutrals/Gray800")
-    static let gray900 = Color("Neutrals/Gray900")
+    static let neutralGray50 = Color("Neutrals/Gray50")
+    static let neutralGray100 = Color("Neutrals/Gray100")
+    static let neutralGray200 = Color("Neutrals/Gray200")
+    static let neutralGray300 = Color("Neutrals/Gray300")
+    static let neutralGray400 = Color("Neutrals/Gray400")
+    static let neutralGray500 = Color("Neutrals/Gray500")
+    static let neutralGray600 = Color("Neutrals/Gray600")
+    static let neutralGray700 = Color("Neutrals/Gray700")
+    static let neutralGray800 = Color("Neutrals/Gray800")
+    static let neutralGray900 = Color("Neutrals/Gray900")
     
     // MARK: - High Contrast Support
-    var highContrastVariant: Color {
+    var accessibilityHighContrastVariant: Color {
         if UIAccessibility.isDarkerSystemColorsEnabled {
             return self.opacity(0.9)
         } else {
@@ -150,7 +150,7 @@ extension Color {
     }
     
     // MARK: - Dynamic Color Creation
-    static func dynamic(light: Color, dark: Color) -> Color {
+    static func colorDynamic(light: Color, dark: Color) -> Color {
         return Color(UIColor { traitCollection in
             switch traitCollection.userInterfaceStyle {
             case .dark:
@@ -162,7 +162,7 @@ extension Color {
     }
     
     // MARK: - Elevated Surface Colors
-    static func elevatedSurface(level: Int = 1) -> Color {
+    static func surfaceElevated(level: Int = 1) -> Color {
         switch level {
         case 1: return ColorTokens.UI.surfaceSecondary
         case 2: return ColorTokens.UI.surfaceElevated

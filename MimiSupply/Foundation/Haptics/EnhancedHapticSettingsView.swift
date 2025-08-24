@@ -251,51 +251,21 @@ struct HapticTestGroup: View {
 }
 
 // MARK: - Enhanced Haptic Test Button
-struct HapticTestButton: View {
-    let title: String
-    let type: HapticFeedbackType
+struct EnhancedHapticTestButton: View {
+    let hapticType: HapticFeedbackType
     let context: HapticContext
-    @State private var isPressed = false
+    let title: String
     
     var body: some View {
-        Button(title) {
-            HapticManager.shared.trigger(type, context: context)
-        }
-        .font(.caption)
-        .fontWeight(.medium)
-        .padding(.horizontal, 12)
-        .padding(.vertical, 8)
-        .background(backgroundColor)
-        .foregroundColor(textColor)
-        .cornerRadius(8)
-        .scaleEffect(isPressed ? 0.95 : 1.0)
-        .animation(.easeInOut(duration: 0.1), value: isPressed)
-        .onLongPressGesture(minimumDuration: 0, maximumDistance: .infinity) {
-            // Empty action
-        } onPressingChanged: { pressing in
-            withAnimation {
-                isPressed = pressing
-            }
-        }
-    }
-    
-    private var backgroundColor: Color {
-        switch context {
-        case .ui, .navigation: return .blue.opacity(0.1)
-        case .commerce: return .green.opacity(0.1)
-        case .analytics: return .purple.opacity(0.1)
-        case .system: return .orange.opacity(0.1)
-        case .gaming: return .pink.opacity(0.1)
-        }
-    }
-    
-    private var textColor: Color {
-        switch context {
-        case .ui, .navigation: return .blue
-        case .commerce: return .green
-        case .analytics: return .purple
-        case .system: return .orange
-        case .gaming: return .pink
+        Button {
+            HapticManager.shared.trigger(hapticType, context: context)
+        } label: {
+            Text(title)
+                .font(.caption.scaledFont())
+                .padding(.horizontal, Spacing.sm)
+                .padding(.vertical, Spacing.xs)
+                .background(Color.accentColor.opacity(0.1))
+                .clipShape(RoundedRectangle(cornerRadius: 8))
         }
     }
 }

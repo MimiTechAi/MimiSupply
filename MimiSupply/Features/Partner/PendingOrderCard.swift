@@ -271,6 +271,45 @@ extension OrderStatus {
     }
 }
 
+// MARK: - Order Action Button
+struct OrderActionButton: View {
+    let title: String
+    let action: () -> Void
+    let style: ButtonStyle
+    
+    enum ButtonStyle {
+        case primary, secondary, destructive
+        
+        var backgroundColor: Color {
+            switch self {
+            case .primary: return .emerald
+            case .secondary: return .gray200
+            case .destructive: return .error
+            }
+        }
+        
+        var textColor: Color {
+            switch self {
+            case .primary: return .white
+            case .secondary: return .primary
+            case .destructive: return .white
+            }
+        }
+    }
+    
+    var body: some View {
+        Button(action: action) {
+            Text(title)
+                .font(.caption.scaledFont().weight(.semibold))
+                .foregroundColor(style.textColor)
+                .padding(.horizontal, Spacing.md)
+                .padding(.vertical, Spacing.sm)
+                .background(style.backgroundColor)
+                .clipShape(RoundedRectangle(cornerRadius: 8))
+        }
+    }
+}
+
 // MARK: - Mock Data
 extension Order {
     static let mockPendingOrder = Order(

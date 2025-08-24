@@ -704,7 +704,7 @@ struct ConnectionEvent: View {
             Spacer()
             
             Text(timestamp, style: .time)
-                .font(.caption2.scaledFont())
+                .font(.caption2.scaledFont().monospacedDigit())
                 .foregroundColor(.secondary)
         }
     }

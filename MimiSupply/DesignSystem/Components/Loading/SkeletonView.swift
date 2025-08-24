@@ -1,269 +1,125 @@
+//
+//  SkeletonView.swift
+//  MimiSupply
+//
+//  Created by Alex on 15.08.25.
+//
+
 import SwiftUI
 
-// MARK: - Skeleton Loading System
-struct SkeletonView: View {
-    let content: () -> any View
-    let isLoading: Bool
-    
-    init(isLoading: Bool, @ViewBuilder content: @escaping () -> any View) {
-        self.isLoading = isLoading
-        self.content = content
-    }
-    
-    var body: some View {
-        if isLoading {
-            AnyView(content())
-                .redacted(reason: .placeholder)
-                .shimmer()
-        } else {
-            AnyView(content())
-        }
-    }
-}
-
-// MARK: - Shimmer Effect
-struct ShimmerEffect: ViewModifier {
-    @State private var phase: CGFloat = 0
-    
-    func body(content: Content) -> some View {
-        content
-            .overlay(
-                // Shimmer gradient overlay
-                LinearGradient(
-                    gradient: Gradient(colors: [
-                        Color.white.opacity(0),
-                        Color.white.opacity(0.4),
-                        Color.white.opacity(0)
-                    ]),
-                    startPoint: .leading,
-                    endPoint: .trailing
-                )
-                .rotationEffect(.degrees(15))
-                .offset(x: phase * 400 - 200)
-                .animation(
-                    Animation.linear(duration: 1.5)
-                        .repeatForever(autoreverses: false),
-                    value: phase
-                )
-            )
-            .onAppear {
-                phase = 1
-            }
-    }
-}
-
-extension View {
-    func shimmer() -> some View {
-        modifier(ShimmerEffect())
-    }
-}
-
-// MARK: - Predefined Skeleton Components
-struct SkeletonCard: View {
+/// Enhanced skeleton loading view with accessibility and animations
+struct EnhancedSkeletonView: View {
+    let width: CGFloat?
     let height: CGFloat
     let cornerRadius: CGFloat
+    let animationDuration: Double
     
-    init(height: CGFloat = 120, cornerRadius: CGFloat = 12) {
+    @State private var isAnimating = false
+    @StateObject private var accessibilityManager = AccessibilityManager.shared
+    
+    init(
+        width: CGFloat? = nil,
+        height: CGFloat = 20,
+        cornerRadius: CGFloat = 4,
+        animationDuration: Double = 1.5
+    ) {
+        self.width = width
         self.height = height
         self.cornerRadius = cornerRadius
+        self.animationDuration = animationDuration
     }
     
     var body: some View {
         RoundedRectangle(cornerRadius: cornerRadius)
-            .fill(Color.gray.opacity(0.3))
-            .frame(height: height)
-            .shimmer()
+            .fill(skeletonGradient)
+            .frame(width: width, height: height)
+            .opacity(isAnimating ? 0.6 : 1.0)
+            .animation(
+                accessibilityManager.isReduceMotionEnabled ? 
+                    .none : 
+                    .easeInOut(duration: animationDuration).repeatForever(autoreverses: true),
+                value: isAnimating
+            )
+            .onAppear {
+                if !accessibilityManager.isReduceMotionEnabled {
+                    isAnimating = true
+                }
+            }
+            .accessibilityElement(children: .ignore)
+            .accessibilityLabel("Loading content")
+            .accessibilityAddTraits(.updatesFrequently)
+    }
+    
+    private var skeletonGradient: some View {
+        LinearGradient(
+            colors: [
+                Color.gray200,
+                Color.gray300,
+                Color.gray200
+            ],
+            startPoint: .leading,
+            endPoint: .trailing
+        )
     }
 }
+
+// MARK: - Convenience Views
 
 struct SkeletonText: View {
-    let width: CGFloat?
-    let height: CGFloat
+    let lines: Int
+    let spacing: CGFloat
     
-    init(width: CGFloat? = nil, height: CGFloat = 16) {
-        self.width = width
-        self.height = height
+    init(lines: Int = 3, spacing: CGFloat = Spacing.xs) {
+        self.lines = lines
+        self.spacing = spacing
     }
     
     var body: some View {
-        RoundedRectangle(cornerRadius: height / 2)
-            .fill(Color.gray.opacity(0.3))
-            .frame(width: width, height: height)
-            .shimmer()
+        VStack(alignment: .leading, spacing: spacing) {
+            ForEach(0..<lines, id: \.self) { index in
+                EnhancedSkeletonView(
+                    width: index == lines - 1 ? 120 : nil,
+                    height: 16,
+                    cornerRadius: 8
+                )
+            }
+        }
     }
 }
 
-struct SkeletonCircle: View {
-    let size: CGFloat
-    
-    init(size: CGFloat = 40) {
-        self.size = size
-    }
-    
+struct SkeletonCard: View {
     var body: some View {
-        Circle()
-            .fill(Color.gray.opacity(0.3))
-            .frame(width: size, height: size)
-            .shimmer()
-    }
-}
-
-// MARK: - Business Intelligence Skeleton Components
-struct KeyMetricCardSkeleton: View {
-    var body: some View {
-        VStack(alignment: .leading, spacing: Spacing.sm) {
+        VStack(alignment: .leading, spacing: Spacing.md) {
             HStack {
-                SkeletonCircle(size: 24)
+                EnhancedSkeletonView(width: 40, height: 40, cornerRadius: 20)
+                
+                VStack(alignment: .leading, spacing: Spacing.xs) {
+                    EnhancedSkeletonView(width: 120, height: 16, cornerRadius: 8)
+                    EnhancedSkeletonView(width: 80, height: 12, cornerRadius: 6)
+                }
                 
                 Spacer()
-                
-                SkeletonText(width: 40, height: 12)
             }
             
-            SkeletonText(width: 80, height: 24)
-            SkeletonText(width: 120, height: 14)
+            SkeletonText(lines: 2)
+            
+            HStack {
+                EnhancedSkeletonView(width: 60, height: 30, cornerRadius: 15)
+                Spacer()
+                EnhancedSkeletonView(width: 80, height: 30, cornerRadius: 8)
+            }
         }
-        .padding(Spacing.md)
-        .background(Color.white)
-        .cornerRadius(12)
-        .shadow(color: .black.opacity(0.1), radius: 4, x: 0, y: 2)
+        .padding(Spacing.lg)
+        .background(Color.surfaceSecondary.opacity(0.5))
+        .clipShape(RoundedRectangle(cornerRadius: 12))
     }
 }
 
-struct RevenueChartCardSkeleton: View {
-    var body: some View {
-        VStack(alignment: .leading, spacing: Spacing.md) {
-            SkeletonText(width: 150, height: 20)
-            
-            SkeletonCard(height: 200, cornerRadius: 8)
-        }
-        .padding(Spacing.md)
-        .background(Color.white)
-        .cornerRadius(12)
-        .shadow(color: .black.opacity(0.1), radius: 4, x: 0, y: 2)
+#Preview {
+    VStack(spacing: Spacing.lg) {
+        EnhancedSkeletonView()
+        SkeletonText()
+        SkeletonCard()
     }
-}
-
-struct OrderAnalyticsCardSkeleton: View {
-    var body: some View {
-        VStack(alignment: .leading, spacing: Spacing.md) {
-            SkeletonText(width: 140, height: 20)
-            
-            VStack(spacing: Spacing.sm) {
-                ForEach(0..<4, id: \.self) { _ in
-                    HStack {
-                        SkeletonCircle(size: 20)
-                        SkeletonText(width: 100, height: 16)
-                        Spacer()
-                        SkeletonText(width: 60, height: 16)
-                    }
-                    .padding(.vertical, 2)
-                }
-            }
-        }
-        .padding(Spacing.md)
-        .background(Color.white)
-        .cornerRadius(12)
-        .shadow(color: .black.opacity(0.1), radius: 4, x: 0, y: 2)
-    }
-}
-
-struct CustomerInsightsCardSkeleton: View {
-    var body: some View {
-        VStack(alignment: .leading, spacing: Spacing.md) {
-            SkeletonText(width: 130, height: 20)
-            
-            VStack(spacing: Spacing.sm) {
-                ForEach(0..<4, id: \.self) { _ in
-                    HStack(spacing: 12) {
-                        SkeletonCircle(size: 8)
-                        
-                        VStack(alignment: .leading, spacing: 4) {
-                            SkeletonText(width: 120, height: 16)
-                            SkeletonText(width: 180, height: 12)
-                        }
-                        
-                        Spacer()
-                        
-                        SkeletonText(width: 50, height: 12)
-                    }
-                    .padding(.vertical, 8)
-                }
-            }
-        }
-        .padding(Spacing.md)
-        .background(Color.white)
-        .cornerRadius(12)
-        .shadow(color: .black.opacity(0.1), radius: 4, x: 0, y: 2)
-    }
-}
-
-struct PerformanceMetricsCardSkeleton: View {
-    var body: some View {
-        VStack(alignment: .leading, spacing: Spacing.md) {
-            SkeletonText(width: 160, height: 20)
-            
-            VStack(spacing: Spacing.sm) {
-                ForEach(0..<4, id: \.self) { _ in
-                    HStack {
-                        SkeletonCircle(size: 8)
-                        SkeletonText(width: 110, height: 16)
-                        Spacer()
-                        SkeletonText(width: 50, height: 16)
-                    }
-                    .padding(.vertical, 2)
-                }
-            }
-        }
-        .padding(Spacing.md)
-        .background(Color.white)
-        .cornerRadius(12)
-        .shadow(color: .black.opacity(0.1), radius: 4, x: 0, y: 2)
-    }
-}
-
-struct TopProductsCardSkeleton: View {
-    var body: some View {
-        VStack(alignment: .leading, spacing: Spacing.md) {
-            SkeletonText(width: 100, height: 20)
-            
-            ForEach(0..<5, id: \.self) { _ in
-                HStack {
-                    VStack(alignment: .leading, spacing: 4) {
-                        SkeletonText(width: 140, height: 16)
-                        SkeletonText(width: 80, height: 12)
-                    }
-                    Spacer()
-                    SkeletonText(width: 60, height: 16)
-                }
-                .padding(.vertical, 4)
-            }
-        }
-        .padding(Spacing.md)
-        .background(Color.white)
-        .cornerRadius(12)
-        .shadow(color: .black.opacity(0.1), radius: 4, x: 0, y: 2)
-    }
-}
-
-// MARK: - Preview
-#Preview("Skeleton Components") {
-    ScrollView {
-        VStack(spacing: 20) {
-            Text("Skeleton Loading States")
-                .font(.title)
-                .padding()
-            
-            VStack(spacing: 16) {
-                KeyMetricCardSkeleton()
-                RevenueChartCardSkeleton()
-                OrderAnalyticsCardSkeleton()
-                CustomerInsightsCardSkeleton()
-                PerformanceMetricsCardSkeleton()
-                TopProductsCardSkeleton()
-            }
-            .padding(.horizontal)
-        }
-    }
-    .background(Color(.systemGroupedBackground))
+    .padding()
 }

@@ -134,14 +134,28 @@ final class HapticManager: ObservableObject {
     @Published var isHapticsEnabled: Bool {
         didSet {
             UserDefaults.standard.set(isHapticsEnabled, forKey: "haptics_enabled")
-            logger.info("🔄 Haptics \(isHapticsEnabled ? "enabled" : "disabled")")
+            
+            Timer.scheduledTimer(withTimeInterval: 0.1, repeats: false) { _ in
+                Task { @MainActor in
+                    logger.info("🔄 Haptics \(self.isHapticsEnabled ? "enabled" : "disabled")")
+                }
+            }
         }
     }
     
     @Published var hapticIntensity: HapticIntensity {
         didSet {
             UserDefaults.standard.set(hapticIntensity.rawValue, forKey: "haptic_intensity")
-            logger.info("🔄 Haptic intensity: \(hapticIntensity.displayName)")
+            
+            let logger = self.logger
+            Timer.scheduledTimer(withTimeInterval: 0.1, repeats: false) { _ in
+                Task { @MainActor in
+                    logger.info("🔄 Haptic intensity: \(self.hapticIntensity.displayName)")
+                }
+            }
+            
+            // Trigger sample haptic with new intensity
+            trigger(.intensityChange)
         }
     }
     
@@ -478,6 +492,35 @@ final class HapticManager: ObservableObject {
         
         // Test the new intensity
         trigger(.mediumImpact, context: .system)
+    }
+    
+    /// Update haptic settings
+    func updateSettings(enabled: Bool) async {
+        isHapticsEnabled = enabled
+        UserDefaults.standard.set(enabled, forKey: "haptics_enabled")
+        
+        Timer.scheduledTimer(withTimeInterval: 0.1, repeats: false) { [weak self] _ in
+            Task { @MainActor in
+                guard let self = self else { return }
+                self.logger.info("🔄 Haptics \(self.isHapticsEnabled ? "enabled" : "disabled")")
+            }
+        }
+    }
+    
+    /// Update haptic intensity
+    func updateIntensity(_ intensity: HapticIntensity) async {
+        hapticIntensity = intensity
+        UserDefaults.standard.set(intensity.rawValue, forKey: "haptic_intensity")
+        
+        Timer.scheduledTimer(withTimeInterval: 0.1, repeats: false) { [weak self] _ in
+            Task { @MainActor in
+                guard let self = self else { return }
+                self.logger.info("🔄 Haptic intensity: \(self.hapticIntensity.displayName)")
+            }
+        }
+        
+        // Trigger sample haptic with new intensity
+        trigger(.buttonTap)
     }
 }
 

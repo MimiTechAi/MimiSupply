@@ -118,9 +118,8 @@ final class RetryManager: ObservableObject, Sendable {
 }
 
 /// Network connectivity monitor
-// Sendable conformance is omitted because this class contains mutable state that is not concurrency-safe. All mutable state should be accessed only from the main actor.
-final class NetworkMonitor: ObservableObject {
-    nonisolated(unsafe) static let shared = NetworkMonitor()
+final class NetworkMonitor: ObservableObject, @unchecked Sendable {
+    static let shared = NetworkMonitor()
     
     @MainActor @Published var isConnected = false
     @MainActor @Published var connectionType: NWInterface.InterfaceType?
@@ -142,8 +141,8 @@ final class NetworkMonitor: ObservableObject {
     /// Start monitoring network connectivity
     private func startMonitoring() {
         monitor.pathUpdateHandler = { [weak self] path in
-            DispatchQueue.main.async {
-                self?.updateConnectionStatus(path)
+            Task { @MainActor in
+                await self?.updateConnectionStatus(path)
             }
         }
         monitor.start(queue: queue)
@@ -157,7 +156,8 @@ final class NetworkMonitor: ObservableObject {
     }
     
     /// Update connection status based on network path
-    private func updateConnectionStatus(_ path: NWPath) {
+    @MainActor
+    private func updateConnectionStatus(_ path: NWPath) async {
         let wasConnected = isConnected
         isConnected = path.status == .satisfied
         
@@ -183,12 +183,14 @@ final class NetworkMonitor: ObservableObject {
     
     /// Wait for network connection to become available
     func waitForConnection() async {
-        if isConnected {
+        if await isConnected {
             return
         }
         
         await withCheckedContinuation { continuation in
-            connectionContinuation = continuation
+            Task { @MainActor in
+                self.connectionContinuation = continuation
+            }
         }
     }
 }

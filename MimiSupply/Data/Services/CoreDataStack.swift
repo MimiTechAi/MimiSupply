@@ -9,148 +9,61 @@ import Foundation
 import CoreData
 import CloudKit
 
-// @MainActor ensures that global mutable Core Data policies and context are only accessed from the main thread, making merge policy assignments concurrency safe.
+/// Core Data stack for offline data persistence
 @MainActor
-@preconcurrency final class CoreDataStack: ObservableObject, @unchecked Sendable {
+final class CoreDataStack: ObservableObject {
+    static let shared = CoreDataStack()
     
-    nonisolated(unsafe) static let shared = CoreDataStack()
-    
-    // MARK: - Thread Safety
-    private let queue = DispatchQueue(label: "com.mimisupply.coredata", qos: .userInitiated)
-    
-    // MARK: - Core Data Stack
-    
-    lazy var persistentContainer: NSPersistentCloudKitContainer = {
-        let container = NSPersistentCloudKitContainer(name: "MimiSupplyDataModel")
-        
-        // Configure CloudKit integration
-        guard let description = container.persistentStoreDescriptions.first else {
-            fatalError("Failed to retrieve persistent store description")
-        }
-        
-        // Enable CloudKit
-        description.setOption(true as NSNumber, forKey: NSPersistentHistoryTrackingKey)
-        description.setOption(true as NSNumber, forKey: NSPersistentStoreRemoteChangeNotificationPostOptionKey)
-        // CloudKit container identifier is set in the data model, not here
-        
+    lazy var persistentContainer: NSPersistentContainer = {
+        let container = NSPersistentContainer(name: "MimiSupply")
         container.loadPersistentStores { _, error in
             if let error = error {
-                // In production, handle this error appropriately
-                fatalError("Failed to load Core Data stack: \(error)")
+                fatalError("Core Data error: \(error)")
             }
         }
         
-        // Enable automatic merging from parent context
+        // Configure for concurrency
         container.viewContext.automaticallyMergesChangesFromParent = true
         
-        // Set merge policy for conflict resolution
-        if #available(iOS 16.0, *) {
-            container.viewContext.mergePolicy = NSMergeByPropertyObjectTrumpMergePolicy
-        } else {
-            // For iOS < 16, use the constant directly
+        // Use MainActor for safe access to merge policy
+        Task { @MainActor in
             container.viewContext.mergePolicy = NSMergeByPropertyObjectTrumpMergePolicy
         }
         
         return container
     }()
     
+    private init() {}
+    
     var viewContext: NSManagedObjectContext {
         return persistentContainer.viewContext
     }
     
-    // MARK: - Background Context
-    
-    func newBackgroundContext() -> NSManagedObjectContext {
-        let context = persistentContainer.newBackgroundContext()
-        context.mergePolicy = NSMergeByPropertyObjectTrumpMergePolicy
-        return context
-    }
-    
-    // MARK: - Save Operations
-    
     func save() {
-        queue.sync {
-            let context = persistentContainer.viewContext
-            
-            if context.hasChanges {
-                do {
-                    try context.save()
-                } catch {
-                    print("Failed to save Core Data context: \(error)")
-                }
-            }
-        }
-    }
-    
-    func saveContext(_ context: NSManagedObjectContext) {
-        queue.sync {
-            if context.hasChanges {
-                do {
-                    try context.save()
-                } catch {
-                    print("Failed to save Core Data context: \(error)")
-                }
-            }
-        }
-    }
-    
-    // MARK: - CloudKit Sync Status
-    
-    func checkCloudKitStatus() async -> CKAccountStatus {
-        do {
-            return try await CKContainer.default().accountStatus()
-        } catch {
-            print("Failed to check CloudKit status: \(error)")
-            return .couldNotDetermine
-        }
-    }
-    
-    // MARK: - Conflict Resolution
-    
-    func resolveConflicts() {
-        let context = viewContext
+        let context = persistentContainer.viewContext
         
-        // Implement custom conflict resolution logic here
-        // This is called when CloudKit sync conflicts occur
-        
-        context.perform {
-            // Process any pending changes
-            if context.hasChanges {
-                do {
-                    try context.save()
-                } catch {
-                    print("Failed to resolve conflicts: \(error)")
-                }
+        if context.hasChanges {
+            do {
+                try context.save()
+            } catch {
+                print("Save error: \(error)")
             }
         }
     }
     
-    // MARK: - Data Migration
-    
-    func performMigrationIfNeeded() {
-        // Implement data migration logic for schema changes
-        // This ensures smooth updates when the data model changes
-    }
-    
-    private init() {
-        // Setup remote change notifications
-        NotificationCenter.default.addObserver(
-            self,
-            selector: #selector(storeRemoteChange(_:)),
-            name: .NSPersistentStoreRemoteChange,
-            object: persistentContainer.persistentStoreCoordinator
-        )
-    }
-    
-    @objc private func storeRemoteChange(_ notification: Notification) {
-        // Handle remote changes from CloudKit
-        DispatchQueue.main.async {
-            self.objectWillChange.send()
+    func saveContext() async {
+        await MainActor.run {
+            save()
         }
     }
     
-    deinit {
-        NotificationCenter.default.removeObserver(self)
+    func performBackgroundTask<T>(_ block: @escaping (NSManagedObjectContext) -> T) async -> T {
+        return await withCheckedContinuation { continuation in
+            persistentContainer.performBackgroundTask { context in
+                let result = block(context)
+                continuation.resume(returning: result)
+            }
+        }
     }
 }
 
