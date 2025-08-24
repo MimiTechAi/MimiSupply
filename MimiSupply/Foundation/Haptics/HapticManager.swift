@@ -155,7 +155,7 @@ final class HapticManager: ObservableObject {
             }
             
             // Trigger sample haptic with new intensity
-            trigger(.intensityChange)
+            trigger(.mediumImpact)
         }
     }
     

@@ -32,6 +32,33 @@ struct SettingsView: View {
                 
                 // About Section
                 aboutSection
+                
+                // Performance Section
+                Section {
+                    NavigationLink(destination: PerformanceDashboard()) {
+                        SettingRow(
+                            icon: "speedometer",
+                            title: "Performance",
+                            subtitle: "Monitor app performance",
+                            showChevron: true
+                        )
+                    }
+                    .accessibilityLabel("Performance dashboard")
+                    .accessibilityHint("View app performance metrics and optimization tools")
+                    
+                    NavigationLink(destination: AccessibilityDashboard()) {
+                        SettingRow(
+                            icon: "accessibility",
+                            title: "Accessibility",
+                            subtitle: "Accessibility tools and audit",
+                            showChevron: true
+                        )
+                    }
+                    .accessibilityLabel("Accessibility dashboard")
+                    .accessibilityHint("View accessibility audit results and testing tools")
+                } header: {
+                    Text("Developer Tools")
+                }
             }
             .navigationTitle("Settings")
             .navigationBarTitleDisplayMode(.large)

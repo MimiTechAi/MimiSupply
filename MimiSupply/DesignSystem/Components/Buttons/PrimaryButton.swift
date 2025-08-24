@@ -19,7 +19,9 @@ struct PrimaryButton: View {
     let accessibilityHint: String?
     let accessibilityIdentifier: String?
     
-    @StateObject private var accessibilityManager = AccessibilityManager.shared
+    @StateObject private var motionManager = MotionManager.shared
+    @StateObject private var dynamicTypeManager = DynamicTypeManager.shared
+    @StateObject private var highContrastManager = HighContrastManager.shared
     @State private var isPressed = false
     @State private var successAnimation = false
     
@@ -47,7 +49,7 @@ struct PrimaryButton: View {
     
     var body: some View {
         Button(action: handleAction) {
-            HStack(spacing: Spacing.sm * accessibilityManager.preferredContentSizeCategory.spacingMultiplier) {
+            ResponsiveHStack(spacing: dynamicTypeManager.scaledSpacing(Spacing.sm)) {
                 if isLoading {
                     ProgressView()
                         .progressViewStyle(CircularProgressViewStyle(tint: .white))
@@ -55,22 +57,35 @@ struct PrimaryButton: View {
                         .accessibilityHidden(true)
                 } else if let systemImage = systemImage {
                     Image(systemName: systemImage)
-                        .font(.labelLarge)
+                        .font(dynamicTypeManager.scaledFont(.body, weight: .medium))
                         .foregroundColor(.white)
                         .scaleEffect(successAnimation ? 1.2 : 1.0)
-                        .animation(.spring(response: 0.4, dampingFraction: 0.6), value: successAnimation)
+                        .conditionalAnimation(
+                            type: .scaleIn,
+                            config: .spring,
+                            value: successAnimation
+                        )
+                        .accessibleImage(
+                            description: "\(title) icon",
+                            isDecorative: true
+                        )
                 }
                 
-                Text(title)
-                    .font(.labelLarge.scaledFont())
-                    .foregroundColor(.white)
-                    .rtlTextAlignment()
-                    .lineLimit(accessibilityManager.isAccessibilitySize ? 3 : 1)
+                ResponsiveText(
+                    title,
+                    style: .headline,
+                    weight: .semibold
+                )
+                .foregroundColor(.white)
+                .multilineTextAlignment(.center)
+                .lineLimit(dynamicTypeManager.isCurrentSizeAccessibility() ? 3 : 1)
             }
             .frame(maxWidth: .infinity)
-            .frame(minHeight: max(44, Font.minimumTouchTarget * accessibilityManager.preferredContentSizeCategory.scaleFactor))
+            .frame(minHeight: max(44, dynamicTypeManager.scaledSpacing(44)))
+            .accessibilityPadding(EdgeInsets(top: 12, leading: 16, bottom: 12, trailing: 16))
             .background(backgroundColor)
             .cornerRadius(12)
+            .transparencyAware(opacity: isDisabled ? 0.6 : 1.0)
             .shadow(
                 color: shadowColor,
                 radius: shadowRadius,
@@ -81,53 +96,52 @@ struct PrimaryButton: View {
         .scaleEffect(isPressed ? 0.96 : 1.0)
         .brightness(isPressed ? -0.1 : 0.0)
         .disabled(isDisabled || isLoading)
-        .animation(.spring(response: 0.3, dampingFraction: 0.8), value: isPressed)
-        .animation(.easeInOut(duration: 0.2), value: isDisabled)
+        .motionAwareAnimation(.spring, value: isPressed)
+        .motionAwareAnimation(.default, value: isDisabled)
         .onLongPressGesture(minimumDuration: 0, maximumDistance: .infinity) {
             // Empty action for long press
         } onPressingChanged: { pressing in
-            withAnimation {
-                isPressed = pressing
+            if motionManager.shouldAnimate(type: .buttonPress) {
+                motionManager.withAnimation(.spring) {
+                    isPressed = pressing
+                }
             }
         }
         .accessibleButton(
             label: buttonAccessibilityLabel,
             hint: buttonAccessibilityHint,
-            traits: buttonAccessibilityTraits,
-            value: isLoading ? LocalizationKeys.Common.loading.localized : nil
+            isEnabled: !isDisabled && !isLoading
         )
-        .switchControlAccessible(
-            identifier: accessibilityIdentifier ?? "primary-button-\(title.lowercased().replacingOccurrences(of: " ", with: "-"))",
-            sortPriority: 1.0
-        )
-        .voiceControlAccessible(spokenPhrase: title)
-        .keyboardAccessible(
-            onTab: {
-                // Handle tab navigation
-                AccessibilityFocusState.setFocus(to: "primary-button")
+        .accessibilityElement(children: .combine)
+        .accessibilityIdentifier(accessibilityIdentifier ?? "primary-button-\(title.lowercased().replacingOccurrences(of: " ", with: "-"))")
+        .accessibilityValue(isLoading ? "Loading" : "")
+        .accessibilityActions {
+            Button("Activate") {
+                if !isDisabled && !isLoading {
+                    handleAction()
+                }
             }
-        )
-        .reduceMotionAdaptive(
-            animation: .spring(response: 0.3, dampingFraction: 0.7),
-            value: isDisabled,
-            alternativeAnimation: .easeInOut(duration: 0.1)
-        )
-        .rtlAware()
-        .observeLanguageChanges()
+        }
     }
     
     private func handleAction() {
+        // Announce action for VoiceOver users
+        if VoiceOverHelpers.isVoiceOverRunning {
+            VoiceOverHelpers.announce("\(title) activated")
+        }
+        
         // Provide contextual haptic feedback
-        HapticManager.shared.trigger(hapticType, context: hapticContext)
+        let intensity = motionManager.hapticIntensity()
+        HapticManager.shared.impact(.medium, intensity: intensity)
         
         // Trigger success animation if there's an icon
-        if systemImage != nil {
-            withAnimation(.spring(response: 0.4, dampingFraction: 0.6)) {
+        if systemImage != nil && motionManager.shouldAnimate(type: .scaleIn) {
+            motionManager.withAnimation(.spring) {
                 successAnimation = true
             }
             
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-                withAnimation {
+                motionManager.withAnimation(.spring) {
                     successAnimation = false
                 }
             }
@@ -137,27 +151,26 @@ struct PrimaryButton: View {
     }
     
     private var backgroundColor: Color {
-        let baseColor: Color
-        if isDisabled {
-            baseColor = .gray400
-        } else {
-            baseColor = .emerald
-        }
-        
-        return accessibilityManager.isHighContrastEnabled ? 
-            baseColor.highContrastVariant : baseColor
+        let baseColor: Color = isDisabled ? .gray : .emerald
+        return highContrastManager.backgroundColor(
+            normal: baseColor,
+            highContrast: isDisabled ? .black : .emerald
+        )
     }
     
     private var shadowColor: Color {
-        if isDisabled {
+        if isDisabled || motionManager.reduceMotionEnabled {
             return .clear
         } else {
-            return .emerald.opacity(isPressed ? 0.2 : 0.3)
+            return highContrastManager.backgroundColor(
+                normal: .emerald.opacity(isPressed ? 0.2 : 0.3),
+                highContrast: .clear
+            )
         }
     }
     
     private var shadowRadius: CGFloat {
-        if isDisabled {
+        if isDisabled || motionManager.reduceMotionEnabled {
             return 0
         } else {
             return isPressed ? 2 : 4
@@ -165,7 +178,7 @@ struct PrimaryButton: View {
     }
     
     private var shadowOffset: CGFloat {
-        if isDisabled {
+        if isDisabled || motionManager.reduceMotionEnabled {
             return 0
         } else {
             return isPressed ? 1 : 2
@@ -186,26 +199,12 @@ struct PrimaryButton: View {
         if let customHint = accessibilityHint {
             return customHint
         } else if isLoading {
-            return "accessibility.button.loading_hint".localized
+            return "Please wait while the action completes"
         } else if isDisabled {
-            return "accessibility.button.disabled_hint".localized
+            return "This button is currently disabled"
         } else {
-            return "accessibility.button.activate_hint".localized
+            return "Double tap to activate"
         }
-    }
-    
-    private var buttonAccessibilityTraits: AccessibilityTraits {
-        var traits: AccessibilityTraits = []
-        
-        if isLoading {
-            _ = traits.insert(.updatesFrequently)
-        }
-        
-        if isDisabled {
-            _ = traits.insert(.isButton)
-        }
-        
-        return traits
     }
 }
 
@@ -218,7 +217,8 @@ extension PrimaryButton {
             systemImage: "cart.badge.plus",
             action: action,
             hapticType: .addToCart,
-            hapticContext: .commerce
+            hapticContext: .commerce,
+            accessibilityHint: "Adds item to your shopping cart"
         )
     }
     
@@ -228,7 +228,8 @@ extension PrimaryButton {
             systemImage: "creditcard",
             action: action,
             hapticType: .paymentSuccess,
-            hapticContext: .commerce
+            hapticContext: .commerce,
+            accessibilityHint: "Proceed to payment and complete your order"
         )
     }
     
@@ -239,7 +240,8 @@ extension PrimaryButton {
             systemImage: "doc.text",
             action: action,
             hapticType: .reportGenerated,
-            hapticContext: .analytics
+            hapticContext: .analytics,
+            accessibilityHint: "Creates a new analytical report"
         )
     }
     
@@ -249,7 +251,8 @@ extension PrimaryButton {
             systemImage: "square.and.arrow.up",
             action: action,
             hapticType: .exportComplete,
-            hapticContext: .analytics
+            hapticContext: .analytics,
+            accessibilityHint: "Export data to external application"
         )
     }
 }
