@@ -865,7 +865,7 @@ struct BIDashboardMetricRow: View {
                     .foregroundColor(.secondary)
                 
                 Text(value)
-                    .font(.title3.scaledFont().weight(.semibold))
+                    .font(.title2.scaledFont().weight(.semibold))
                     .foregroundColor(.primary)
             }
             
@@ -884,7 +884,7 @@ struct BIDashboardMetricRow: View {
     }
 }
 
-struct BIDashboardKeyMetricsGrid: View {
+struct BIKeyMetricsGrid: View {
     let metrics: [BusinessMetric]
     
     struct BusinessMetric: Identifiable {

@@ -6,7 +6,8 @@ import os.log
 /// Memory management and leak detection system
 @MainActor
 class MemoryManager: ObservableObject {
-    nonisolated(unsafe) static let shared = MemoryManager()
+    @MainActor
+    static let shared = MemoryManager()
     
     @Published var currentMemoryUsage: Double = 0
     @Published var memoryWarningLevel: MemoryWarningLevel = .normal

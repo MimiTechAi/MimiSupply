@@ -156,25 +156,25 @@ struct SyncStatusDashboard: View {
                 .font(.headline.scaledFont().weight(.semibold))
             
             VStack(spacing: Spacing.sm) {
-                MetricRow(
+                SyncMetricRow(
                     title: "Pending Operations",
                     value: "\(offlineManager.pendingSyncCount)",
                     trend: nil
                 )
                 
-                MetricRow(
+                SyncMetricRow(
                     title: "Cache Size",
                     value: "12.3 MB", // Mock data
                     trend: nil
                 )
                 
-                MetricRow(
+                SyncMetricRow(
                     title: "Success Rate",
                     value: "98.5%", // Mock data
                     trend: .positive
                 )
                 
-                MetricRow(
+                SyncMetricRow(
                     title: "Avg Sync Time",
                     value: "1.2s", // Mock data
                     trend: .negative
@@ -195,7 +195,7 @@ struct SyncStatusDashboard: View {
                 GridItem(.flexible()),
                 GridItem(.flexible())
             ], spacing: Spacing.sm) {
-                ActionButton(
+                SyncActionButton(
                     title: "Force Sync",
                     icon: "arrow.triangle.2.circlepath",
                     color: .accentColor,
@@ -206,7 +206,7 @@ struct SyncStatusDashboard: View {
                     }
                 }
                 
-                ActionButton(
+                SyncActionButton(
                     title: "Clear Cache",
                     icon: "trash",
                     color: .warning
@@ -214,7 +214,7 @@ struct SyncStatusDashboard: View {
                     CacheManager.shared.clearCache()
                 }
                 
-                ActionButton(
+                SyncActionButton(
                     title: "Reset Services",
                     icon: "arrow.clockwise",
                     color: .error
@@ -222,7 +222,7 @@ struct SyncStatusDashboard: View {
                     // Reset services
                 }
                 
-                ActionButton(
+                SyncActionButton(
                     title: "Export Data",
                     icon: "square.and.arrow.up",
                     color: .blue
@@ -549,7 +549,7 @@ struct StatusCard: View {
     }
 }
 
-struct MetricRow: View {
+struct SyncMetricRow: View {
     let title: String
     let value: String
     let trend: TrendDirection?
@@ -601,7 +601,7 @@ enum TrendDirection {
     }
 }
 
-struct ActionButton: View {
+struct SyncActionButton: View {
     let title: String
     let icon: String
     let color: Color

@@ -209,12 +209,12 @@ extension View {
     /// Conditional animation based on motion preferences
     func conditionalAnimation(
         type: MotionAnimationType,
-        config: AnimationConfig = .default,
+        config: Animation = .default,
         value: some Equatable
     ) -> some View {
         self.animation(
             MotionManager.shared.shouldAnimate(type: type) 
-                ? MotionManager.shared.animation(for: config) 
+                ? config
                 : nil, 
             value: value
         )
