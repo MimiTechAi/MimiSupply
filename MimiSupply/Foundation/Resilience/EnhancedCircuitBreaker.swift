@@ -10,9 +10,8 @@ import SwiftUI
 import Combine
 import OSLog
 
-/// Enhanced Circuit Breaker with adaptive thresholds and gradual recovery
-@MainActor
-final class EnhancedCircuitBreaker: ObservableObject {
+/// Enhanced Circuit Breaker with adaptive recovery
+final class EnhancedCircuitBreaker: ObservableObject, @unchecked Sendable {
     
     // MARK: - Published Properties
     @Published var state: CircuitBreakerState = .closed
@@ -70,6 +69,7 @@ final class EnhancedCircuitBreaker: ObservableObject {
     
     deinit {
         recoveryTimer?.invalidate()
+        recoveryTimer = nil
     }
     
     // MARK: - Request Execution

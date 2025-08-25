@@ -3,7 +3,7 @@ import CoreLocation
 import Combine
 
 @MainActor
-class LocationServiceImpl: NSObject, LocationService {
+class LocationServiceImpl: NSObject, LocationService, @unchecked Sendable {
     
     static let shared = LocationServiceImpl()
     
@@ -17,7 +17,14 @@ class LocationServiceImpl: NSObject, LocationService {
         self.authorizationStatus = locationManager.authorizationStatus
         super.init()
         locationManager.delegate = self
-        locationManager.desiredAccuracy = kCLLocationAccuracyBest
+        Task { @MainActor in
+            await self.setupLocationManager()
+        }
+    }
+    
+    @MainActor
+    private func setupLocationManager() async {
+        authorizationStatus = locationManager.authorizationStatus
     }
     
     func requestLocationPermission() async throws -> Bool {
@@ -61,10 +68,11 @@ extension LocationServiceImpl: CLLocationManagerDelegate {
     }
     
     nonisolated func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {
+        let status = manager.authorizationStatus
         Task { @MainActor in
-            self.authorizationStatus = manager.authorizationStatus
+            self.authorizationStatus = status
             
-            switch manager.authorizationStatus {
+            switch status {
             case .authorizedWhenInUse, .authorizedAlways:
                 authorizationContinuation?.resume(returning: true)
             case .denied, .restricted:

@@ -50,6 +50,7 @@ final class BiometricAuthService: ObservableObject {
     
     private func evaluateBiometricAvailability() {
         var error: NSError?
+        
         guard context.canEvaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, error: &error) else {
             self.isAvailable = false
             
@@ -203,7 +204,7 @@ final class BiometricAuthService: ObservableObject {
         let context = LAContext()
         var error: NSError?
         
-        guard context.canEvaluatePolicy(.biometryOwner, error: &error) else {
+        guard context.canEvaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, error: &error) else {
             if let laError = error as? LAError {
                 switch laError.code {
                 case .biometryNotEnrolled:

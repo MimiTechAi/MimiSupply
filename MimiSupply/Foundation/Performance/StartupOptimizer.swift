@@ -190,7 +190,7 @@ class StartupOptimizer: ObservableObject, @unchecked Sendable {
 private struct InitializationTask {
     let name: String
     let priority: Priority
-    let task: () async throws -> Void
+    let task: @Sendable () async throws -> Void
     
     enum Priority: Int, CaseIterable {
         case critical = 3
@@ -199,6 +199,8 @@ private struct InitializationTask {
         case low = 0
     }
 }
+
+extension InitializationTask: Sendable {}
 
 struct StartupMetrics {
     let totalStartupTime: TimeInterval

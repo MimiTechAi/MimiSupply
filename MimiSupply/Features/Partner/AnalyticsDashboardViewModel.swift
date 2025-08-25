@@ -1,8 +1,17 @@
 import SwiftUI
 import Combine
 
+// Temporary ChartDataPoint struct since InteractiveCharts.swift was moved aside
+struct ChartDataPoint: Identifiable, Codable {
+    let id = UUID()
+    let x: Double
+    let y: Double
+    let date: Date
+    let value: Double
+}
+
 @MainActor
-class AnalyticsDashboardViewModel: ObservableObject {
+final class AnalyticsDashboardViewModel: ObservableObject {
     @Published var keyMetrics = KeyMetrics(
         totalRevenue: 0,
         revenueChange: 0.0,
@@ -91,7 +100,12 @@ class AnalyticsDashboardViewModel: ObservableObject {
         )
         
         revenueData = data.map { dataPoint in
-            ChartDataPoint(date: dataPoint.date, value: dataPoint.amount)
+            ChartDataPoint(
+                x: dataPoint.date.timeIntervalSince1970,
+                y: dataPoint.amount,
+                date: dataPoint.date, 
+                value: dataPoint.amount
+            )
         }
     }
     
@@ -102,7 +116,12 @@ class AnalyticsDashboardViewModel: ObservableObject {
         )
         
         ordersData = data.map { dataPoint in
-            ChartDataPoint(date: dataPoint.date, value: Double(dataPoint.orderCount))
+            ChartDataPoint(
+                x: dataPoint.date.timeIntervalSince1970,
+                y: Double(dataPoint.orderCount),
+                date: dataPoint.date, 
+                value: Double(dataPoint.orderCount)
+            )
         }
     }
     

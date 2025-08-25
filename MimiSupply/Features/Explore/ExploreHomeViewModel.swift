@@ -3,7 +3,7 @@ import Combine
 import CoreLocation
 
 @MainActor
-class ExploreHomeViewModel: ObservableObject {
+class ExploreHomeViewModel: ObservableObject, @unchecked Sendable {
     // MARK: - Published Properties
     @Published var partners: [Partner] = []
     @Published var featuredPartners: [Partner] = []

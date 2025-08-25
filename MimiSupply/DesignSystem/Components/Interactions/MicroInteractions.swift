@@ -297,11 +297,11 @@ struct LoadingButton: View {
         loadingProgress = 0
         
         // Simulate loading progress
-        Timer.scheduledTimer(withTimeInterval: 0.1, repeats: true) { timer in
+        let progressTimer = Timer.scheduledTimer(withTimeInterval: 0.1, repeats: true) { timer in
             Task { @MainActor in
                 self.loadingProgress += 0.1
                 if self.loadingProgress >= 1.0 {
-                    Task { @MainActor in
+                    DispatchQueue.main.async {
                         timer.invalidate()
                         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
                             self.isLoading = false
