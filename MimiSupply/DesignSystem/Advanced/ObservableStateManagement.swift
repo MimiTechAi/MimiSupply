@@ -8,32 +8,29 @@
 import SwiftUI
 import Observation
 
-// MARK: - Advanced Observable State Management
+// MARK: - Modern Observable State (iOS 17+)
 
-/// Enhanced state management using the new @Observable macro (iOS 17+)
 @available(iOS 17.0, *)
 @Observable
+@MainActor
 final class AdvancedAppState {
-    // MARK: - App-wide State
+    
+    // MARK: - App-Level State
     var isLoading: Bool = false
-    var currentUser: User?
     var networkStatus: NetworkStatus = .connected
-    var appTheme: AppTheme = .system
-    
-    // MARK: - UI State
-    var selectedTab: Int = 0
-    var isShowingSidebar: Bool = false
-    var searchText: String = ""
-    var selectedFilters: Set<String> = []
-    
-    // MARK: - Navigation State
-    var navigationPath: [NavigationDestination] = []
+    var appTheme: AppTheme = .default
     var presentedSheets: Set<SheetType> = []
-    var alerts: [AlertInfo] = []
+    var navigationPath: [NavigationDestination] = []
+    var currentAlert: AlertInfo?
     
-    // MARK: - Performance State
-    var cachedData: [String: Any] = [:]
-    var backgroundTasksCount: Int = 0
+    // MARK: - User State
+    var currentUser: UserProfile?
+    var isAuthenticated: Bool { currentUser != nil }
+    
+    // MARK: - Cart State
+    var cartItems: [CartItem] = []
+    var cartTotal: Double { cartItems.reduce(0) { $0 + ($1.product.price * Double($1.quantity)) } }
+    var cartItemCount: Int { cartItems.reduce(0) { $0 + $1.quantity } }
     
     // MARK: - Methods
     func updateTheme(_ theme: AppTheme) {
@@ -43,11 +40,11 @@ final class AdvancedAppState {
     }
     
     func showAlert(_ alert: AlertInfo) {
-        alerts.append(alert)
+        currentAlert = alert
     }
     
-    func dismissAlert(id: UUID) {
-        alerts.removeAll { $0.id == id }
+    func dismissAlert() {
+        currentAlert = nil
     }
     
     func navigate(to destination: NavigationDestination) {
@@ -69,23 +66,34 @@ final class AdvancedAppState {
     }
 }
 
-// MARK: - Legacy ObservableObject for iOS 16 support
+// MARK: - Legacy Support (iOS 16 and earlier)
 
+@MainActor
 final class LegacyAppState: ObservableObject {
-    @Published var isLoading: Bool = false
-    @Published var currentUser: User?
-    @Published var networkStatus: NetworkStatus = .connected
-    @Published var appTheme: AppTheme = .system
-    @Published var selectedTab: Int = 0
-    @Published var isShowingSidebar: Bool = false
-    @Published var searchText: String = ""
-    @Published var selectedFilters: Set<String> = []
-    @Published var navigationPath: [NavigationDestination] = []
-    @Published var presentedSheets: Set<SheetType> = []
-    @Published var alerts: [AlertInfo] = []
-    @Published var cachedData: [String: Any] = [:]
-    @Published var backgroundTasksCount: Int = 0
     
+    // MARK: - App-Level State
+    @Published var isLoading: Bool = false
+    @Published var networkStatus: NetworkStatus = .connected
+    @Published var appTheme: AppTheme = .default
+    @Published var presentedSheets: Set<SheetType> = []
+    @Published var navigationPath: [NavigationDestination] = []
+    @Published var currentAlert: AlertInfo?
+    
+    // MARK: - User State
+    @Published var currentUser: UserProfile?
+    var isAuthenticated: Bool { currentUser != nil }
+    
+    // MARK: - Cart State
+    @Published var cartItems: [CartItem] = []
+    var cartTotal: Double { cartItems.reduce(0) { $0 + ($1.product.price * Double($1.quantity)) } }
+    var cartItemCount: Int { cartItems.reduce(0) { $0 + $1.quantity } }
+    
+    // MARK: - Initialization
+    init() {
+        // Initialize with defaults
+    }
+    
+    // MARK: - Methods
     func updateTheme(_ theme: AppTheme) {
         withAnimation(.smooth) {
             appTheme = theme
@@ -93,11 +101,11 @@ final class LegacyAppState: ObservableObject {
     }
     
     func showAlert(_ alert: AlertInfo) {
-        alerts.append(alert)
+        currentAlert = alert
     }
     
-    func dismissAlert(id: UUID) {
-        alerts.removeAll { $0.id == id }
+    func dismissAlert() {
+        currentAlert = nil
     }
     
     func navigate(to destination: NavigationDestination) {
@@ -119,90 +127,53 @@ final class LegacyAppState: ObservableObject {
     }
 }
 
-// MARK: - Supporting Types
+// MARK: - State Views for Legacy Support
 
-enum NetworkStatus {
-    case connected
-    case disconnected
-    case limited
-}
-
-enum NavigationDestination: Hashable {
-    case profile
-    case settings
-    case orders
-    case analytics
-    case productDetail(String)
-    case orderDetail(String)
-}
-
-enum SheetType: Hashable {
-    case profile
-    case settings
-    case search
-    case filters
-    case notifications
-}
-
-struct AlertInfo: Identifiable, Equatable {
-    let id = UUID()
-    let title: String
-    let message: String
-    let type: AlertType
-    let actions: [AlertAction]
+@available(iOS 16.0, *)
+struct AppStateView<Content: View>: View {
+    typealias State = LegacyAppState
     
-    enum AlertType {
-        case info
-        case warning
-        case error
-        case success
-    }
+    @StateObject private var state = State()
+    let content: (State) -> Content
     
-    struct AlertAction: Equatable {
-        let title: String
-        let style: ActionStyle
-        let action: () -> Void
-        
-        enum ActionStyle {
-            case `default`
-            case cancel
-            case destructive
-        }
-        
-        static func == (lhs: AlertAction, rhs: AlertAction) -> Bool {
-            lhs.title == rhs.title && lhs.style == rhs.style
-        }
+    var body: some View {
+        content(state)
+            .environmentObject(state)
     }
 }
 
-// MARK: - State Management Helpers
+// MARK: - Modern State Provider
 
-/// Factory for creating appropriate state manager based on iOS version
-struct StateManagerFactory {
-    static func createAppState() -> any AppStateProtocol {
-        if #available(iOS 17.0, *) {
-            return AdvancedAppState()
-        } else {
-            return LegacyAppState()
-        }
+@available(iOS 17.0, *)
+struct ModernAppStateView<Content: View>: View {
+    let state = AdvancedAppState()
+    let content: (AdvancedAppState) -> Content
+    
+    var body: some View {
+        content(state)
+            .environment(state)
     }
 }
 
-protocol AppStateProtocol {
-    var isLoading: Bool { get set }
-    var currentUser: User? { get set }
-    var networkStatus: NetworkStatus { get set }
-    var appTheme: AppTheme { get set }
-    var selectedTab: Int { get set }
-    var searchText: String { get set }
-    var navigationPath: [NavigationDestination] { get set }
-    var alerts: [AlertInfo] { get set }
+// MARK: - State Container Protocol
+
+protocol StateContainer {
+    associatedtype State
+    var state: State { get }
+}
+
+// MARK: - State Management Utilities
+
+@MainActor
+struct StateManager {
+    static func createLegacyState() -> LegacyAppState {
+        return LegacyAppState()
+    }
     
-    func updateTheme(_ theme: AppTheme)
-    func showAlert(_ alert: AlertInfo)
-    func dismissAlert(id: UUID)
-    func navigate(to destination: NavigationDestination)
-    func navigateBack()
+    @available(iOS 17.0, *)
+    static func createModernState() -> AdvancedAppState {
+        return AdvancedAppState()
+    }
 }
 
 // MARK: - Advanced State Modifiers
@@ -222,31 +193,6 @@ struct StateObservingModifier<State: AppStateProtocol>: ViewModifier {
 extension View {
     func observeAppState<State: AppStateProtocol>(_ state: State) -> some View {
         self.modifier(StateObservingModifier(state: state))
-    }
-}
-
-// MARK: - Advanced State Binding
-
-@propertyWrapper
-struct DynamicBinding<Value> {
-    private let getValue: () -> Value
-    private let setValue: (Value) -> Void
-    
-    init(get: @escaping () -> Value, set: @escaping (Value) -> Void) {
-        self.getValue = get
-        self.setValue = set
-    }
-    
-    var wrappedValue: Value {
-        get { getValue() }
-        nonmutating set { setValue(newValue) }
-    }
-    
-    var projectedValue: Binding<Value> {
-        Binding(
-            get: { wrappedValue },
-            set: { wrappedValue = $0 }
-        )
     }
 }
 

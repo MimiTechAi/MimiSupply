@@ -398,77 +398,27 @@ extension Notification.Name {
     static let encryptionKeysRotated = Notification.Name("encryptionKeysRotated")
 }
 
-// MARK: - Preview
+// MARK: - Preview for Testing
 
 #if DEBUG
-struct EncryptionService_Preview: View {
-    @StateObject private var encryptionService = EncryptionService.shared
-    @State private var plainText = "Hello, World!"
-    @State private var encryptedText = ""
-    @State private var decryptedText = ""
-    
-    var body: some View {
-        VStack(spacing: 20) {
-            Text("Encryption Service Demo")
-                .font(.title)
+final class EncryptionServiceDemo {
+    func testEncryptionDecryption() {
+        Task { @MainActor in
+            let encryptionService = EncryptionService.shared
+            let plainText = "Hello, World!"
             
-            VStack(alignment: .leading, spacing: 8) {
-                Text("Plain Text:")
-                    .font(.headline)
-                TextField("Enter text to encrypt", text: $plainText)
-                    .textFieldStyle(RoundedBorderTextFieldStyle())
-            }
-            
-            Button("Encrypt") {
-                do {
-                    encryptedText = try encryptionService.encryptString(plainText)
-                } catch {
-                    print("Encryption failed: \(error)")
-                }
-            }
-            .padding()
-            .background(Color.emerald)
-            .foregroundColor(.white)
-            .cornerRadius(8)
-            
-            if !encryptedText.isEmpty {
-                VStack(alignment: .leading, spacing: 8) {
-                    Text("Encrypted Text:")
-                        .font(.headline)
-                    Text(encryptedText)
-                        .font(.caption.monospaced())
-                        .padding()
-                        .background(Color.gray.opacity(0.1))
-                        .cornerRadius(8)
-                }
-            }
-            
-            Button("Decrypt") {
-                do {
-                    decryptedText = try encryptionService.decryptString(encryptedText)
-                } catch {
-                    print("Decryption failed: \(error)")
-                }
-            }
-            .padding()
-            .background(Color.blue)
-            .foregroundColor(.white)
-            .cornerRadius(8)
-            .disabled(encryptedText.isEmpty)
-            
-            if !decryptedText.isEmpty {
-                VStack(alignment: .leading, spacing: 8) {
-                    Text("Decrypted Text:")
-                        .font(.headline)
-                    Text(decryptedText)
-                        .font(.body)
-                        .padding()
-                        .background(Color.green.opacity(0.1))
-                        .cornerRadius(8)
-                }
+            do {
+                let encryptedText = try encryptionService.encryptString(plainText)
+                print("Encrypted: \(encryptedText)")
+                
+                let decryptedText = try encryptionService.decryptString(encryptedText)
+                print("Decrypted: \(decryptedText)")
+                
+                print("Success: \(plainText == decryptedText)")
+            } catch {
+                print("Encryption test failed: \(error)")
             }
         }
-        .padding()
     }
 }
 #endif

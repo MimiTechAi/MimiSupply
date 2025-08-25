@@ -10,9 +10,11 @@ import CoreData
 import CloudKit
 
 /// Core Data stack for offline data persistence
-@MainActor
-final class CoreDataStack: ObservableObject {
+final class CoreDataStack: ObservableObject, @unchecked Sendable {
     static let shared = CoreDataStack()
+    
+    // Background queue for Core Data operations
+    private let queue = DispatchQueue(label: "com.mimisupply.coredata", qos: .utility)
     
     lazy var persistentContainer: NSPersistentContainer = {
         let container = NSPersistentContainer(name: "MimiSupply")
@@ -25,10 +27,8 @@ final class CoreDataStack: ObservableObject {
         // Configure for concurrency
         container.viewContext.automaticallyMergesChangesFromParent = true
         
-        // Use MainActor for safe access to merge policy
-        Task { @MainActor in
-            container.viewContext.mergePolicy = NSMergeByPropertyObjectTrumpMergePolicy
-        }
+        // Set merge policy using the newer NSMergePolicy approach
+        container.viewContext.mergePolicy = NSMergePolicy.mergeByPropertyObjectTrump
         
         return container
     }()
@@ -37,6 +37,10 @@ final class CoreDataStack: ObservableObject {
     
     var viewContext: NSManagedObjectContext {
         return persistentContainer.viewContext
+    }
+    
+    func newBackgroundContext() -> NSManagedObjectContext {
+        return persistentContainer.newBackgroundContext()
     }
     
     func save() {
@@ -57,11 +61,12 @@ final class CoreDataStack: ObservableObject {
         }
     }
     
-    func performBackgroundTask<T>(_ block: @escaping (NSManagedObjectContext) -> T) async -> T {
-        return await withCheckedContinuation { continuation in
-            persistentContainer.performBackgroundTask { context in
-                let result = block(context)
-                continuation.resume(returning: result)
+    func saveContext(_ context: NSManagedObjectContext) {
+        if context.hasChanges {
+            do {
+                try context.save()
+            } catch {
+                print("Background save error: \(error)")
             }
         }
     }
@@ -75,7 +80,7 @@ extension CoreDataStack {
     func saveCartItems(_ items: [CartItem]) {
         queue.async { [weak self] in
             guard let self = self else { return }
-            let context = self.newBackgroundContext()
+            let context = self.persistentContainer.newBackgroundContext()
             
             context.perform {
                 // Clear existing cart items
@@ -112,7 +117,7 @@ extension CoreDataStack {
             
             do {
                 let entities = try context.fetch(fetchRequest)
-                return entities.compactMap { entity in
+                return entities.compactMap { (entity: CartItemEntity) -> CartItem? in
                     guard let id = entity.id,
                           let productData = entity.productData,
                           let addedAt = entity.addedAt,
@@ -164,7 +169,7 @@ extension CoreDataStack {
     func cachePartners(_ partners: [Partner]) {
         queue.async { [weak self] in
             guard let self = self else { return }
-            let context = self.newBackgroundContext()
+            let context = self.persistentContainer.newBackgroundContext()
             
             context.perform {
                 for partner in partners {
@@ -200,7 +205,7 @@ extension CoreDataStack {
             
             do {
                 let entities = try context.fetch(fetchRequest)
-                return entities.compactMap { entity in
+                return entities.compactMap { (entity: PartnerEntity) -> Partner? in
                     guard let partnerData = entity.partnerData,
                           let partner = try? JSONDecoder().decode(Partner.self, from: partnerData) else {
                         return nil
@@ -218,7 +223,7 @@ extension CoreDataStack {
     func cacheProducts(_ products: [Product], for partnerId: String) {
         queue.async { [weak self] in
             guard let self = self else { return }
-            let context = self.newBackgroundContext()
+            let context = self.persistentContainer.newBackgroundContext()
             
             context.perform {
                 for product in products {
@@ -258,7 +263,7 @@ extension CoreDataStack {
             
             do {
                 let entities = try context.fetch(fetchRequest)
-                return entities.compactMap { entity in
+                return entities.compactMap { (entity: ProductEntity) -> Product? in
                     guard let productData = entity.productData,
                           let product = try? JSONDecoder().decode(Product.self, from: productData) else {
                         return nil

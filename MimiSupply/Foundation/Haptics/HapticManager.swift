@@ -137,7 +137,7 @@ final class HapticManager: ObservableObject {
             
             Timer.scheduledTimer(withTimeInterval: 0.1, repeats: false) { _ in
                 Task { @MainActor in
-                    logger.info("🔄 Haptics \(self.isHapticsEnabled ? "enabled" : "disabled")")
+                    self.logger.info("🔄 Haptics \(self.isHapticsEnabled ? "enabled" : "disabled")")
                 }
             }
         }

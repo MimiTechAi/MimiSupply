@@ -282,9 +282,9 @@ final class ExploreHomeViewModelWithErrorHandling: ObservableObject {
     }
     
     /// Generic error handling wrapper
-    private func withErrorHandling<T>(
+    private func withErrorHandling<T: Sendable>(
         _ operation: String,
-        action: () async throws -> T
+        action: @Sendable () async throws -> T
     ) async -> T? {
         do {
             return try await action()

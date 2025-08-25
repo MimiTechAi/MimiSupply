@@ -41,7 +41,7 @@ final class AuthenticationServiceImpl: NSObject, @unchecked Sendable, Authentica
     private var authControllerDelegate: AuthenticationDelegate?
     private var presentationContextProvider: PresentationContextProvider?
     
-    private init() {
+    private override init() {
         self.keychainService = KeychainService.shared
         self.cloudKitService = CloudKitServiceImpl.shared
         super.init()

@@ -31,7 +31,17 @@ struct EnhancedSkeletonView: View {
     
     var body: some View {
         RoundedRectangle(cornerRadius: cornerRadius)
-            .fill(skeletonGradient)
+            .fill(
+                LinearGradient(
+                    colors: [
+                        Color.gray200,
+                        Color.gray300,
+                        Color.gray200
+                    ],
+                    startPoint: .leading,
+                    endPoint: .trailing
+                )
+            )
             .frame(width: width, height: height)
             .opacity(isAnimating ? 0.6 : 1.0)
             .animation(
@@ -48,18 +58,6 @@ struct EnhancedSkeletonView: View {
             .accessibilityElement(children: .ignore)
             .accessibilityLabel("Loading content")
             .accessibilityAddTraits(.updatesFrequently)
-    }
-    
-    private var skeletonGradient: some View {
-        LinearGradient(
-            colors: [
-                Color.gray200,
-                Color.gray300,
-                Color.gray200
-            ],
-            startPoint: .leading,
-            endPoint: .trailing
-        )
     }
 }
 

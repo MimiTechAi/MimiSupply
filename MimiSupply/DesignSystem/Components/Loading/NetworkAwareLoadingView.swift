@@ -92,7 +92,9 @@ final class NetworkQualityMonitor: ObservableObject {
     }
     
     deinit {
-        stopMonitoring()
+        Task { @MainActor in
+            stopMonitoring()
+        }
     }
     
     private func startMonitoring() {

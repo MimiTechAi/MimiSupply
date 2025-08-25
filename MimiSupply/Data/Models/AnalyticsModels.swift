@@ -20,12 +20,12 @@ struct KeyMetrics {
     let ratingChange: Double
 }
 
-struct ChartDataPoint: Identifiable, Equatable {
+struct AnalyticsChartDataPoint: Identifiable, Equatable {
     let id = UUID()
     let date: Date
     let value: Double
     
-    static func == (lhs: ChartDataPoint, rhs: ChartDataPoint) -> Bool {
+    static func == (lhs: AnalyticsChartDataPoint, rhs: AnalyticsChartDataPoint) -> Bool {
         return lhs.date == rhs.date && lhs.value == rhs.value
     }
 }

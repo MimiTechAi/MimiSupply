@@ -127,7 +127,7 @@ struct OptimizedAsyncImage: View {
         return await Task.detached {
             guard let image = UIImage(data: data) else { return data }
             
-            let targetSize = calculateOptimalSize(
+            let targetSize = await calculateOptimalSize(
                 original: image.size,
                 maxSize: maxSize
             )
@@ -141,7 +141,7 @@ struct OptimizedAsyncImage: View {
         }.value
     }
     
-    private func calculateOptimalSize(original: CGSize, maxSize: CGSize) -> CGSize {
+    private func calculateOptimalSize(original: CGSize, maxSize: CGSize) async -> CGSize {
         let widthRatio = maxSize.width / original.width
         let heightRatio = maxSize.height / original.height
         let ratio = min(widthRatio, heightRatio)
@@ -278,7 +278,9 @@ final class BatchUpdateManager: ObservableObject {
         
         batchTimer?.invalidate()
         batchTimer = Timer.scheduledTimer(withTimeInterval: batchDelay, repeats: false) { _ in
-            self.commitBatchUpdates()
+            Task { @MainActor in
+                self.commitBatchUpdates()
+            }
         }
     }
     

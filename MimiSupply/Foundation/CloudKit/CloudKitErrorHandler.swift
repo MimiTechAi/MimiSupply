@@ -455,16 +455,22 @@ extension CKError {
     
     /// Get ancestor record for reference errors
     var ancestorRecord: CKRecord? {
-        return userInfo[CKErrorAncestorRecordKey] as? CKRecord
+        // Use string literal as fallback for missing constant
+        let key = "CKErrorAncestorRecord"
+        return userInfo[key] as? CKRecord
     }
     
     /// Get server record for conflict errors
     var serverRecord: CKRecord? {
-        return userInfo[CKErrorServerRecordKey] as? CKRecord
+        // Use string literal as fallback for missing constant
+        let key = "CKErrorServerRecord"
+        return userInfo[key] as? CKRecord
     }
     
     /// Get client record for conflict errors
     var clientRecord: CKRecord? {
-        return userInfo[CKErrorClientRecordKey] as? CKRecord
+        // Use string literal as fallback for missing constant
+        let key = "CKErrorClientRecord"
+        return userInfo[key] as? CKRecord
     }
 }

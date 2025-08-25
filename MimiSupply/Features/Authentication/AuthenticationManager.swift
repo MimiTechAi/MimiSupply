@@ -21,7 +21,7 @@ final class AuthenticationManager: ObservableObject {
     private let authenticationService: AuthenticationService
     private var cancellables = Set<AnyCancellable>()
     
-    init(authenticationService: AuthenticationService = AuthenticationServiceImpl()) {
+    init(authenticationService: AuthenticationService = AuthenticationServiceImpl.shared) {
         self.authenticationService = authenticationService
         setupStateObservation()
         

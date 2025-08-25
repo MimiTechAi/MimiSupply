@@ -82,7 +82,7 @@ final class RateLimiter: ObservableObject {
         
         // Check sliding window limit
         if requestsInWindow >= adaptiveThreshold {
-            logger.warning("⚠️ Rate limit exceeded: \(requestsInWindow)/\(adaptiveThreshold) in window")
+            logger.warning("⚠️ Rate limit exceeded: \(self.requestsInWindow)/\(self.adaptiveThreshold) in window")
             await startThrottle(duration: calculateThrottleDuration())
             return false
         }
@@ -93,7 +93,7 @@ final class RateLimiter: ObservableObject {
             requestTimestamps.append(Date())
             requestsInWindow = requestTimestamps.count
             
-            logger.debug("✅ Token acquired: \(currentTokens) remaining")
+            logger.debug("✅ Token acquired: \(self.currentTokens) remaining")
             return true
         } else {
             logger.debug("🪣 No tokens available")
@@ -116,7 +116,7 @@ final class RateLimiter: ObservableObject {
         // Adapt rate limit based on success rate
         await adaptRateLimit()
         
-        logger.debug("📊 Success rate: \(successRate * 100, specifier: "%.1f")%, threshold: \(adaptiveThreshold)")
+        logger.debug("📊 Success rate: \(String(format: "%.1f", self.successRate * 100))%, threshold: \(self.adaptiveThreshold)")
     }
     
     // MARK: - Adaptive Rate Limiting
@@ -127,15 +127,15 @@ final class RateLimiter: ObservableObject {
         if successRate < 0.5 { // Less than 50% success rate
             // Decrease rate limit aggressively
             adaptiveThreshold = max(1, Int(Double(adaptiveThreshold) * 0.5))
-            logger.info("📉 Aggressive rate limit reduction: \(oldThreshold) → \(adaptiveThreshold)")
+            logger.info("📉 Aggressive rate limit reduction: \(oldThreshold) → \(self.adaptiveThreshold)")
         } else if successRate < 0.8 { // Less than 80% success rate
             // Decrease rate limit moderately
             adaptiveThreshold = max(1, Int(Double(adaptiveThreshold) * 0.8))
-            logger.info("📉 Moderate rate limit reduction: \(oldThreshold) → \(adaptiveThreshold)")
+            logger.info("📉 Moderate rate limit reduction: \(oldThreshold) → \(self.adaptiveThreshold)")
         } else if successRate > 0.95 && adaptiveThreshold < maxTokens {
             // Increase rate limit gradually when doing well
             adaptiveThreshold = min(maxTokens, adaptiveThreshold + 1)
-            logger.info("📈 Rate limit increase: \(oldThreshold) → \(adaptiveThreshold)")
+            logger.info("📈 Rate limit increase: \(oldThreshold) → \(self.adaptiveThreshold)")
         }
     }
     
@@ -145,7 +145,7 @@ final class RateLimiter: ObservableObject {
         isThrottled = true
         throttleEndTime = Date().addingTimeInterval(duration)
         
-        logger.warning("🚫 Throttling activated for \(duration, specifier: "%.1f")s")
+        logger.warning("🚫 Throttling activated for \(String(format: "%.1f", duration))s")
         
         // Start timer to end throttle
         throttleTimer?.invalidate()
@@ -186,7 +186,7 @@ final class RateLimiter: ObservableObject {
             currentTokens = min(maxTokens, currentTokens + tokensToAdd)
             lastRefill = now
             
-            logger.debug("🔋 Refilled \(tokensToAdd) tokens: \(currentTokens)/\(maxTokens)")
+            logger.debug("🔋 Refilled \(tokensToAdd) tokens: \(self.currentTokens)/\(self.maxTokens)")
         }
     }
     
@@ -294,9 +294,9 @@ final class RateLimiterManager: ObservableObject {
     }
     
     /// Execute a request with rate limiting
-    func executeWithRateLimit<T>(
+    func executeWithRateLimit<T: Sendable>(
         service: String,
-        operation: () async throws -> T
+        operation: @Sendable () async throws -> T
     ) async throws -> T {
         let rateLimiter = getRateLimiter(for: service)
         

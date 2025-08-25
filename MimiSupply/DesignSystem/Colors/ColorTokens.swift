@@ -142,11 +142,15 @@ extension Color {
     
     // MARK: - High Contrast Support
     var accessibilityHighContrastVariant: Color {
-        if UIAccessibility.isDarkerSystemColorsEnabled {
-            return self.opacity(0.9)
-        } else {
-            return self
+        Task { @MainActor in
+            if UIAccessibility.isDarkerSystemColorsEnabled {
+                return self.opacity(0.9)
+            } else {
+                return self
+            }
         }
+        // Provide synchronous fallback
+        return self
     }
     
     // MARK: - Dynamic Color Creation
@@ -207,7 +211,9 @@ final class ColorSchemeManager: ObservableObject {
             rawValue: UserDefaults.standard.string(forKey: "color_scheme_preference") ?? "system"
         ) ?? .system
         
-        self.isHighContrast = UIAccessibility.isDarkerSystemColorsEnabled
+        Task { @MainActor in
+            self.isHighContrast = UIAccessibility.isDarkerSystemColorsEnabled
+        }
         
         updateColorScheme()
         
@@ -217,7 +223,9 @@ final class ColorSchemeManager: ObservableObject {
             object: nil,
             queue: .main
         ) { [weak self] _ in
-            self?.isHighContrast = UIAccessibility.isDarkerSystemColorsEnabled
+            Task { @MainActor in
+                self?.isHighContrast = UIAccessibility.isDarkerSystemColorsEnabled
+            }
         }
     }
     
@@ -278,7 +286,7 @@ struct ElevatedSurfaceModifier: ViewModifier {
     
     func body(content: Content) -> some View {
         content
-            .background(Color.elevatedSurface(level: level))
+            .background(Color.surfaceElevated(level: level))
     }
 }
 
