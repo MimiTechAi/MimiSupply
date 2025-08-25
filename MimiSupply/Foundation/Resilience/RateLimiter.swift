@@ -10,8 +10,7 @@ import OSLog
 import Combine
 
 /// Adaptive rate limiter with token bucket algorithm and dynamic adjustment
-@MainActor
-final class RateLimiter: ObservableObject {
+final class RateLimiter: ObservableObject, @unchecked Sendable {
     
     // MARK: - Published Properties
     @Published var currentTokens: Int = 0
@@ -62,6 +61,7 @@ final class RateLimiter: ObservableObject {
     
     deinit {
         throttleTimer?.invalidate()
+        throttleTimer = nil
     }
     
     // MARK: - Token Management
@@ -258,7 +258,7 @@ struct RateLimiterStatistics {
 // MARK: - Rate Limiter Manager
 
 @MainActor
-final class RateLimiterManager: ObservableObject {
+final class RateLimiterManager: ObservableObject, @unchecked Sendable {
     static let shared = RateLimiterManager()
     
     @Published var rateLimiters: [String: RateLimiter] = [:]

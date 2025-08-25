@@ -61,7 +61,7 @@ struct PrimaryButton: View {
                         .foregroundColor(.white)
                         .scaleEffect(successAnimation ? 1.2 : 1.0)
                         .conditionalAnimation(
-                            type: .scaleIn,
+                            type: AccessibilityAnimationType.scaleIn,
                             config: .spring,
                             value: successAnimation
                         )

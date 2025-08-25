@@ -4,9 +4,7 @@ import SwiftUI
 import os.log
 
 /// Memory management and leak detection system
-@MainActor
-class MemoryManager: ObservableObject {
-    @MainActor
+class MemoryManager: ObservableObject, @unchecked Sendable {
     static let shared = MemoryManager()
     
     @Published var currentMemoryUsage: Double = 0

@@ -351,9 +351,7 @@ class PaymentViewModel: ObservableObject {
         clearError()
         
         do {
-            let result = try await MainActor.run {
-                paymentService.processPayment(for: order)
-            }
+            let result = try await paymentService.processPayment(for: order)
             paymentResult = result
         } catch {
             paymentError = error
@@ -362,7 +360,7 @@ class PaymentViewModel: ObservableObject {
         
         isProcessingPayment = false
     }
-    
+
     func clearError() {
         showingError = false
         errorMessage = ""

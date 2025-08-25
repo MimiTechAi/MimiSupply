@@ -11,11 +11,11 @@ import Foundation
 final class UserRepositoryImpl: UserRepository, @unchecked Sendable {
     
     private let cloudKitService: CloudKitService
-    private let keychainService: KeychainService
+    private let keychainService: SecureKeychainService
     
     private let currentUserKey = "current_user"
     
-    init(cloudKitService: CloudKitService, keychainService: KeychainService) {
+    init(cloudKitService: CloudKitService, keychainService: SecureKeychainService) {
         self.cloudKitService = cloudKitService
         self.keychainService = keychainService
     }
@@ -25,7 +25,7 @@ final class UserRepositoryImpl: UserRepository, @unchecked Sendable {
         try await cloudKitService.saveUserProfile(user)
         
         // Cache locally in Keychain
-        try keychainService.store(user, forKey: currentUserKey)
+        try await keychainService.store(user, forKey: currentUserKey)
     }
     
     func fetchUser(by appleUserID: String) async throws -> UserProfile? {
@@ -34,7 +34,7 @@ final class UserRepositoryImpl: UserRepository, @unchecked Sendable {
     
     func fetchCurrentUser() async throws -> UserProfile? {
         // Try to get from local cache first
-        if let cachedUser: UserProfile = try keychainService.retrieve(UserProfile.self, forKey: currentUserKey) {
+        if let cachedUser: UserProfile = try await keychainService.retrieve(UserProfile.self, forKey: currentUserKey) {
             return cachedUser
         }
         
@@ -48,7 +48,7 @@ final class UserRepositoryImpl: UserRepository, @unchecked Sendable {
     
     func deleteUser(_ userId: String) async throws {
         // Remove from local cache
-        try keychainService.deleteItem(forKey: currentUserKey)
+        try await keychainService.deleteItem(forKey: currentUserKey)
         
         // TODO: Implement CloudKit user deletion if needed
     }

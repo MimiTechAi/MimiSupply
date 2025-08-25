@@ -282,7 +282,7 @@ struct SyncStatusDetailsView: View {
             
             Button {
                 offlineManager.clearPendingSync()
-                HapticManager.shared.trigger(.light)
+                HapticManager.shared.trigger(.lightImpact)
             } label: {
                 Label("Clear Pending", systemImage: "trash")
                     .frame(maxWidth: .infinity)

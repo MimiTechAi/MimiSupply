@@ -142,7 +142,7 @@ struct MagneticModifier: ViewModifier {
 
 // MARK: - Enhanced Hero Transition System
 
-class HeroTransitionCoordinator: ObservableObject {
+class HeroTransitionCoordinator: ObservableObject, @unchecked Sendable {
     @Published var activeTransitions: Set<String> = []
     @Published var transitionProgress: [String: Double] = [:]
     

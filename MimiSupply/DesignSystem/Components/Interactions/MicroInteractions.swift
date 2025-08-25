@@ -301,10 +301,12 @@ struct LoadingButton: View {
             Task { @MainActor in
                 self.loadingProgress += 0.1
                 if self.loadingProgress >= 1.0 {
-                    timer.invalidate()
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                        self.isLoading = false
-                        self.action()
+                    Task { @MainActor in
+                        timer.invalidate()
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                            self.isLoading = false
+                            self.action()
+                        }
                     }
                 }
             }

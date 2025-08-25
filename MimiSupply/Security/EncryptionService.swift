@@ -18,7 +18,7 @@ final class EncryptionService: ObservableObject {
     static let shared = EncryptionService()
     
     private let logger = Logger(subsystem: "MimiSupply", category: "Encryption")
-    private let keychainService: KeychainService
+    private let keychainService: SecureKeychainService
     
     // Encryption keys
     private var symmetricKey: SymmetricKey?
@@ -26,7 +26,7 @@ final class EncryptionService: ObservableObject {
     private var publicKey: P256.Signing.PublicKey?
     
     private init() {
-        self.keychainService = KeychainService.shared
+        self.keychainService = SecureKeychainService.shared
         setupEncryptionKeys()
     }
     

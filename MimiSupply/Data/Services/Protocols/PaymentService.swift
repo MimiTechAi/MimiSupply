@@ -9,7 +9,7 @@ import Foundation
 import PassKit
 
 /// Payment service protocol for handling Apple Pay transactions
-protocol PaymentService {
+protocol PaymentService: Sendable {
     func processPayment(for order: Order) async throws -> PaymentResult
     func refundPayment(for orderId: String, amount: Int) async throws
     func validateMerchantCapability() -> Bool

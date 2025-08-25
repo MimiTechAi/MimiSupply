@@ -4,7 +4,7 @@ import os.log
 
 /// Optimizes app startup time through lazy initialization and performance monitoring
 @MainActor
-class StartupOptimizer: ObservableObject {
+class StartupOptimizer: ObservableObject, @unchecked Sendable {
     static let shared = StartupOptimizer()
     
     @Published var isInitialized = false
@@ -78,10 +78,10 @@ class StartupOptimizer: ObservableObject {
             logger.info("App initialization completed in \(self.startupTime, privacy: .public)s")
         }
         
-        // Execute remaining tasks asynchronously
-        Task.detached { [weak self] in
-            for task in otherTasks {
-                await self?.executeTask(task)
+        // Execute remaining tasks asynchronously  
+        for task in otherTasks {
+            Task.detached { @Sendable in
+                await self.executeTask(task)
             }
         }
     }

@@ -26,7 +26,7 @@ final class BiometricAuthService: ObservableObject {
     
     // MARK: - Private Properties
     private let logger = Logger(subsystem: "MimiSupply", category: "BiometricAuth")
-    private let keychain = KeychainService.shared
+    private let keychain = SecureKeychainService.shared
     private let context = LAContext()
     private var cancellables = Set<AnyCancellable>()
     

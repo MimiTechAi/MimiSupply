@@ -225,6 +225,26 @@ struct IntensityButton: View {
     }
 }
 
+// MARK: - Haptic Test Button
+struct HapticTestButton: View {
+    let title: String
+    let type: HapticFeedbackType
+    
+    var body: some View {
+        Button {
+            HapticManager.shared.trigger(type, context: .ui)
+        } label: {
+            Text(title)
+                .font(.caption)
+                .padding(.horizontal, 12)
+                .padding(.vertical, 8)
+                .background(Color.accentColor.opacity(0.1))
+                .foregroundColor(.accentColor)
+                .cornerRadius(8)
+        }
+    }
+}
+
 // MARK: - Haptic Test Group
 struct HapticTestGroup: View {
     let title: String
@@ -241,31 +261,10 @@ struct HapticTestGroup: View {
                 ForEach(Array(haptics.enumerated()), id: \.offset) { _, haptic in
                     HapticTestButton(
                         title: haptic.0,
-                        type: haptic.1,
-                        context: haptic.2
+                        type: haptic.1
                     )
                 }
             }
-        }
-    }
-}
-
-// MARK: - Enhanced Haptic Test Button
-struct EnhancedHapticTestButton: View {
-    let hapticType: HapticFeedbackType
-    let context: HapticContext
-    let title: String
-    
-    var body: some View {
-        Button {
-            HapticManager.shared.trigger(hapticType, context: context)
-        } label: {
-            Text(title)
-                .font(.caption.scaledFont())
-                .padding(.horizontal, Spacing.sm)
-                .padding(.vertical, Spacing.xs)
-                .background(Color.accentColor.opacity(0.1))
-                .clipShape(RoundedRectangle(cornerRadius: 8))
         }
     }
 }

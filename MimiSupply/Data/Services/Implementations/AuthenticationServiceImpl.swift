@@ -28,7 +28,7 @@ final class AuthenticationServiceImpl: NSObject, @unchecked Sendable, Authentica
     }
     
     
-    private var keychainService: KeychainService!
+    private var keychainService: SecureKeychainService!
     private let cloudKitService: CloudKitService
     private let logger = Logger(subsystem: "com.mimisupply.app", category: "Authentication")
     
@@ -49,12 +49,12 @@ final class AuthenticationServiceImpl: NSObject, @unchecked Sendable, Authentica
         super.init()
         
         Task { @MainActor in
-            self.keychainService = KeychainService.shared
+            self.keychainService = SecureKeychainService.shared
             await self.initializeAuthenticationState()
         }
     }
     
-    convenience init(keychainService: KeychainService, cloudKitService: CloudKitService) {
+    convenience init(keychainService: SecureKeychainService, cloudKitService: CloudKitService) {
         self.init()
     }
     
@@ -97,15 +97,17 @@ final class AuthenticationServiceImpl: NSObject, @unchecked Sendable, Authentica
         request.requestedScopes = [.fullName, .email]
         
         return try await withCheckedThrowingContinuation { continuation in
-            let delegate = AuthenticationDelegate(completion: { result in
-                continuation.resume(with: result)
-            })
-            self.authControllerDelegate = delegate
-            
-            let authController = ASAuthorizationController(authorizationRequests: [request])
-            authController.delegate = delegate
-            authController.presentationContextProvider = self.presentationContextProvider
-            authController.performRequests()
+            Task { @MainActor in
+                let delegate = AuthenticationDelegate(completion: { result in
+                    continuation.resume(with: result)
+                })
+                self.authControllerDelegate = delegate
+                
+                let authController = ASAuthorizationController(authorizationRequests: [request])
+                authController.delegate = delegate
+                authController.presentationContextProvider = self.presentationContextProvider
+                authController.performRequests()
+            }
         }
     }
     
@@ -380,6 +382,7 @@ private class AuthenticationDelegate: NSObject, ASAuthorizationControllerDelegat
     
     init(completion: @escaping @Sendable (Result<AuthenticationResult, Error>) -> Void) {
         self.completion = completion
+        super.init()
     }
     
     func authorizationController(controller: ASAuthorizationController, didCompleteWithAuthorization authorization: ASAuthorization) {

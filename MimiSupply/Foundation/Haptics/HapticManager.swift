@@ -632,12 +632,12 @@ struct HapticSettingsView: View {
                         .foregroundColor(.secondary)
                     
                     LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 2), spacing: 8) {
-                        HapticTestButton("Light", type: .lightImpact)
-                        HapticTestButton("Medium", type: .mediumImpact)
-                        HapticTestButton("Heavy", type: .heavyImpact)
-                        HapticTestButton("Success", type: .success)
-                        HapticTestButton("Warning", type: .warning)
-                        HapticTestButton("Error", type: .error)
+                        HapticTestButton(title: "Light", type: .lightImpact)
+                        HapticTestButton(title: "Medium", type: .mediumImpact)
+                        HapticTestButton(title: "Heavy", type: .heavyImpact)
+                        HapticTestButton(title: "Success", type: .success)
+                        HapticTestButton(title: "Warning", type: .warning)
+                        HapticTestButton(title: "Error", type: .error)
                     }
                 }
                 .padding(.top, 8)
@@ -646,28 +646,6 @@ struct HapticSettingsView: View {
         .padding()
         .background(Color(.systemBackground))
         .cornerRadius(12)
-    }
-}
-
-struct HapticTestButton: View {
-    let title: String
-    let type: HapticFeedbackType
-    
-    init(_ title: String, type: HapticFeedbackType) {
-        self.title = title
-        self.type = type
-    }
-    
-    var body: some View {
-        Button(title) {
-            HapticManager.shared.trigger(type)
-        }
-        .font(.caption)
-        .padding(.horizontal, 12)
-        .padding(.vertical, 6)
-        .background(Color.blue.opacity(0.1))
-        .foregroundColor(.blue)
-        .cornerRadius(8)
     }
 }
 

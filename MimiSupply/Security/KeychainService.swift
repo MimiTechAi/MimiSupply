@@ -13,8 +13,8 @@ import os
 // MARK: - Secure Keychain Service
 
 @MainActor
-final class KeychainService: ObservableObject {
-    static let shared = KeychainService()
+final class SecureKeychainService: ObservableObject {
+    static let shared = SecureKeychainService()
     
     private let logger = Logger(subsystem: "MimiSupply", category: "Keychain")
     private let serviceName = "com.mimisupply.app"
@@ -23,24 +23,24 @@ final class KeychainService: ObservableObject {
     private init() {
         // Configure access group for app extensions if needed
         self.accessGroup = nil // Set to your app group if using extensions
-        logger.info("🔐 KeychainService initialized")
+        logger.info("🔐 SecureKeychainService initialized")
     }
     
     // MARK: - Generic Keychain Operations
     
-    func store<T: Codable>(_ item: T, forKey key: String, accessibility: KeychainAccessibility = .whenUnlockedThisDeviceOnly) throws {
+    func store<T: Codable>(_ item: T, forKey key: String, accessibility: KeychainAccessibility = .whenUnlockedThisDeviceOnly) async throws {
         let data = try JSONEncoder().encode(item)
-        try storeData(data, forKey: key, accessibility: accessibility)
+        try await storeData(data, forKey: key, accessibility: accessibility)
     }
     
-    func retrieve<T: Codable>(_ type: T.Type, forKey key: String) throws -> T? {
-        guard let data = try retrieveData(forKey: key) else { return nil }
+    func retrieve<T: Codable>(_ type: T.Type, forKey key: String) async throws -> T? {
+        guard let data = try await retrieveData(forKey: key) else { return nil }
         return try JSONDecoder().decode(type, from: data)
     }
     
-    func storeData(_ data: Data, forKey key: String, accessibility: KeychainAccessibility = .whenUnlockedThisDeviceOnly) throws {
+    func storeData(_ data: Data, forKey key: String, accessibility: KeychainAccessibility = .whenUnlockedThisDeviceOnly) async throws {
         // Delete existing item first
-        try? deleteItem(forKey: key)
+        try? await deleteItem(forKey: key)
         
         var query: [String: Any] = [
             kSecClass as String: kSecClassGenericPassword,
@@ -64,7 +64,7 @@ final class KeychainService: ObservableObject {
         logger.debug("✅ Stored keychain item: \(key)")
     }
     
-    func retrieveData(forKey key: String) throws -> Data? {
+    func retrieveData(forKey key: String) async throws -> Data? {
         var query: [String: Any] = [
             kSecClass as String: kSecClassGenericPassword,
             kSecAttrService as String: serviceName,
@@ -98,7 +98,7 @@ final class KeychainService: ObservableObject {
         }
     }
     
-    func deleteItem(forKey key: String) throws {
+    func deleteItem(forKey key: String) async throws {
         var query: [String: Any] = [
             kSecClass as String: kSecClassGenericPassword,
             kSecAttrService as String: serviceName,

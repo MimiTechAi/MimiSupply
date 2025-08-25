@@ -6,7 +6,7 @@ import UIKit
 
 // Sendable conformance is omitted because this class is not final and contains mutable state that is not concurrency-safe. All mutable state should be accessed only from the main actor.
 /// Manages background tasks for location updates and data synchronization
-class BackgroundTaskManager: NSObject, ObservableObject {
+class BackgroundTaskManager: NSObject, ObservableObject, @unchecked Sendable {
     @MainActor static let shared = BackgroundTaskManager()
     
     // Background task identifiers
