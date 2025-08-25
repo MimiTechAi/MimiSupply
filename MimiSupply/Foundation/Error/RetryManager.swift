@@ -11,7 +11,7 @@ import Network
 import OSLog
 
 /// Manages retry logic for failed operations
-final class RetryManager: ObservableObject, Sendable {
+final class RetryManager: ObservableObject, @unchecked Sendable {
     nonisolated(unsafe) static let shared = RetryManager()
     
     private let logger = Logger(subsystem: "com.mimisupply.app", category: "RetryManager")
@@ -20,8 +20,8 @@ final class RetryManager: ObservableObject, Sendable {
     private init() {}
     
     /// Retry an async operation with exponential backoff
-    func retry<T>(
-        operation: @escaping () async throws -> T,
+    func retry<T: Sendable>(
+        operation: @escaping @Sendable () async throws -> T,
         maxAttempts: Int = 3,
         initialDelay: TimeInterval = 1.0,
         maxDelay: TimeInterval = 30.0,
@@ -40,7 +40,7 @@ final class RetryManager: ObservableObject, Sendable {
                 logger.warning("⚠️ Operation failed on attempt \(attempt): \(error.localizedDescription)")
                 
                 // Check if error is retryable
-                if !(await isRetryable(error: error, retryableErrors: retryableErrors)) {
+                if !isRetryable(error: error, retryableErrors: retryableErrors) {
                     logger.info("❌ Error not retryable, failing immediately")
                     throw error
                 }
@@ -59,12 +59,12 @@ final class RetryManager: ObservableObject, Sendable {
     }
     
     /// Retry operation when network becomes available
-    func retryWhenNetworkAvailable<T>(
-        operation: @escaping () async throws -> T,
+    func retryWhenNetworkAvailable<T: Sendable>(
+        operation: @escaping @Sendable () async throws -> T,
         timeout: TimeInterval = 60.0
     ) async throws -> T {
         // If network is available, try immediately
-        if networkMonitor.isConnected {
+        if await networkMonitor.isConnected {
             return try await operation()
         }
         
@@ -79,13 +79,9 @@ final class RetryManager: ObservableObject, Sendable {
             }
             
             // Add network monitoring task
-            group.addTask { [weak self] in
-                guard let self = self else {
-                    throw AppError.unknown(NSError(domain: "RetryManager", code: -1))
-                }
-                
+            group.addTask { [networkMonitor] in
                 // Wait for network to become available
-                await self.networkMonitor.waitForConnection()
+                await networkMonitor.waitForConnection()
                 
                 // Try the operation
                 return try await operation()
@@ -99,28 +95,35 @@ final class RetryManager: ObservableObject, Sendable {
     }
     
     /// Check if an error is retryable
-    @MainActor
     private func isRetryable(error: Error, retryableErrors: [Error.Type]) -> Bool {
-        // Convert to AppError if needed
-        let appError = ErrorHandler.shared.convertToAppError(error)
-        
-        switch appError {
-        case .network(.noConnection), .network(.timeout), .network(.connectionFailed):
+        // Simple conversion without using ErrorHandler for concurrency safety
+        if let networkError = error as? NetworkError {
             return true
-        case .cloudKit:
-            return true
-        case .authentication(.tokenExpired):
-            return true
-        default:
-            return false
         }
+        if let cloudKitError = error as? CloudKitError {
+            return true
+        }
+        if let appError = error as? AppError {
+            switch appError {
+            case .network(.noConnection), .network(.timeout), .network(.connectionFailed):
+                return true
+            case .cloudKit:
+                return true
+            case .authentication(.tokenExpired):
+                return true
+            default:
+                return false
+            }
+        }
+        return false
     }
 }
 
 /// Network connectivity monitor
 final class NetworkMonitor: ObservableObject, @unchecked Sendable {
-    static let shared = NetworkMonitor()
-    
+    private static let _shared = NetworkMonitor()
+    static var shared: NetworkMonitor { _shared }
+
     @MainActor @Published var isConnected = false
     @MainActor @Published var connectionType: NWInterface.InterfaceType?
     
@@ -142,7 +145,7 @@ final class NetworkMonitor: ObservableObject, @unchecked Sendable {
     private func startMonitoring() {
         monitor.pathUpdateHandler = { [weak self] path in
             Task { @MainActor in
-                await self?.updateConnectionStatus(path)
+                self?.updateConnectionStatus(path)
             }
         }
         monitor.start(queue: queue)
@@ -157,7 +160,7 @@ final class NetworkMonitor: ObservableObject, @unchecked Sendable {
     
     /// Update connection status based on network path
     @MainActor
-    private func updateConnectionStatus(_ path: NWPath) async {
+    private func updateConnectionStatus(_ path: NWPath) {
         let wasConnected = isConnected
         isConnected = path.status == .satisfied
         

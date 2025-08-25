@@ -44,7 +44,7 @@ protocol CloudKitService: Sendable {
     
     // MARK: - Generic Operations
     func save<T: Codable & Sendable>(_ object: T) async throws -> T
-    func fetch<T: Codable & Sendable>(_ type: T.Type, predicate: NSPredicate) async throws -> [T]
+    func fetch<T: Codable & Sendable>(_ type: T.Type, predicate: String) async throws -> [T]
     
     // MARK: - Analytics Operations
     func fetchPartnerAnalytics(partnerId: String, timeRange: TimeRange) async throws -> PartnerAnalytics

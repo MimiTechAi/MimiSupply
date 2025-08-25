@@ -12,6 +12,7 @@ import CoreLocation
 import OSLog
 
 /// Enhanced CloudKit service with comprehensive error handling and offline support
+@MainActor
 final class EnhancedCloudKitService: CloudKitService {
     private let publicDatabase = CKContainer.default().publicCloudDatabase
     private let privateDatabase = CKContainer.default().privateCloudDatabase
@@ -21,7 +22,6 @@ final class EnhancedCloudKitService: CloudKitService {
     private let retryManager = RetryManager.shared
     private let cacheManager = CacheManager.shared
 
-    @MainActor
     private var degradationService: GracefulDegradationService {
         GracefulDegradationService.shared
     }
@@ -846,7 +846,7 @@ final class EnhancedCloudKitService: CloudKitService {
     
     // MARK: - Generic Operations
     
-    func save<T: Codable>(_ object: T) async throws -> T {
+    nonisolated func save<T: Codable & Sendable>(_ object: T) async throws -> T {
         return try await retryManager.retry(operation: {
             do {
                 // Determine converter and database by type
@@ -882,11 +882,12 @@ final class EnhancedCloudKitService: CloudKitService {
         })
     }
     
-    func fetch<T: Codable>(_ type: T.Type, predicate: NSPredicate) async throws -> [T] {
+    nonisolated func fetch<T: Codable & Sendable>(_ type: T.Type, predicate: String) async throws -> [T] {
+        let nsPredicate = NSPredicate(format: predicate)
         return try await retryManager.retry(operation: {
             do {
                 if type == Partner.self {
-                    let query = CKQuery(recordType: CloudKitSchema.Partner.recordType, predicate: predicate)
+                    let query = CKQuery(recordType: CloudKitSchema.Partner.recordType, predicate: nsPredicate)
                     let (matchResults, _) = try await self.publicDatabase.records(matching: query)
                     let items: [Partner] = try matchResults.compactMap { _, result in
                         switch result {
@@ -899,7 +900,7 @@ final class EnhancedCloudKitService: CloudKitService {
                     }
                     return items as! [T]
                 } else if type == Product.self {
-                    let query = CKQuery(recordType: CloudKitSchema.Product.recordType, predicate: predicate)
+                    let query = CKQuery(recordType: CloudKitSchema.Product.recordType, predicate: nsPredicate)
                     let (matchResults, _) = try await self.publicDatabase.records(matching: query)
                     let items: [Product] = try matchResults.compactMap { _, result in
                         switch result {
@@ -912,7 +913,7 @@ final class EnhancedCloudKitService: CloudKitService {
                     }
                     return items as! [T]
                 } else if type == Order.self {
-                    let query = CKQuery(recordType: CloudKitSchema.Order.recordType, predicate: predicate)
+                    let query = CKQuery(recordType: CloudKitSchema.Order.recordType, predicate: nsPredicate)
                     let (matchResults, _) = try await self.privateDatabase.records(matching: query)
                     let items: [Order] = try matchResults.compactMap { _, result in
                         switch result {
@@ -925,7 +926,7 @@ final class EnhancedCloudKitService: CloudKitService {
                     }
                     return items as! [T]
                 } else if type == UserProfile.self {
-                    let query = CKQuery(recordType: CloudKitSchema.UserProfile.recordType, predicate: predicate)
+                    let query = CKQuery(recordType: CloudKitSchema.UserProfile.recordType, predicate: nsPredicate)
                     let (matchResults, _) = try await self.privateDatabase.records(matching: query)
                     let items: [UserProfile] = try matchResults.compactMap { _, result in
                         switch result {
@@ -938,7 +939,7 @@ final class EnhancedCloudKitService: CloudKitService {
                     }
                     return items as! [T]
                 } else if type == Driver.self {
-                    let query = CKQuery(recordType: CloudKitSchema.Driver.recordType, predicate: predicate)
+                    let query = CKQuery(recordType: CloudKitSchema.Driver.recordType, predicate: nsPredicate)
                     let (matchResults, _) = try await self.privateDatabase.records(matching: query)
                     let items: [Driver] = try matchResults.compactMap { _, result in
                         switch result {

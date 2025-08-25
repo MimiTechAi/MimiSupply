@@ -273,18 +273,20 @@ struct PerformanceDashboard: View {
         animationMonitor.startMonitoring()
         
         timer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { _ in
-            let snapshot = PerformanceSnapshot(
-                timestamp: Date(),
-                memoryUsage: memoryManager.currentMemoryUsage,
-                fps: animationMonitor.averageFPS,
-                droppedFrames: animationMonitor.droppedFrames
-            )
-            
-            performanceHistory.append(snapshot)
-            
-            // Keep only last 100 snapshots
-            if performanceHistory.count > 100 {
-                performanceHistory.removeFirst()
+            Task { @MainActor in
+                let snapshot = PerformanceSnapshot(
+                    timestamp: Date(),
+                    memoryUsage: self.memoryManager.currentMemoryUsage,
+                    fps: self.animationMonitor.averageFPS,
+                    droppedFrames: self.animationMonitor.droppedFrames
+                )
+                
+                self.performanceHistory.append(snapshot)
+                
+                // Keep only last 100 snapshots
+                if self.performanceHistory.count > 100 {
+                    self.performanceHistory.removeFirst()
+                }
             }
         }
     }

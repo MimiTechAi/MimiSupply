@@ -422,7 +422,7 @@ struct SyncStatusDashboard: View {
                     Label("Run Speed Test", systemImage: "speedometer")
                         .frame(maxWidth: .infinity)
                 }
-                .buttonStyle(.secondary)
+                .buttonStyle(BorderedButtonStyle())
                 
                 Button {
                     // Test CloudKit connectivity
@@ -430,7 +430,7 @@ struct SyncStatusDashboard: View {
                     Label("Test CloudKit", systemImage: "icloud")
                         .frame(maxWidth: .infinity)
                 }
-                .buttonStyle(.secondary)
+                .buttonStyle(BorderedButtonStyle())
                 
                 Button {
                     // Ping external services
@@ -438,7 +438,7 @@ struct SyncStatusDashboard: View {
                     Label("Ping Services", systemImage: "network")
                         .frame(maxWidth: .infinity)
                 }
-                .buttonStyle(.secondary)
+                .buttonStyle(BorderedButtonStyle())
             }
         }
         .padding(Spacing.lg)
@@ -648,7 +648,7 @@ struct ServiceStatusRow: View {
     var body: some View {
         HStack {
             Circle()
-                .fill(isHealthy ? .success : .error)
+                .fill(isHealthy ? Color.green : Color.red)
                 .frame(width: 8, height: 8)
             
             Text(serviceType.rawValue)

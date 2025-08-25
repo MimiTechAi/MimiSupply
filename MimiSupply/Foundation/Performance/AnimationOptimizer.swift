@@ -44,12 +44,12 @@ struct AnimationOptimizer {
     }
     
     /// Smooth animation that respects reduce motion
-    static var accessibleSmooth: Animation? {
+    @MainActor static var accessibleSmooth: Animation? {
         return adaptiveAnimation(smoothSpring)
     }
     
     /// Quick animation that respects reduce motion
-    static var accessibleQuick: Animation? {
+    @MainActor static var accessibleQuick: Animation? {
         return adaptiveAnimation(quickSpring)
     }
 }

@@ -133,7 +133,7 @@ struct ShapeRecognizer {
         }
         
         let averageDistance = distances.reduce(0, +) / Double(distances.count)
-        let variance = distances.map { pow($0 - averageDistance, 2) }.reduce(0, +) / Double(distances.count)
+        let variance = distances.map { pow($0 - averageDistance, 2.0) }.reduce(0, +) / Double(distances.count)
         
         return variance < radius * 0.3 // Tolerance for circle detection
     }

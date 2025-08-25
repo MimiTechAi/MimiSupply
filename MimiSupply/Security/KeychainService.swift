@@ -325,7 +325,7 @@ final class KeychainService: ObservableObject {
         
         switch status {
         case errSecSuccess:
-            return result as? SecCertificate
+            return result as! SecCertificate
         case errSecItemNotFound:
             return nil
         default:
@@ -458,7 +458,7 @@ enum KeychainAccessibility {
         case .whenPasscodeSetThisDeviceOnly:
             return kSecAttrAccessibleWhenPasscodeSetThisDeviceOnly
         case .biometryCurrentSet:
-            return kSecAttrAccessibleBiometryCurrentSet
+            return kSecAttrAccessibleWhenUnlockedThisDeviceOnly
         case .biometryAny:
             return kSecAttrAccessibleWhenUnlocked
         }

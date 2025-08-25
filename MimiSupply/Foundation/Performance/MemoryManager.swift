@@ -36,7 +36,8 @@ class MemoryManager: ObservableObject {
     }
     
     deinit {
-        stopMemoryMonitoring()
+        memoryTimer?.invalidate()
+        memoryTimer = nil
     }
     
     // MARK: - Memory Monitoring

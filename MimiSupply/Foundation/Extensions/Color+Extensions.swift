@@ -116,10 +116,12 @@ extension Color {
     
     // MARK: - Accessibility Support
     var highContrastVariant: Color {
-        if UIAccessibility.isDarkerSystemColorsEnabled {
-            return self.opacity(0.9)
-        } else {
-            return self
+        return MainActor.assumeIsolated {
+            if UIAccessibility.isDarkerSystemColorsEnabled {
+                return self.opacity(0.9)
+            } else {
+                return self
+            }
         }
     }
     
@@ -149,7 +151,7 @@ extension Color {
         dark: Color(red: 0.7, green: 0.4, blue: 0.9)
     )
     
-    // MARK: - Dynamic Color Helper (renamed to avoid conflicts)
+    // MARK: - Semantic Color Helper
     static func semanticColor(light: Color, dark: Color) -> Color {
         return Color(UIColor { traitCollection in
             switch traitCollection.userInterfaceStyle {
@@ -160,8 +162,13 @@ extension Color {
             }
         })
     }
+}
+
+// MARK: - Color Convenience Methods
+
+extension Color {
     
-    // MARK: - Hex Color Initializer
+    /// Initialize color from hex string
     init(hex: String) {
         let hex = hex.trimmingCharacters(in: CharacterSet.alphanumerics.inverted)
         var int: UInt64 = 0
@@ -187,12 +194,16 @@ extension Color {
         )
     }
     
-    // MARK: - Random Color
-    static var random: Color {
-        return Color(
-            red: .random(in: 0...1),
-            green: .random(in: 0...1),
-            blue: .random(in: 0...1)
-        )
+    /// Get hex string representation
+    var hexString: String {
+        guard let components = UIColor(self).cgColor.components else {
+            return "#000000"
+        }
+        
+        let r = Int(components[0] * 255)
+        let g = Int(components[1] * 255)
+        let b = Int(components[2] * 255)
+        
+        return String(format: "#%02X%02X%02X", r, g, b)
     }
 }

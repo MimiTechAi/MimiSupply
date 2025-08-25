@@ -17,14 +17,17 @@ class BackgroundTaskManager: NSObject, ObservableObject {
     }
     
     @MainActor private var backgroundTaskID: UIBackgroundTaskIdentifier = .invalid
-    private let locationService: LocationService
+    @MainActor private var locationService: LocationService!
     private let cloudKitService: CloudKitService
     
     override init() {
-        self.locationService = LocationServiceImpl.shared
         self.cloudKitService = CloudKitServiceImpl.shared
         super.init()
-        Task { await registerBackgroundTasks() }
+        
+        Task { @MainActor in
+            self.locationService = LocationServiceImpl.shared
+            await self.registerBackgroundTasks()
+        }
     }
     
     // MARK: - Background Task Registration
@@ -40,24 +43,33 @@ class BackgroundTaskManager: NSObject, ObservableObject {
         BGTaskScheduler.shared.register(
             forTaskWithIdentifier: TaskIdentifier.locationUpdate,
             using: nil
-        ) { task in
-            Task { await self.handleLocationUpdateTask(task as! BGAppRefreshTask) }
+        ) { [weak self] task in
+            guard let self = self else { return }
+            Task { @MainActor in
+                await self.handleLocationUpdateTask(task as! BGAppRefreshTask)
+            }
         }
         
         // Register data sync task (iOS < 17)
         BGTaskScheduler.shared.register(
             forTaskWithIdentifier: TaskIdentifier.dataSync,
             using: nil
-        ) { task in
-            Task { await self.handleDataSyncTask(task as! BGAppRefreshTask) }
+        ) { [weak self] task in
+            guard let self = self else { return }
+            Task { @MainActor in
+                await self.handleDataSyncTask(task as! BGAppRefreshTask)
+            }
         }
         
         // Register cleanup task (iOS < 17)
         BGTaskScheduler.shared.register(
             forTaskWithIdentifier: TaskIdentifier.cleanup,
             using: nil
-        ) { task in
-            Task { await self.handleCleanupTask(task as! BGProcessingTask) }
+        ) { [weak self] task in
+            guard let self = self else { return }
+            Task { @MainActor in
+                await self.handleCleanupTask(task as! BGProcessingTask)
+            }
         }
     }
     
@@ -103,7 +115,7 @@ class BackgroundTaskManager: NSObject, ObservableObject {
     
     // MARK: - Task Handlers
     
-    private func handleLocationUpdateTask(_ task: BGAppRefreshTask) {
+    private func handleLocationUpdateTask(_ task: BGAppRefreshTask) async {
         print("🔄 Handling location update background task")
         
         // Schedule next location update
@@ -114,23 +126,21 @@ class BackgroundTaskManager: NSObject, ObservableObject {
             task.setTaskCompleted(success: false)
         }
         
-        Task {
-            do {
-                // Update driver location if user is a driver and online
-                if await shouldUpdateDriverLocation() {
-                    try await updateDriverLocation()
-                }
-                
-                task.setTaskCompleted(success: true)
-                print("✅ Location update task completed successfully")
-            } catch {
-                print("❌ Location update task failed: \(error)")
-                task.setTaskCompleted(success: false)
+        do {
+            // Update driver location if user is a driver and online
+            if await shouldUpdateDriverLocation() {
+                try await updateDriverLocation()
             }
+            
+            task.setTaskCompleted(success: true)
+            print("✅ Location update task completed successfully")
+        } catch {
+            print("❌ Location update task failed: \(error)")
+            task.setTaskCompleted(success: false)
         }
     }
     
-    private func handleDataSyncTask(_ task: BGAppRefreshTask) {
+    private func handleDataSyncTask(_ task: BGAppRefreshTask) async {
         print("🔄 Handling data sync background task")
         
         // Schedule next data sync
@@ -141,21 +151,19 @@ class BackgroundTaskManager: NSObject, ObservableObject {
             task.setTaskCompleted(success: false)
         }
         
-        Task {
-            do {
-                // Sync pending data
-                try await syncPendingData()
-                
-                task.setTaskCompleted(success: true)
-                print("✅ Data sync task completed successfully")
-            } catch {
-                print("❌ Data sync task failed: \(error)")
-                task.setTaskCompleted(success: false)
-            }
+        do {
+            // Sync pending data
+            try await syncPendingData()
+            
+            task.setTaskCompleted(success: true)
+            print("✅ Data sync task completed successfully")
+        } catch {
+            print("❌ Data sync task failed: \(error)")
+            task.setTaskCompleted(success: false)
         }
     }
     
-    private func handleCleanupTask(_ task: BGProcessingTask) {
+    private func handleCleanupTask(_ task: BGProcessingTask) async {
         print("🔄 Handling cleanup background task")
         
         // Schedule next cleanup
@@ -166,17 +174,15 @@ class BackgroundTaskManager: NSObject, ObservableObject {
             task.setTaskCompleted(success: false)
         }
         
-        Task {
-            do {
-                // Perform cleanup operations
-                await performCleanup()
-                
-                task.setTaskCompleted(success: true)
-                print("✅ Cleanup task completed successfully")
-            } catch {
-                print("❌ Cleanup task failed: \(error)")
-                task.setTaskCompleted(success: false)
-            }
+        do {
+            // Perform cleanup operations
+            await performCleanup()
+            
+            task.setTaskCompleted(success: true)
+            print("✅ Cleanup task completed successfully")
+        } catch {
+            print("❌ Cleanup task failed: \(error)")
+            task.setTaskCompleted(success: false)
         }
     }
     
@@ -199,7 +205,12 @@ class BackgroundTaskManager: NSObject, ObservableObject {
               userProfile.role == .driver else {
             return
         }
-        guard let location = await locationService.currentLocation else {
+        
+        let currentLocation = await MainActor.run {
+            locationService.currentLocation
+        }
+        
+        guard let location = await currentLocation else {
             throw LocationError.locationUnavailable
         }
         
@@ -283,7 +294,9 @@ class BackgroundTaskManager: NSObject, ObservableObject {
     @MainActor
     func beginBackgroundTask() {
         backgroundTaskID = UIApplication.shared.beginBackgroundTask { [weak self] in
-            self?.endBackgroundTask()
+            Task { @MainActor in
+                self?.endBackgroundTask()
+            }
         }
     }
     

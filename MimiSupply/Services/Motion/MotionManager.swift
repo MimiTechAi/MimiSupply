@@ -105,7 +105,7 @@ final class MotionManager: ObservableObject {
     
     private func setupMotionMonitoring() {
         // Monitor reduce motion changes
-        NotificationCenter.default.publisher(for: UIAccessibility.reducedMotionStatusDidChangeNotification)
+        NotificationCenter.default.publisher(for: UIAccessibility.reduceMotionStatusDidChangeNotification)
             .sink { [weak self] _ in
                 Task { @MainActor in
                     self?.updateMotionSettings()
@@ -114,7 +114,7 @@ final class MotionManager: ObservableObject {
             .store(in: &cancellables)
         
         // Monitor cross fade preference changes - using existing notification name
-        NotificationCenter.default.publisher(for: UIAccessibility.reducedMotionStatusDidChangeNotification)
+        NotificationCenter.default.publisher(for: UIAccessibility.reduceMotionStatusDidChangeNotification)
             .sink { [weak self] _ in
                 Task { @MainActor in
                     self?.updateCrossFadeSettings()
@@ -166,7 +166,7 @@ enum MotionAnimationType {
     case listInsertion
     case shimmerEffect
     case pulseEffect
-    case slideIn
+    case motionSlideIn  // Renamed to avoid conflict
     case fadeIn
     case scaleIn
     case rotation
@@ -181,7 +181,7 @@ enum MotionAnimationType {
             return true // Minimal motion
         case .shimmerEffect, .pulseEffect, .parallax, .backgroundVideo:
             return false // Decorative animations
-        case .listInsertion, .slideIn, .scaleIn, .rotation:
+        case .listInsertion, .motionSlideIn, .scaleIn, .rotation:
             return false // Non-essential animations
         }
     }
@@ -267,7 +267,7 @@ struct MotionAwareProgress: View {
                     .fill(Color.emerald)
                     .frame(width: geometry.size.width * progress)
                     .conditionalAnimation(
-                        type: .slideIn,
+                        type: .motionSlideIn,  // Use renamed case
                         config: .default,
                         value: progress
                     )

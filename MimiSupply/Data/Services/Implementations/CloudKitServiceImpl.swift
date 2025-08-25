@@ -558,7 +558,7 @@ final class CloudKitServiceImpl: CloudKitService, Sendable {
     
     // MARK: - Generic Operations
     
-    func save<T: Codable>(_ object: T) async throws -> T {
+    func save<T: Codable & Sendable>(_ object: T) async throws -> T {
         // Convert object to CKRecord
         let record = try convertCodableToRecord(object)
         
@@ -581,7 +581,9 @@ final class CloudKitServiceImpl: CloudKitService, Sendable {
         }
     }
     
-    func fetch<T: Codable>(_ type: T.Type, predicate: NSPredicate) async throws -> [T] {
+    func fetch<T: Codable & Sendable>(_ type: T.Type, predicate: String) async throws -> [T] {
+        let nsPredicate = NSPredicate(format: predicate)
+
         // Determine record type based on generic type
         let recordType: String
         let database: CKDatabase
@@ -605,7 +607,7 @@ final class CloudKitServiceImpl: CloudKitService, Sendable {
             throw CloudKitError.syncFailed("Unsupported type for generic fetch")
         }
         
-        let query = CKQuery(recordType: recordType, predicate: predicate)
+        let query = CKQuery(recordType: recordType, predicate: nsPredicate)
         
         do {
             let (matchResults, _) = try await database.records(matching: query)
@@ -624,6 +626,75 @@ final class CloudKitServiceImpl: CloudKitService, Sendable {
         } catch {
             throw CloudKitError.unknown(error)
         }
+    }
+    
+    // MARK: - Analytics Operations
+    func fetchPartnerAnalytics(partnerId: String, timeRange: TimeRange) async throws -> PartnerAnalytics {
+        // Mock implementation for now
+        let totalRevenue = Double.random(in: 1000...10000)
+        let totalOrders = Int.random(in: 50...500)
+        let averageOrderValue = Double.random(in: 20...100)
+        
+        return PartnerAnalytics(
+            totalRevenue: totalRevenue,
+            totalOrders: totalOrders,
+            averageOrderValue: averageOrderValue,
+            customerCount: Int.random(in: 10...100),
+            timeRange: timeRange,
+            totalRevenueCents: Int(totalRevenue * 100),
+            revenueChangePercent: Double.random(in: -20...20),
+            ordersChangePercent: Double.random(in: -15...15),
+            averageOrderValueCents: Int(averageOrderValue * 100),
+            aovChangePercent: Double.random(in: -10...10),
+            averageRating: Double.random(in: 3.5...5.0),
+            ratingChangePercent: Double.random(in: -0.5...0.5)
+        )
+    }
+
+    func fetchRevenueChartData(partnerId: String, timeRange: TimeRange) async throws -> [RevenueDataPoint] {
+        // Mock implementation for now
+        let calendar = Calendar.current
+        let endDate = Date()
+        let startDate = calendar.date(byAdding: .day, value: -30, to: endDate) ?? endDate
+        
+        var dataPoints: [RevenueDataPoint] = []
+        var currentDate = startDate
+        
+        while currentDate <= endDate {
+            let dataPoint = RevenueDataPoint(
+                date: currentDate,
+                amount: Double.random(in: 100...1000),
+                orderCount: Int.random(in: 1...20)
+            )
+            dataPoints.append(dataPoint)
+            currentDate = calendar.date(byAdding: .day, value: 1, to: currentDate) ?? currentDate
+        }
+        
+        return dataPoints
+    }
+
+    func fetchOrdersChartData(partnerId: String, timeRange: TimeRange) async throws -> [OrdersDataPoint] {
+        return []
+    }
+
+    func fetchTopProducts(partnerId: String, timeRange: TimeRange, limit: Int) async throws -> [TopProductData] {
+        return []
+    }
+
+    func fetchPerformanceInsights(partnerId: String, timeRange: TimeRange) async throws -> PartnerInsightData {
+        return PartnerInsightData(
+            keyMetrics: [],
+            revenueData: [],
+            orderAnalytics: OrderAnalytics(),
+            customerInsights: CustomerInsights(),
+            topProducts: [],
+            generatedAt: Date(),
+            revenueChangePercent: 15.2,
+            ordersChangePercent: 8.7,
+            averageRating: 4.5,
+            peakOrderHour: 18,
+            topProductName: "Pizza Margherita"
+        )
     }
     
     // MARK: - Helper Methods for Generic Operations

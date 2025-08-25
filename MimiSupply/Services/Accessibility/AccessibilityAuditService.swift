@@ -86,7 +86,7 @@ final class AccessibilityAuditService: ObservableObject {
         calculateAuditScore()
         isAuditing = false
         
-        logger.info("Accessibility audit completed with score: \(auditScore)")
+        logger.info("Accessibility audit completed with score: \(self.auditScore)")
     }
     
     /// Get audit results for a specific view

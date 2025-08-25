@@ -139,7 +139,8 @@ extension LocalizationKeys {
         case cancel = "bi.cancel"
         
         var localized: String {
-            return EnhancedLocalizationManager.shared.localizedString(for: LocalizationKeys.BusinessIntelligence(rawValue: self.rawValue) ?? LocalizationKeys.BusinessIntelligence.dashboard)
+            // Use a simple NSLocalizedString fallback to avoid actor isolation issues
+            return NSLocalizedString(self.rawValue, value: self.rawValue, comment: "Business Intelligence localization key")
         }
     }
 }

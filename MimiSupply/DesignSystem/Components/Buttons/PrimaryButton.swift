@@ -96,8 +96,8 @@ struct PrimaryButton: View {
         .scaleEffect(isPressed ? 0.96 : 1.0)
         .brightness(isPressed ? -0.1 : 0.0)
         .disabled(isDisabled || isLoading)
-        .motionAwareAnimation(.spring, value: isPressed)
-        .motionAwareAnimation(.default, value: isDisabled)
+        .motionAwareAnimation(.spring(), value: isPressed)
+        .motionAwareAnimation(MotionManager.AnimationConfig.default.animation, value: isDisabled)
         .onLongPressGesture(minimumDuration: 0, maximumDistance: .infinity) {
             // Empty action for long press
         } onPressingChanged: { pressing in
@@ -132,7 +132,7 @@ struct PrimaryButton: View {
         
         // Provide contextual haptic feedback
         let intensity = motionManager.hapticIntensity()
-        HapticManager.shared.impact(.medium, intensity: intensity)
+        HapticManager.shared.trigger(.mediumImpact)
         
         // Trigger success animation if there's an icon
         if systemImage != nil && motionManager.shouldAnimate(type: .scaleIn) {

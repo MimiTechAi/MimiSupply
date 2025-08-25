@@ -102,16 +102,11 @@ struct LanguageRow: View {
             .padding(.vertical, Spacing.xs)
         }
         .buttonStyle(PlainButtonStyle())
-        .accessibleCard(
-            title: language.nativeName,
-            subtitle: language.englishName,
-            hint: isSelected ? "Currently selected language" : "Tap to select this language",
-            isSelected: isSelected
-        )
-        .switchControlAccessible(
-            identifier: "language-\(language.code)",
-            sortPriority: isSelected ? 1.0 : 0.8
-        )
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel("\(language.nativeName), \(language.englishName)")
+        .accessibilityHint(isSelected ? "Currently selected language" : "Tap to select this language")
+        .accessibilityAddTraits(isSelected ? [.isSelected] : [])
+        .accessibilityIdentifier("language-\(language.code)")
     }
 }
 

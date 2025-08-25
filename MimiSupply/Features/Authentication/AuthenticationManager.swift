@@ -31,12 +31,6 @@ final class AuthenticationManager: ObservableObject {
         }
     }
     
-    deinit {
-        Task {
-            await authenticationService.stopAutomaticStateManagement()
-        }
-    }
-    
     // MARK: - Public Methods
     
     func signInWithApple() async {

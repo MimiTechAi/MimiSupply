@@ -162,7 +162,9 @@ class HeroTransitionCoordinator: ObservableObject {
         
         // Clean up after animation
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-            self.completeTransition(id: id)
+            Task { @MainActor in
+                self.completeTransition(id: id)
+            }
         }
     }
     

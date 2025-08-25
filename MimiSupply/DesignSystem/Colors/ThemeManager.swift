@@ -162,9 +162,9 @@ enum AppTheme: String, CaseIterable {
             )
         case .minimal:
             return ThemeSurfaceColors(
-                primary: Color.dynamic(light: .gray50, dark: .gray900),
-                secondary: Color.dynamic(light: .gray100, dark: .gray800),
-                elevated: Color.dynamic(light: .white, dark: .gray700)
+                primary: Color.semanticColor(light: .gray50, dark: .gray900),
+                secondary: Color.semanticColor(light: .gray100, dark: .gray800),
+                elevated: Color.semanticColor(light: .white, dark: .gray700)
             )
         case .business:
             return ThemeSurfaceColors(

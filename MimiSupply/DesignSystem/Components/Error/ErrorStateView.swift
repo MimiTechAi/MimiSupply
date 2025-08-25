@@ -40,7 +40,7 @@ struct ErrorStateView: View {
                     .font(.titleLarge.scaledFont())
                     .foregroundColor(titleColor)
                     .multilineTextAlignment(.center)
-                    .accessibleHeading(errorTitle, level: .h2)
+                    .accessibleHeading(label: errorTitle, level: .h2)
                 
                 Text(errorMessage)
                     .font(.bodyMedium.scaledFont())

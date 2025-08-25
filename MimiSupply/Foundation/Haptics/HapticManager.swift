@@ -598,7 +598,7 @@ extension Button {
     init(
         _ title: String,
         hapticType: HapticFeedbackType = .buttonTap,
-        action: @escaping () -> Void
+        action: @escaping @Sendable () -> Void
     ) {
         self.init(title) {
             Task { @MainActor in

@@ -230,7 +230,7 @@ struct ExploreListView: View {
             LazyVStack(spacing: Spacing.lg) {
                 if isLoading && partners.isEmpty {
                     // Loading state
-                    LoadingView()
+                    AppLoadingView(message: "Loading partners...", size: .medium)
                         .accessibilityIdentifier("loading_view")
                 } else if partners.isEmpty {
                     // Empty state

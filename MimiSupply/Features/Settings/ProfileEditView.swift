@@ -84,7 +84,7 @@ struct ProfileEditView: View {
             Text("Profile Photo")
                 .font(.titleMedium.scaledFont())
                 .foregroundColor(.graphite)
-                .accessibleHeading("Profile Photo", level: .h2)
+                .accessibleHeading(label: "Profile Photo", level: .h2)
             
             ZStack {
                 // Current/Selected Photo
@@ -173,7 +173,7 @@ struct ProfileEditView: View {
             Text("Personal Information")
                 .font(.titleMedium.scaledFont())
                 .foregroundColor(.graphite)
-                .accessibleHeading("Personal Information", level: .h2)
+                .accessibleHeading(label: "Personal Information", level: .h2)
             
             AppTextField(
                 title: "First Name",
@@ -202,7 +202,7 @@ struct ProfileEditView: View {
             Text("Contact Information")
                 .font(.titleMedium.scaledFont())
                 .foregroundColor(.graphite)
-                .accessibleHeading("Contact Information", level: .h2)
+                .accessibleHeading(label: "Contact Information", level: .h2)
             
             AppTextField(
                 title: "Email",
@@ -234,7 +234,7 @@ struct ProfileEditView: View {
             Text("Account Type")
                 .font(.titleMedium.scaledFont())
                 .foregroundColor(.graphite)
-                .accessibleHeading("Account Type", level: .h2)
+                .accessibleHeading(label: "Account Type", level: .h2)
             
             HStack(spacing: Spacing.md) {
                 Image(systemName: roleIcon)

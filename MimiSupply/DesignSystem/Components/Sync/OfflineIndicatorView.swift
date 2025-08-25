@@ -47,7 +47,7 @@ struct OfflineIndicatorView: View {
                 
                 Button {
                     showOfflineGuide.toggle()
-                    HapticManager.shared.trigger(.light)
+                    HapticManager.shared.trigger(.lightImpact)
                 } label: {
                     Image(systemName: "questionmark.circle")
                         .font(.title3)

@@ -362,29 +362,29 @@ struct PermissionEmptyStateView: View {
     TabView {
         ContextualEmptyStateView(
             type: .businessIntelligence(metric: "revenue"),
-            primaryAction: { print("View Partners") },
-            secondaryAction: { print("Learn Analytics") }
+            primaryAction: { },
+            secondaryAction: { }
         )
         .tabItem { Text("BI Empty") }
         
         SearchEmptyStateView(
-            query: "pizza margherita",
+            query: "pizza margherita", 
             suggestions: ["pizza", "italian food", "pasta", "margherita"],
-            onClearSearch: { print("Clear search") },
-            onSuggestionTap: { print("Suggestion: \($0)") }
+            onClearSearch: { },
+            onSuggestionTap: { _ in }
         )
         .tabItem { Text("Search Empty") }
         
         ContextualEmptyStateView(
             type: .offline,
-            primaryAction: { print("Try Again") }
+            primaryAction: { }
         )
         .tabItem { Text("Offline") }
         
         ContextualEmptyStateView(
             type: .firstUse,
-            primaryAction: { print("Get Started") },
-            secondaryAction: { print("Learn More") }
+            primaryAction: { },
+            secondaryAction: { }
         )
         .tabItem { Text("First Use") }
     }

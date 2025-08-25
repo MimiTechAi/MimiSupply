@@ -38,16 +38,45 @@ final class ServiceHealthMonitor: ObservableObject {
     static let shared = ServiceHealthMonitor()
     
     private init() {
-        setupHealthChecks()
+        setupDefaultHealthChecks()
         startMonitoring()
         logger.info("🏥 Service health monitor initialized")
     }
     
     deinit {
-        stopMonitoring()
+        Task { @MainActor in
+            self.stopMonitoring()
+        }
     }
     
     // MARK: - Service Registration
+    
+    private func setupDefaultHealthChecks() {
+        // Register default services for monitoring
+        registerService("CloudKit", isCritical: true) {
+            await self.checkCloudKitHealth()
+        }
+        
+        registerService("Authentication", isCritical: true) {
+            await self.checkAuthenticationHealth()
+        }
+        
+        registerService("Payment", isCritical: true) {
+            await self.checkPaymentHealth()
+        }
+        
+        registerService("Location", isCritical: false) {
+            await self.checkLocationHealth()
+        }
+        
+        registerService("PushNotifications", isCritical: false) {
+            await self.checkPushNotificationHealth()
+        }
+        
+        registerService("Analytics", isCritical: false) {
+            await self.checkAnalyticsHealth()
+        }
+    }
     
     /// Register a service for health monitoring
     func registerService(

@@ -215,8 +215,8 @@ struct InteractiveCard<Content: View>: View {
                     .onChanged { value in
                         // Subtle drag effect
                         dragOffset = CGSize(
-                            width: value.translation.x * 0.1,
-                            height: value.translation.y * 0.1
+                            width: value.translation.width * 0.1,
+                            height: value.translation.height * 0.1
                         )
                     }
                     .onEnded { _ in
@@ -298,12 +298,14 @@ struct LoadingButton: View {
         
         // Simulate loading progress
         Timer.scheduledTimer(withTimeInterval: 0.1, repeats: true) { timer in
-            loadingProgress += 0.1
-            if loadingProgress >= 1.0 {
-                timer.invalidate()
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                    isLoading = false
-                    action()
+            Task { @MainActor in
+                self.loadingProgress += 0.1
+                if self.loadingProgress >= 1.0 {
+                    timer.invalidate()
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                        self.isLoading = false
+                        self.action()
+                    }
                 }
             }
         }

@@ -9,6 +9,7 @@
 import AuthenticationServices
 @preconcurrency import Combine
 import CloudKit
+import OSLog
 #if canImport(UIKit)
 import UIKit
 #endif
@@ -27,8 +28,9 @@ final class AuthenticationServiceImpl: NSObject, @unchecked Sendable, Authentica
     }
     
     
-    private let keychainService: KeychainService
+    private var keychainService: KeychainService!
     private let cloudKitService: CloudKitService
+    private let logger = Logger(subsystem: "com.mimisupply.app", category: "Authentication")
     
     private let currentUserKey = "current_user"
     private let credentialsKey = "apple_credentials"
@@ -36,19 +38,19 @@ final class AuthenticationServiceImpl: NSObject, @unchecked Sendable, Authentica
     
     // State management
     private let authStateSubject = CurrentValueSubject<AuthenticationState, Never>(.unauthenticated)
+    private var _currentUser: UserProfile?
     private var stateManagementTask: Task<Void, Never>? = nil
     private var credentialRefreshTimer: Timer?
     private var authControllerDelegate: AuthenticationDelegate?
     private var presentationContextProvider: PresentationContextProvider?
     
     private override init() {
-        self.keychainService = KeychainService.shared
         self.cloudKitService = CloudKitServiceImpl.shared
         super.init()
         
-        // Initialize authentication state
-        Task {
-            await initializeAuthenticationState()
+        Task { @MainActor in
+            self.keychainService = KeychainService.shared
+            await self.initializeAuthenticationState()
         }
     }
     
@@ -73,7 +75,7 @@ final class AuthenticationServiceImpl: NSObject, @unchecked Sendable, Authentica
     
     var currentUser: UserProfile? {
         get async {
-            await authenticationState.user
+            return _currentUser
         }
     }
     
@@ -89,44 +91,39 @@ final class AuthenticationServiceImpl: NSObject, @unchecked Sendable, Authentica
     
     // MARK: - Authentication Methods
     
+    /// Sign in with Apple
     func signInWithApple() async throws -> AuthenticationResult {
-        await updateAuthenticationState(.authenticating)
+        let request = ASAuthorizationAppleIDProvider().createRequest()
+        request.requestedScopes = [.fullName, .email]
         
-        do {
-            let result = try await performAppleSignIn()
+        return try await withCheckedThrowingContinuation<AuthenticationResult, Error> { continuation in
+            let delegate = AuthenticationDelegate(completion: { result in
+                continuation.resume(with: result)
+            })
+            self.authControllerDelegate = delegate
             
-            // Store credentials securely
-            try keychainService.store(result.user, forKey: currentUserKey)
-            try keychainService.store(Date(), forKey: "last_auth_time")
-            
-            // Check if user needs role selection
-            if result.requiresRoleSelection {
-                await updateAuthenticationState(.roleSelectionRequired(result.user))
-            } else {
-                // Sync with CloudKit
-                try await syncUserProfileToCloudKit(result.user)
-                await updateAuthenticationState(.authenticated(result.user))
-            }
-            
-            return result
-            
-        } catch {
-            let authError = mapToAuthenticationError(error)
-            await updateAuthenticationState(.error(authError))
-            throw authError
+            let authController = ASAuthorizationController(authorizationRequests: [request])
+            authController.delegate = delegate
+            authController.presentationContextProvider = self.presentationContextProvider
+            authController.performRequests()
         }
     }
     
+    /// Sign out the current user
     func signOut() async throws {
+        _currentUser = nil
         await updateAuthenticationState(.unauthenticated)
         
-        // Clear all stored credentials
-        try keychainService.deleteItem(forKey: currentUserKey)
-        try keychainService.deleteItem(forKey: credentialsKey)
-        try keychainService.deleteItem(forKey: "last_auth_time")
+        // Clear keychain data
+        await MainActor.run {
+            Task {
+                try await keychainService.deleteItem(forKey: currentUserKey)
+                try await keychainService.deleteItem(forKey: credentialsKey)
+                try await keychainService.deleteItem(forKey: "last_auth_time")
+            }
+        }
         
-        // Stop automatic state management
-        await stopAutomaticStateManagement()
+        logger.info("User signed out successfully")
     }
     
     func refreshCredentials() async throws -> Bool {
@@ -142,7 +139,11 @@ final class AuthenticationServiceImpl: NSObject, @unchecked Sendable, Authentica
             switch credentialState {
             case .authorized:
                 // Update last auth time
-                try keychainService.store(Date(), forKey: "last_auth_time")
+                await MainActor.run {
+                    Task {
+                        try await keychainService.store(Date(), forKey: "last_auth_time")
+                    }
+                }
                 return true
                 
             case .revoked, .notFound:
@@ -163,13 +164,14 @@ final class AuthenticationServiceImpl: NSObject, @unchecked Sendable, Authentica
         }
     }
     
+    /// Update user role
     func updateUserRole(_ role: UserRole) async throws -> UserProfile {
-        guard var currentUser = await currentUser else {
-            throw AuthServiceError.invalidCredentials
+        guard let currentUser = await currentUser else {
+            throw AuthenticationError.notAuthenticated
         }
         
-        // Update user role
-        currentUser = UserProfile(
+        // Create updated user profile with new role
+        let updatedUser = UserProfile(
             id: currentUser.id,
             appleUserID: currentUser.appleUserID,
             email: currentUser.email,
@@ -184,28 +186,39 @@ final class AuthenticationServiceImpl: NSObject, @unchecked Sendable, Authentica
             partnerProfile: currentUser.partnerProfile
         )
         
-        // Store updated profile
-        try keychainService.store(currentUser, forKey: currentUserKey)
+        _currentUser = updatedUser
         
-        // Sync to CloudKit
-        try await syncUserProfileToCloudKit(currentUser)
+        // Update CloudKit
+        try await cloudKitService.saveUserProfile(updatedUser)
         
-        // Update authentication state
-        await updateAuthenticationState(.authenticated(currentUser))
+        // Update local cache
+        await MainActor.run {
+            Task {
+                try await keychainService.store(Date(), forKey: "last_auth_time")
+            }
+        }
         
-        return currentUser
+        logger.info("User role updated to: \(role.rawValue)")
+        return updatedUser
     }
     
+    /// Update user profile
     func updateUserProfile(_ profile: UserProfile) async throws -> UserProfile {
-        // Store updated profile
-        try keychainService.store(profile, forKey: currentUserKey)
+        guard await currentUser != nil else {
+            throw AuthenticationError.notAuthenticated
+        }
         
-        // Sync to CloudKit
-        try await syncUserProfileToCloudKit(profile)
+        _currentUser = profile
         
-        // Update authentication state
-        await updateAuthenticationState(.authenticated(profile))
+        // Update CloudKit and local cache
+        try await cloudKitService.saveUserProfile(profile)
+        await MainActor.run {
+            Task {
+                try await keychainService.store(profile, forKey: currentUserKey)
+            }
+        }
         
+        logger.info("User profile updated")
         return profile
     }
     
@@ -260,44 +273,7 @@ final class AuthenticationServiceImpl: NSObject, @unchecked Sendable, Authentica
     // MARK: - Private Methods
     
     private func initializeAuthenticationState() async {
-        do {
-            if let storedUser: UserProfile = try keychainService.retrieve(UserProfile.self, forKey: currentUserKey) {
-                // Verify credentials are still valid
-                let isValid = try await refreshCredentials()
-                if isValid {
-                    await updateAuthenticationState(.authenticated(storedUser))
-                } else {
-                    await updateAuthenticationState(.unauthenticated)
-                }
-            } else {
-                await updateAuthenticationState(.unauthenticated)
-            }
-        } catch {
-            await updateAuthenticationState(.unauthenticated)
-        }
-    }
-    
-    private func performAppleSignIn() async throws -> AuthenticationResult {
-        return try await withCheckedThrowingContinuation { continuation in
-            Task { @MainActor in
-                let request = ASAuthorizationAppleIDProvider().createRequest()
-                request.requestedScopes = [.fullName, .email]
-                
-                let controller = ASAuthorizationController(authorizationRequests: [request])
-                let delegate = AuthenticationDelegate { result in
-                    continuation.resume(with: result)
-                }
-                let contextProvider = PresentationContextProvider()
-                
-                // Retain to ensure they live for the duration of the request
-                self.authControllerDelegate = delegate
-                self.presentationContextProvider = contextProvider
-                
-                controller.delegate = delegate
-                controller.presentationContextProvider = contextProvider
-                controller.performRequests()
-            }
-        }
+        await loadAuthenticationState()
     }
     
     private func syncUserProfileToCloudKit(_ profile: UserProfile) async throws {
@@ -357,34 +333,43 @@ final class AuthenticationServiceImpl: NSObject, @unchecked Sendable, Authentica
         
         if let asError = error as? ASAuthorizationError {
             switch asError.code {
-            case .canceled:
-                return .signInCancelled
-            case .failed:
-                return .signInFailed("Unknown error")
-            case .invalidResponse:
-                return .invalidCredentials
-            case .notHandled:
-                return .accountDisabled
-            case .unknown:
-                return .signInFailed("Apple ID credential error")
-            case .notInteractive:
-                return .signInFailed("Identity token missing")
-            case .matchedExcludedCredential:
-                return .invalidCredentials
-            case .credentialImport:
-                return .signInFailed("Identity token data missing")
-            case .credentialExport:
-                return .signInFailed("Authorization code missing")
-            case .preferSignInWithApple:
-                return .signInFailed("Prefer Sign in with Apple")
-            case .deviceNotConfiguredForPasskeyCreation:
-                return .signInFailed("Device not configured for passkey creation")
-            @unknown default:
-                return .signInFailed("Password credential error")
+            case ASAuthorizationError.canceled:
+                return .signInFailed("User canceled")
+            case ASAuthorizationError.failed:
+                return .signInFailed(error.localizedDescription)
+            case ASAuthorizationError.invalidResponse:
+                return .signInFailed("Invalid response from Apple")
+            case ASAuthorizationError.notHandled:
+                return .signInFailed("Sign in not handled")
+            case ASAuthorizationError.unknown:
+                return .signInFailed(error.localizedDescription)
+            default:
+                return .signInFailed(error.localizedDescription)
             }
         }
         
         return .signInFailed("Unexpected authorization type")
+    }
+    
+    /// Load authentication state from storage
+    private func loadAuthenticationState() async {
+        await MainActor.run {
+            Task {
+                do {
+                    if let storedUser: UserProfile = try await keychainService.retrieve(UserProfile.self, forKey: currentUserKey) {
+                        _currentUser = storedUser
+                        await updateAuthenticationState(.authenticated(storedUser))
+                        logger.info("Loaded stored user: \(storedUser.name)")
+                    } else {
+                        await updateAuthenticationState(.unauthenticated)
+                        logger.info("No stored user found")
+                    }
+                } catch {
+                    await updateAuthenticationState(.unauthenticated)
+                    logger.warning("Failed to load stored user: \(error.localizedDescription)")
+                }
+            }
+        }
     }
 }
 

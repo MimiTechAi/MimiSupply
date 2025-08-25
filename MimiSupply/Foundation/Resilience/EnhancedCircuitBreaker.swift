@@ -75,10 +75,10 @@ final class EnhancedCircuitBreaker: ObservableObject {
     // MARK: - Request Execution
     
     /// Execute operation with circuit breaker protection
-    func execute<T>(_ operation: () async throws -> T) async throws -> T {
+    func execute<T: Sendable>(_ operation: @Sendable () async throws -> T) async throws -> T {
         // Check if circuit breaker allows the request
         guard await canExecute() else {
-            logger.debug("🚫 Request blocked by circuit breaker: \(identifier)")
+            logger.debug("🚫 Request blocked by circuit breaker: \(self.identifier)")
             throw ResilienceError.circuitBreakerOpen(service: identifier)
         }
         
@@ -118,14 +118,14 @@ final class EnhancedCircuitBreaker: ObservableObject {
     private func recordSuccess() async {
         successCount += 1
         
-        logger.debug("✅ Success recorded for \(identifier): \(successCount)")
+        logger.debug("✅ Success recorded for \(self.identifier): \(self.successCount)")
         
         switch state {
         case .closed:
             // Reset failure count on success
             if failureCount > 0 {
                 failureCount = 0
-                logger.debug("🔄 Failure count reset for \(identifier)")
+                logger.debug("🔄 Failure count reset for \(self.identifier)")
             }
             
         case .halfOpen:
@@ -139,7 +139,7 @@ final class EnhancedCircuitBreaker: ObservableObject {
             
         case .open:
             // This shouldn't happen, but handle gracefully
-            logger.warning("⚠️ Success recorded while circuit is open: \(identifier)")
+            logger.warning("⚠️ Success recorded while circuit is open: \(self.identifier)")
         }
         
         // Adapt thresholds based on recent performance
@@ -151,7 +151,7 @@ final class EnhancedCircuitBreaker: ObservableObject {
         totalFailures += 1
         lastFailureTime = Date()
         
-        logger.warning("❌ Failure recorded for \(identifier): \(failureCount)/\(adaptiveFailureThreshold)")
+        logger.warning("❌ Failure recorded for \(self.identifier): \(self.failureCount)/\(self.adaptiveFailureThreshold)")
         
         switch state {
         case .closed:
@@ -186,7 +186,7 @@ final class EnhancedCircuitBreaker: ObservableObject {
         recoveryTimer = nil
         
         recordStateChange(from: previousState, to: .closed)
-        logger.info("🟢 Circuit breaker CLOSED: \(identifier)")
+        logger.info("🟢 Circuit breaker CLOSED: \(self.identifier)")
     }
     
     private func transitionToOpen() async {
@@ -200,7 +200,7 @@ final class EnhancedCircuitBreaker: ObservableObject {
         startRecoveryTimer()
         
         recordStateChange(from: previousState, to: .open)
-        logger.warning("🔴 Circuit breaker OPEN: \(identifier), timeout: \(adaptiveTimeout)s")
+        logger.warning("🔴 Circuit breaker OPEN: \(self.identifier), timeout: \(self.adaptiveTimeout)s")
     }
     
     private func transitionToHalfOpen() async {
@@ -212,7 +212,7 @@ final class EnhancedCircuitBreaker: ObservableObject {
         recoveryProgress = 0.5
         
         recordStateChange(from: previousState, to: .halfOpen)
-        logger.info("🟡 Circuit breaker HALF-OPEN: \(identifier)")
+        logger.info("🟡 Circuit breaker HALF-OPEN: \(self.identifier)")
     }
     
     // MARK: - Adaptive Behavior
@@ -235,7 +235,7 @@ final class EnhancedCircuitBreaker: ObservableObject {
             adaptiveTimeout = min(maxTimeout, adaptiveTimeout * 1.5)
         }
         
-        logger.debug("🎯 Adapted thresholds for \(identifier): threshold=\(adaptiveFailureThreshold), timeout=\(adaptiveTimeout)s")
+        logger.debug("🎯 Adapted thresholds for \(self.identifier): threshold=\(self.adaptiveFailureThreshold), timeout=\(self.adaptiveTimeout)s")
     }
     
     // MARK: - Recovery Timer
@@ -323,13 +323,13 @@ final class EnhancedCircuitBreaker: ObservableObject {
         adaptiveFailureThreshold = failureThreshold
         adaptiveTimeout = recoveryTimeout
         
-        logger.info("🔄 Circuit breaker reset: \(identifier)")
+        logger.info("🔄 Circuit breaker reset: \(self.identifier)")
     }
     
     /// Manually trip the circuit breaker
     func trip() async {
         await transitionToOpen()
-        logger.warning("⚠️ Circuit breaker manually tripped: \(identifier)")
+        logger.warning("⚠️ Circuit breaker manually tripped: \(self.identifier)")
     }
 }
 

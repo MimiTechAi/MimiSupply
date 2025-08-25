@@ -176,12 +176,12 @@ class StartupOptimizer: ObservableObject {
         """)
         
         // Send to analytics if needed
-        Task {
-            await AnalyticsManager.shared.trackEvent(AnalyticsEvent.appLaunch, parameters: [
-                "startup_time": metrics.totalStartupTime,
-                "memory_usage": metrics.memoryUsage
-            ])
-        }
+        // Task {
+        //     await AnalyticsManager.shared.trackEvent(.appLaunch, parameters: [
+        //         "startup_time": .double(metrics.totalStartupTime),
+        //         "memory_usage": .double(metrics.memoryUsage)
+        //     ])
+        // }
     }
 }
 

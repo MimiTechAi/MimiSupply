@@ -220,11 +220,7 @@ struct ExploreHomeView: View {
                 label: "Filters",
                 hint: "Open filtering options to refine your search results"
             )
-            .switchControlAccessible(
-                identifier: "filters-button",
-                sortPriority: 0.9
-            )
-            .voiceControlAccessible(spokenPhrase: "Filters")
+            .accessibilityIdentifier("filters-button")
         }
         .accessibilityElement(children: .contain)
     }

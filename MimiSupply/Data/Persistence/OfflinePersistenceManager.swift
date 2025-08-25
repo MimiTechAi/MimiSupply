@@ -358,7 +358,7 @@ final class OfflinePersistenceManager: ObservableObject {
             var totalSize: Int64 = 0
             
             if let enumerator = FileManager.default.enumerator(at: await self.cacheDirectory, includingPropertiesForKeys: [.fileSizeKey]) {
-                for case let fileURL as URL in enumerator {
+                while let fileURL = enumerator.nextObject() as? URL {
                     do {
                         let resourceValues = try fileURL.resourceValues(forKeys: [.fileSizeKey])
                         totalSize += Int64(resourceValues.fileSize ?? 0)
@@ -377,7 +377,7 @@ final class OfflinePersistenceManager: ObservableObject {
             var totalSize: Int64 = 0
             
             if let enumerator = FileManager.default.enumerator(at: await self.imagesCacheDirectory, includingPropertiesForKeys: [.fileSizeKey]) {
-                for case let fileURL as URL in enumerator {
+                while let fileURL = enumerator.nextObject() as? URL {
                     do {
                         let resourceValues = try fileURL.resourceValues(forKeys: [.fileSizeKey])
                         totalSize += Int64(resourceValues.fileSize ?? 0)
@@ -396,7 +396,7 @@ final class OfflinePersistenceManager: ObservableObject {
             var count = 0
             
             if let enumerator = FileManager.default.enumerator(at: await self.cacheDirectory, includingPropertiesForKeys: nil) {
-                for _ in enumerator {
+                while enumerator.nextObject() != nil {
                     count += 1
                 }
             }
@@ -410,7 +410,7 @@ final class OfflinePersistenceManager: ObservableObject {
             var oldestDate: Date?
             
             if let enumerator = FileManager.default.enumerator(at: await self.cacheDirectory, includingPropertiesForKeys: [.creationDateKey]) {
-                for case let fileURL as URL in enumerator {
+                while let fileURL = enumerator.nextObject() as? URL {
                     do {
                         let resourceValues = try fileURL.resourceValues(forKeys: [.creationDateKey])
                         if let creationDate = resourceValues.creationDate {
@@ -433,7 +433,7 @@ final class OfflinePersistenceManager: ObservableObject {
             var newestDate: Date?
             
             if let enumerator = FileManager.default.enumerator(at: await self.cacheDirectory, includingPropertiesForKeys: [.creationDateKey]) {
-                for case let fileURL as URL in enumerator {
+                while let fileURL = enumerator.nextObject() as? URL {
                     do {
                         let resourceValues = try fileURL.resourceValues(forKeys: [.creationDateKey])
                         if let creationDate = resourceValues.creationDate {
@@ -638,7 +638,7 @@ final class CacheCleanupOperation: Operation {
         
         let expirationDate = Date().addingTimeInterval(-7 * 24 * 60 * 60) // 7 days ago
         
-        for case let fileURL as URL in enumerator {
+        while let fileURL = enumerator.nextObject() as? URL {
             guard !isCancelled else { break }
             
             do {

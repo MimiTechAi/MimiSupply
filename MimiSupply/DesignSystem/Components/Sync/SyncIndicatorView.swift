@@ -30,7 +30,7 @@ struct SyncIndicatorView: View {
     private var syncStatusContent: some View {
         Button {
             showDetails.toggle()
-            HapticManager.shared.trigger(.light)
+            HapticManager.shared.trigger(.lightImpact)
         } label: {
             HStack(spacing: Spacing.xs) {
                 statusIcon
@@ -176,7 +176,7 @@ struct SyncStatusDetailsView: View {
             
             HStack {
                 Circle()
-                    .fill(networkMonitor.isConnected ? .success : .error)
+                    .fill(networkMonitor.isConnected ? Color.green : Color.red)
                     .frame(width: 8, height: 8)
                 
                 Text(networkMonitor.isConnected ? "Connected" : "Disconnected")
@@ -251,7 +251,7 @@ struct SyncStatusDetailsView: View {
     private func serviceStatusRow(for serviceType: ServiceType) -> some View {
         HStack {
             Circle()
-                .fill(degradationService.isServiceAvailable(serviceType) ? .success : .error)
+                .fill(degradationService.isServiceAvailable(serviceType) ? Color.green : Color.red)
                 .frame(width: 6, height: 6)
             
             Text(serviceType.rawValue)
@@ -272,12 +272,12 @@ struct SyncStatusDetailsView: View {
                     Task {
                         await offlineManager.forceSyncNow()
                     }
-                    HapticManager.shared.trigger(.medium)
+                    HapticManager.shared.trigger(.mediumImpact)
                 } label: {
                     Label("Sync Now", systemImage: "arrow.triangle.2.circlepath")
                         .frame(maxWidth: .infinity)
                 }
-                .buttonStyle(.primary)
+                .buttonStyle(BorderedButtonStyle())
             }
             
             Button {

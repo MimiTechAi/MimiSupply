@@ -1,0 +1,3 @@
+HapticManager.shared.trigger(.lightImpact)
+
+// ... existing code ...
