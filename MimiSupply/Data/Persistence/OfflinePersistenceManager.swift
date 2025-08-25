@@ -577,7 +577,7 @@ struct CacheStatistics {
 
 // MARK: - Operations
 
-final class BatchCacheOperation<T: Codable>: Operation {
+final class BatchCacheOperation<T: Codable & Sendable>: Operation {
     private let items: [(key: String, data: T)]
     private let category: CacheCategory
     private weak var persistenceManager: OfflinePersistenceManager?
@@ -592,13 +592,20 @@ final class BatchCacheOperation<T: Codable>: Operation {
     override func main() {
         guard !isCancelled else { return }
         
+        // Process items sequentially to avoid data races
+        let group = DispatchGroup()
+        
         for (key, data) in items {
             guard !isCancelled else { break }
             
-            Task {
-                try? await persistenceManager?.cacheData(data, forKey: key, category: category)
+            group.enter()
+            Task { @MainActor in
+                defer { group.leave() }
+                try? await self.persistenceManager?.cacheData(data, forKey: key, category: self.category)
             }
         }
+        
+        group.wait()
     }
 }
 

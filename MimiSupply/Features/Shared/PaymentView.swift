@@ -351,7 +351,9 @@ class PaymentViewModel: ObservableObject {
         clearError()
         
         do {
-            let result = try await paymentService.processPayment(for: order)
+            let result = try await MainActor.run {
+                paymentService.processPayment(for: order)
+            }
             paymentResult = result
         } catch {
             paymentError = error

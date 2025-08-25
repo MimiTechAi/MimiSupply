@@ -44,8 +44,8 @@ final class ServiceHealthMonitor: ObservableObject {
     }
     
     deinit {
-        Task { @MainActor in
-            self.stopMonitoring()
+        Task.detached { [weak self] in
+            await self?.stopMonitoring()
         }
     }
     

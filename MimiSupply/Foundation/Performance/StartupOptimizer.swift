@@ -79,9 +79,9 @@ class StartupOptimizer: ObservableObject {
         }
         
         // Execute remaining tasks asynchronously
-        Task.detached {
+        Task.detached { [weak self] in
             for task in otherTasks {
-                await self.executeTask(task)
+                await self?.executeTask(task)
             }
         }
     }

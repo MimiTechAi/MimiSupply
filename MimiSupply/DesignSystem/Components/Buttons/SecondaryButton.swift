@@ -94,24 +94,11 @@ struct SecondaryButton: View {
         .accessibleButton(
             label: buttonAccessibilityLabel,
             hint: buttonAccessibilityHint,
-            traits: buttonAccessibilityTraits,
-            value: isLoading ? "Loading" : nil
+            isEnabled: !isDisabled && !isLoading
         )
-        .switchControlAccessible(
-            identifier: accessibilityIdentifier ?? "secondary-button-\(title.lowercased().replacingOccurrences(of: " ", with: "-"))",
-            sortPriority: 0.8
-        )
-        .voiceControlAccessible(spokenPhrase: title)
-        .keyboardAccessible(
-            onTab: {
-                AccessibilityFocusState.setFocus(to: "secondary-button")
-            }
-        )
-        .reduceMotionAdaptive(
-            animation: .spring(response: 0.3, dampingFraction: 0.7),
-            value: isDisabled,
-            alternativeAnimation: .easeInOut(duration: 0.1)
-        )
+        .accessibilityIdentifier(accessibilityIdentifier ?? "secondary-button-\(title.lowercased().replacingOccurrences(of: " ", with: "-"))")
+        .animation(.spring(response: 0.3, dampingFraction: 0.7), value: isDisabled)
+        .animation(.easeInOut(duration: 0.1), value: isLoading)
     }
     
     private func handleAction() {
@@ -142,20 +129,6 @@ struct SecondaryButton: View {
         } else {
             return "Double tap to activate"
         }
-    }
-    
-    private var buttonAccessibilityTraits: AccessibilityTraits {
-        var traits: AccessibilityTraits = []
-        
-        if isLoading {
-            _ = traits.insert(.updatesFrequently)
-        }
-        
-        if isDisabled {
-            _ = traits.insert(.isButton)
-        }
-        
-        return traits
     }
     
     private var backgroundColor: Color {

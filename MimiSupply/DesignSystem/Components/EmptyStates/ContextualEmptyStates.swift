@@ -270,6 +270,7 @@ struct ContextualEmptyStateView: View {
 // MARK: - Business Intelligence Specific Empty States
 struct BusinessIntelligenceEmptyStates {
     
+    @MainActor
     static func noRevenueData(onViewPartners: @escaping () -> Void) -> ContextualEmptyStateView {
         ContextualEmptyStateView(
             type: .businessIntelligence(metric: "revenue"),
@@ -277,6 +278,7 @@ struct BusinessIntelligenceEmptyStates {
         )
     }
     
+    @MainActor
     static func noOrdersData(onViewPartners: @escaping () -> Void) -> ContextualEmptyStateView {
         ContextualEmptyStateView(
             type: .businessIntelligence(metric: "orders"),
@@ -284,6 +286,7 @@ struct BusinessIntelligenceEmptyStates {
         )
     }
     
+    @MainActor
     static func noCustomerData(onLearnAnalytics: @escaping () -> Void) -> ContextualEmptyStateView {
         ContextualEmptyStateView(
             type: .businessIntelligence(metric: "customer"),

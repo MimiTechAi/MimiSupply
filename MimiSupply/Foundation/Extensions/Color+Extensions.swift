@@ -10,6 +10,18 @@
 
 extension Color {
     
+    // MARK: - Semantic Color Helper
+    static func semanticColor(light: Color, dark: Color) -> Color {
+        return Color(UIColor { traitCollection in
+            switch traitCollection.userInterfaceStyle {
+            case .dark:
+                return UIColor(dark)
+            default:
+                return UIColor(light)
+            }
+        })
+    }
+    
     // MARK: - Primary Semantic Colors
     static let success = Color.semanticColor(
         light: Color(red: 0.2, green: 0.8, blue: 0.2),
@@ -150,18 +162,6 @@ extension Color {
         light: Color(red: 0.6, green: 0.2, blue: 0.8),
         dark: Color(red: 0.7, green: 0.4, blue: 0.9)
     )
-    
-    // MARK: - Semantic Color Helper
-    static func semanticColor(light: Color, dark: Color) -> Color {
-        return Color(UIColor { traitCollection in
-            switch traitCollection.userInterfaceStyle {
-            case .dark:
-                return UIColor(dark)
-            default:
-                return UIColor(light)
-            }
-        })
-    }
 }
 
 // MARK: - Color Convenience Methods
