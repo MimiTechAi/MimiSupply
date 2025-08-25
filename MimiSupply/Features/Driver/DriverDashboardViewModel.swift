@@ -643,7 +643,9 @@ final class DriverDashboardViewModel: ObservableObject {
         
         // Update working hours every minute
         Timer.scheduledTimer(withTimeInterval: 60.0, repeats: true) { _ in
-            self.updateWorkingHours()
+            Task { @MainActor in
+                self.updateWorkingHours()
+            }
         }
     }
     

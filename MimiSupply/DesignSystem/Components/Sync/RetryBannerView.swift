@@ -91,7 +91,7 @@ struct RetryBannerCard: View {
                 Button {
                     isRetrying = true
                     onRetry()
-                    HapticManager.shared.trigger(.medium)
+                    HapticManager.shared.trigger(.mediumImpact)
                     
                     // Reset retrying state after a delay
                     DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
@@ -116,7 +116,7 @@ struct RetryBannerCard: View {
             
             Button {
                 onDismiss()
-                HapticManager.shared.trigger(.light)
+                HapticManager.shared.trigger(.lightImpact)
             } label: {
                 Image(systemName: "xmark")
                     .font(.caption.weight(.semibold))

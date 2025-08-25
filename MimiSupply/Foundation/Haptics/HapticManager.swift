@@ -64,29 +64,29 @@ enum HapticFeedbackType {
     var sensoryFeedback: SensoryFeedback {
         switch self {
         case .lightImpact, .buttonTap, .tabSwitch:
-            return .impact(.light)
+            return .impact(weight: .light)
         case .mediumImpact, .cardFlip, .modalPresent:
-            return .impact(.medium)
+            return .impact(weight: .medium)
         case .heavyImpact, .longPress:
-            return .impact(.heavy)
+            return .impact(weight: .heavy)
         case .rigidImpact:
-            return .impact(.rigid)
+            return .impact(flexibility: .rigid)
         case .softImpact:
-            return .impact(.soft)
+            return .impact(flexibility: .soft)
         case .selection, .searchResult, .filterApplied:
             return .selection
         case .success, .addToCart, .paymentSuccess, .orderPlaced, .dataLoaded:
-            return .notification(.success)
+            return .success
         case .warning:
-            return .notification(.warning)
+            return .warning
         case .error, .paymentError:
-            return .notification(.error)
+            return .error
         case .successSequence, .celebrationPattern:
-            return .notification(.success)
+            return .success
         case .errorSequence, .alertPattern:
-            return .notification(.error)
+            return .error
         default:
-            return .impact(.light)
+            return .impact(weight: .light)
         }
     }
 }
@@ -185,7 +185,7 @@ final class HapticManager: ObservableObject {
         // Prepare generators for better performance
         prepareGenerators()
         
-        logger.info("🎯 Haptic Manager initialized - Haptics: \(isHapticsEnabled ? "enabled" : "disabled"), Intensity: \(hapticIntensity.displayName)")
+        logger.info("🎯 Haptic Manager initialized - Haptics: \(self.isHapticsEnabled ? "enabled" : "disabled"), Intensity: \(self.hapticIntensity.displayName)")
     }
     
     // MARK: - Public Interface
@@ -201,7 +201,7 @@ final class HapticManager: ObservableObject {
         // Apply accessibility considerations
         let effectiveType = applyAccessibilityAdjustments(type)
         
-        logger.debug("🎯 Triggering haptic: \(effectiveType) in context: \(context)")
+        logger.debug("🎯 Triggering haptic: \(String(describing: effectiveType)) in context: \(String(describing: context))")
         
         // Use iOS 17+ sensoryFeedback if available
         if #available(iOS 17.0, *), contextualHapticsEnabled {
@@ -232,16 +232,12 @@ final class HapticManager: ObservableObject {
         // Combine context and user preferences
         let effectiveIntensity = min(contextIntensity.rawValue, userIntensity.rawValue)
         
-        switch feedback {
-        case .impact(let style):
-            if effectiveIntensity < 0.5 {
-                return .impact(.light)
-            } else if effectiveIntensity < 0.8 {
-                return .impact(.medium)
-            } else {
-                return feedback
-            }
-        default:
+        // For impact feedback, adjust based on effective intensity
+        if effectiveIntensity < 0.5 {
+            return .impact(weight: .light)
+        } else if effectiveIntensity < 0.8 {
+            return .impact(weight: .medium)
+        } else {
             return feedback
         }
     }
@@ -605,8 +601,10 @@ extension Button {
         action: @escaping () -> Void
     ) {
         self.init(title) {
-            HapticManager.shared.trigger(hapticType)
-            action()
+            Task { @MainActor in
+                HapticManager.shared.trigger(hapticType)
+                action()
+            }
         }
     }
 }

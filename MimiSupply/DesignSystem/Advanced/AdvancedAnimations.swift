@@ -61,13 +61,13 @@ struct AdvancedAnimation {
                 )
             case .scaleAndRotate(let angle):
                 return .asymmetric(
-                    insertion: .scale(scale: 0.8).combined(with: .rotation(angle).animation(.elastic)),
-                    removal: .scale(scale: 1.2).combined(with: .rotation(angle.opposite).animation(.snappy))
+                    insertion: .scale(scale: 0.8).combined(with: .opacity.animation(AdvancedAnimation.elastic)),
+                    removal: .scale(scale: 1.2).combined(with: .opacity.animation(AdvancedAnimation.snappy))
                 )
             case .morphing:
                 return .asymmetric(
-                    insertion: .scale(scale: 0.1).combined(with: .blur(radius: 10)),
-                    removal: .scale(scale: 2.0).combined(with: .blur(radius: 20))
+                    insertion: .scale(scale: 0.1).combined(with: .opacity),
+                    removal: .scale(scale: 2.0).combined(with: .opacity)
                 )
             case .particle:
                 return .asymmetric(
@@ -206,7 +206,7 @@ struct EnhancedMatchedGeometry: ViewModifier {
             )
             .scaleEffect(coordinator.isTransitioning(id: id) ? 1.05 : 1.0)
             .opacity(coordinator.isTransitioning(id: id) ? 0.9 : 1.0)
-            .animation(.elastic, value: coordinator.isTransitioning(id: id))
+            .animation(AdvancedAnimation.elastic, value: coordinator.isTransitioning(id: id))
     }
 }
 
@@ -239,7 +239,7 @@ extension View {
     func elasticScale(trigger: some Equatable) -> some View {
         self
             .scaleEffect(1.0)
-            .animation(.elastic, value: trigger)
+            .animation(AdvancedAnimation.elastic, value: trigger)
     }
     
     /// Morphing animation
@@ -247,7 +247,7 @@ extension View {
         self
             .scaleEffect(isActive ? 1.2 : 1.0)
             .blur(radius: isActive ? 2 : 0)
-            .animation(.gentle, value: isActive)
+            .animation(AdvancedAnimation.gentle, value: isActive)
     }
 }
 

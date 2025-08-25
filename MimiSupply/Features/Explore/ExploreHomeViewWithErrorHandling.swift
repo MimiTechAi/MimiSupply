@@ -83,7 +83,7 @@ struct ExploreHomeViewWithErrorHandling: View {
             .sheet(isPresented: $showingFilters) {
                 FilterSheet(
                     selectedCategory: .constant(nil),
-                    selectedSortOption: .constant(.relevance),
+                    selectedSortOption: .constant(.recommended),
                     priceRange: .constant(0...100),
                     deliveryTimeRange: .constant(0...60),
                     onApply: {}

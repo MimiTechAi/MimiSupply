@@ -221,25 +221,16 @@ final class OfflinePersistenceManager: ObservableObject {
     }
     
     /// Retrieve multiple cached items
-    func retrieveBatch<T: Codable>(
+    func retrieveBatch<T: Codable & Sendable>(
         _ type: T.Type,
         keys: [String],
         category: CacheCategory = .general
     ) async -> [String: T] {
         var results: [String: T] = [:]
         
-        await withTaskGroup(of: (String, T?).self) { group in
-            for key in keys {
-                group.addTask {
-                    let data = try? await self.retrieveCachedData(type, forKey: key, category: category)
-                    return (key, data)
-                }
-            }
-            
-            for await (key, data) in group {
-                if let data = data {
-                    results[key] = data
-                }
+        for key in keys {
+            if let data = try? await retrieveCachedData(type, forKey: key, category: category) {
+                results[key] = data
             }
         }
         
@@ -279,15 +270,15 @@ final class OfflinePersistenceManager: ObservableObject {
     func enforceCacheLimits() async {
         let currentSize = await calculateCacheSize()
         
-        if currentSize > maxCacheSize {
-            logger.warning("⚠️ Cache size exceeded limit: \(currentSize) > \(maxCacheSize)")
-            await evictOldestCacheItems(targetReduction: currentSize - maxCacheSize)
+        if currentSize > self.maxCacheSize {
+            logger.warning("⚠️ Cache size exceeded limit: \(currentSize) > \(self.maxCacheSize)")
+            await evictOldestCacheItems(targetReduction: currentSize - self.maxCacheSize)
         }
         
         let imagesCacheSize = await calculateImagesCacheSize()
-        if imagesCacheSize > maxImageCacheSize {
-            logger.warning("⚠️ Images cache size exceeded limit: \(imagesCacheSize) > \(maxImageCacheSize)")
-            await evictOldestImages(targetReduction: imagesCacheSize - maxImageCacheSize)
+        if imagesCacheSize > self.maxImageCacheSize {
+            logger.warning("⚠️ Images cache size exceeded limit: \(imagesCacheSize) > \(self.maxImageCacheSize)")
+            await evictOldestImages(targetReduction: imagesCacheSize - self.maxImageCacheSize)
         }
     }
     
@@ -355,117 +346,109 @@ final class OfflinePersistenceManager: ObservableObject {
     }
     
     private func updateCacheMetrics() async {
-        cacheMetrics.totalSize = await calculateCacheSize() + await calculateImagesCacheSize()
+        let generalCacheSize = await calculateCacheSize()
+        let imagesCacheSize = await calculateImagesCacheSize()
+        cacheMetrics.totalSize = generalCacheSize + imagesCacheSize
         cacheMetrics.totalItems = await countCacheItems()
         cacheMetrics.lastUpdated = Date()
     }
     
     private func calculateCacheSize() async -> Int64 {
-        return await withCheckedContinuation { continuation in
-            operationQueue.addOperation {
-                var totalSize: Int64 = 0
-                
-                if let enumerator = self.fileManager.enumerator(at: self.cacheDirectory, includingPropertiesForKeys: [.fileSizeKey]) {
-                    for case let fileURL as URL in enumerator {
-                        do {
-                            let resourceValues = try fileURL.resourceValues(forKeys: [.fileSizeKey])
-                            totalSize += Int64(resourceValues.fileSize ?? 0)
-                        } catch {
-                            // Skip files that can't be read
-                        }
+        return await Task.detached {
+            var totalSize: Int64 = 0
+            
+            if let enumerator = FileManager.default.enumerator(at: await self.cacheDirectory, includingPropertiesForKeys: [.fileSizeKey]) {
+                for case let fileURL as URL in enumerator {
+                    do {
+                        let resourceValues = try fileURL.resourceValues(forKeys: [.fileSizeKey])
+                        totalSize += Int64(resourceValues.fileSize ?? 0)
+                    } catch {
+                        // Skip files that can't be read
                     }
                 }
-                
-                continuation.resume(returning: totalSize)
             }
-        }
+            
+            return totalSize
+        }.value
     }
     
     private func calculateImagesCacheSize() async -> Int64 {
-        return await withCheckedContinuation { continuation in
-            operationQueue.addOperation {
-                var totalSize: Int64 = 0
-                
-                if let enumerator = self.fileManager.enumerator(at: self.imagesCacheDirectory, includingPropertiesForKeys: [.fileSizeKey]) {
-                    for case let fileURL as URL in enumerator {
-                        do {
-                            let resourceValues = try fileURL.resourceValues(forKeys: [.fileSizeKey])
-                            totalSize += Int64(resourceValues.fileSize ?? 0)
-                        } catch {
-                            // Skip files that can't be read
-                        }
+        return await Task.detached {
+            var totalSize: Int64 = 0
+            
+            if let enumerator = FileManager.default.enumerator(at: await self.imagesCacheDirectory, includingPropertiesForKeys: [.fileSizeKey]) {
+                for case let fileURL as URL in enumerator {
+                    do {
+                        let resourceValues = try fileURL.resourceValues(forKeys: [.fileSizeKey])
+                        totalSize += Int64(resourceValues.fileSize ?? 0)
+                    } catch {
+                        // Skip files that can't be read
                     }
                 }
-                
-                continuation.resume(returning: totalSize)
             }
-        }
+            
+            return totalSize
+        }.value
     }
     
     private func countCacheItems() async -> Int {
-        return await withCheckedContinuation { continuation in
-            operationQueue.addOperation {
-                var count = 0
-                
-                if let enumerator = self.fileManager.enumerator(at: self.cacheDirectory, includingPropertiesForKeys: nil) {
-                    for _ in enumerator {
-                        count += 1
-                    }
+        return await Task.detached {
+            var count = 0
+            
+            if let enumerator = FileManager.default.enumerator(at: await self.cacheDirectory, includingPropertiesForKeys: nil) {
+                for _ in enumerator {
+                    count += 1
                 }
-                
-                continuation.resume(returning: count)
             }
-        }
+            
+            return count
+        }.value
     }
     
     private func getOldestCacheItem() async -> Date? {
-        return await withCheckedContinuation { continuation in
-            operationQueue.addOperation {
-                var oldestDate: Date?
-                
-                if let enumerator = self.fileManager.enumerator(at: self.cacheDirectory, includingPropertiesForKeys: [.creationDateKey]) {
-                    for case let fileURL as URL in enumerator {
-                        do {
-                            let resourceValues = try fileURL.resourceValues(forKeys: [.creationDateKey])
-                            if let creationDate = resourceValues.creationDate {
-                                if oldestDate == nil || creationDate < oldestDate! {
-                                    oldestDate = creationDate
-                                }
+        return await Task.detached {
+            var oldestDate: Date?
+            
+            if let enumerator = FileManager.default.enumerator(at: await self.cacheDirectory, includingPropertiesForKeys: [.creationDateKey]) {
+                for case let fileURL as URL in enumerator {
+                    do {
+                        let resourceValues = try fileURL.resourceValues(forKeys: [.creationDateKey])
+                        if let creationDate = resourceValues.creationDate {
+                            if oldestDate == nil || creationDate < oldestDate! {
+                                oldestDate = creationDate
                             }
-                        } catch {
-                            // Skip files that can't be read
                         }
+                    } catch {
+                        // Skip files that can't be read
                     }
                 }
-                
-                continuation.resume(returning: oldestDate)
             }
-        }
+            
+            return oldestDate
+        }.value
     }
     
     private func getNewestCacheItem() async -> Date? {
-        return await withCheckedContinuation { continuation in
-            operationQueue.addOperation {
-                var newestDate: Date?
-                
-                if let enumerator = self.fileManager.enumerator(at: self.cacheDirectory, includingPropertiesForKeys: [.creationDateKey]) {
-                    for case let fileURL as URL in enumerator {
-                        do {
-                            let resourceValues = try fileURL.resourceValues(forKeys: [.creationDateKey])
-                            if let creationDate = resourceValues.creationDate {
-                                if newestDate == nil || creationDate > newestDate! {
-                                    newestDate = creationDate
-                                }
+        return await Task.detached {
+            var newestDate: Date?
+            
+            if let enumerator = FileManager.default.enumerator(at: await self.cacheDirectory, includingPropertiesForKeys: [.creationDateKey]) {
+                for case let fileURL as URL in enumerator {
+                    do {
+                        let resourceValues = try fileURL.resourceValues(forKeys: [.creationDateKey])
+                        if let creationDate = resourceValues.creationDate {
+                            if newestDate == nil || creationDate > newestDate! {
+                                newestDate = creationDate
                             }
-                        } catch {
-                            // Skip files that can't be read
                         }
+                    } catch {
+                        // Skip files that can't be read
                     }
                 }
-                
-                continuation.resume(returning: newestDate)
             }
-        }
+            
+            return newestDate
+        }.value
     }
     
     private func evictOldestCacheItems(targetReduction: Int64) async {
@@ -502,7 +485,7 @@ enum PersistenceStatus: Equatable {
     }
 }
 
-enum CacheCategory: String, CaseIterable {
+enum CacheCategory: String, CaseIterable, Codable {
     case general = "General"
     case partners = "Partners"
     case products = "Products"

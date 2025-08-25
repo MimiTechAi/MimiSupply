@@ -61,7 +61,7 @@ struct DesignSystemShowcase: View {
         VStack(alignment: .leading, spacing: Spacing.md) {
             Text("Colors")
                 .font(.headlineSmall)
-                .accessibleHeading("Colors", level: .h2)
+                .accessibleHeading(label: "Colors", level: .h2)
             
             LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 3), spacing: Spacing.sm) {
                 ColorSwatch(color: .emerald, name: "Emerald")
@@ -83,7 +83,7 @@ struct DesignSystemShowcase: View {
         VStack(alignment: .leading, spacing: Spacing.md) {
             Text("Typography")
                 .font(.headlineSmall)
-                .accessibleHeading("Typography", level: .h2)
+                .accessibleHeading(label: "Typography", level: .h2)
             
             VStack(alignment: .leading, spacing: Spacing.sm) {
                 Text("Display Large")
@@ -106,7 +106,7 @@ struct DesignSystemShowcase: View {
         VStack(alignment: .leading, spacing: Spacing.md) {
             Text("Buttons")
                 .font(.headlineSmall)
-                .accessibleHeading("Buttons", level: .h2)
+                .accessibleHeading(label: "Buttons", level: .h2)
             
             VStack(spacing: Spacing.sm) {
                 PrimaryButton(title: "Primary Button") {
@@ -136,7 +136,7 @@ struct DesignSystemShowcase: View {
         VStack(alignment: .leading, spacing: Spacing.md) {
             Text("Text Fields")
                 .font(.headlineSmall)
-                .accessibleHeading("Text Fields", level: .h2)
+                .accessibleHeading(label: "Text Fields", level: .h2)
             
             VStack(spacing: Spacing.md) {
                 AppTextField(
@@ -176,7 +176,7 @@ struct DesignSystemShowcase: View {
         VStack(alignment: .leading, spacing: Spacing.md) {
             Text("Cards")
                 .font(.headlineSmall)
-                .accessibleHeading("Cards", level: .h2)
+                .accessibleHeading(label: "Cards", level: .h2)
             
             AppCard {
                 VStack(alignment: .leading, spacing: Spacing.sm) {
@@ -198,7 +198,7 @@ struct DesignSystemShowcase: View {
         VStack(alignment: .leading, spacing: Spacing.md) {
             Text("Loading States")
                 .font(.headlineSmall)
-                .accessibleHeading("Loading States", level: .h2)
+                .accessibleHeading(label: "Loading States", level: .h2)
             
             HStack(spacing: Spacing.lg) {
                 AppLoadingView(message: "Small", size: .small)
@@ -214,7 +214,7 @@ struct DesignSystemShowcase: View {
         VStack(alignment: .leading, spacing: Spacing.md) {
             Text("Empty States")
                 .font(.headlineSmall)
-                .accessibleHeading("Empty States", level: .h2)
+                .accessibleHeading(label: "Empty States", level: .h2)
             
             AppCard {
                 EmptyStateView(
@@ -235,7 +235,7 @@ struct DesignSystemShowcase: View {
         VStack(alignment: .leading, spacing: Spacing.md) {
             Text("Badges")
                 .font(.headlineSmall)
-                .accessibleHeading("Badges", level: .h2)
+                .accessibleHeading(label: "Badges", level: .h2)
             
             VStack(spacing: Spacing.md) {
                 HStack(spacing: Spacing.sm) {
@@ -271,7 +271,7 @@ struct DesignSystemShowcase: View {
         VStack(alignment: .leading, spacing: Spacing.md) {
             Text("Dividers")
                 .font(.headlineSmall)
-                .accessibleHeading("Dividers", level: .h2)
+                .accessibleHeading(label: "Dividers", level: .h2)
             
             VStack(spacing: Spacing.md) {
                 Text("Content above divider")
@@ -296,13 +296,13 @@ struct DesignSystemShowcase: View {
         VStack(alignment: .leading, spacing: Spacing.md) {
             Text("Accessibility Info")
                 .font(.headlineSmall)
-                .accessibleHeading("Accessibility Info", level: .h2)
+                .accessibleHeading(label: "Accessibility Info", level: .h2)
             
             AppCard {
                 VStack(alignment: .leading, spacing: Spacing.sm) {
                     AccessibilityInfoRow(
                         title: "VoiceOver",
-                        value: accessibilityManager.isVoiceOverEnabled ? "Enabled" : "Disabled"
+                        value: VoiceOverHelpers.isVoiceOverRunning ? "Enabled" : "Disabled"
                     )
                     
                     AccessibilityInfoRow(
@@ -337,7 +337,7 @@ private struct ColorSwatch: View {
                 .fill(color)
                 .frame(height: 40)
                 .cornerRadius(8)
-                .accessibleImage(label: "\(name) color swatch")
+                .accessibleImage(description: "\(name) color swatch")
             
             Text(name)
                 .font(.labelSmall)

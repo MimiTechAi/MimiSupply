@@ -57,6 +57,27 @@ struct PerformanceBudgets {
     }
 }
 
+// MARK: - Performance Budget Metrics
+struct PerformanceBudgetMetrics {
+    let targetDuration: TimeInterval
+    let maxMemoryUsage: UInt64?
+    let targetFPS: Double?
+    
+    init(
+        targetDuration: TimeInterval,
+        maxMemoryUsage: UInt64? = nil,
+        targetFPS: Double? = nil
+    ) {
+        self.targetDuration = targetDuration
+        self.maxMemoryUsage = maxMemoryUsage
+        self.targetFPS = targetFPS
+    }
+    
+    static let screenTransition = PerformanceBudgetMetrics(targetDuration: PerformanceBudgets.Transitions.screenTransitionTime)
+    static let apiCall = PerformanceBudgetMetrics(targetDuration: PerformanceBudgets.Network.apiResponseTime)
+    static let imageLoad = PerformanceBudgetMetrics(targetDuration: PerformanceBudgets.Network.imageLoadTime)
+}
+
 // MARK: - Performance Monitor
 @MainActor
 final class PerformanceMonitor: ObservableObject {
@@ -203,16 +224,16 @@ extension View {
 }
 
 struct PerformanceBudgetModifier: ViewModifier {
-    let budget: PerformanceMetrics
+    let budget: PerformanceBudgetMetrics
     let identifier: String
     
     func body(content: Content) -> some View {
         content
             .onAppear {
-                PerformanceBudgetManager.shared.startMeasuring(identifier, budget: budget)
+                PerformanceMonitor.shared.startMeasurement(identifier)
             }
             .onDisappear {
-                PerformanceBudgetManager.shared.stopMeasuring(identifier)
+                PerformanceMonitor.shared.endMeasurement(identifier)
             }
     }
 }
@@ -220,7 +241,7 @@ struct PerformanceBudgetModifier: ViewModifier {
 extension View {
     /// Monitor performance budget for this view
     func performanceBudget(
-        _ budget: PerformanceMetrics,
+        _ budget: PerformanceBudgetMetrics,
         identifier: String
     ) -> some View {
         self.modifier(PerformanceBudgetModifier(budget: budget, identifier: identifier))

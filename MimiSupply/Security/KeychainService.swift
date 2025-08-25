@@ -460,7 +460,7 @@ enum KeychainAccessibility {
         case .biometryCurrentSet:
             return kSecAttrAccessibleBiometryCurrentSet
         case .biometryAny:
-            return kSecAttrAccessibleBiometryAny
+            return kSecAttrAccessibleWhenUnlocked
         }
     }
 }

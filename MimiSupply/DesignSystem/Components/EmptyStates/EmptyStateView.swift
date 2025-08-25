@@ -56,7 +56,7 @@ struct EmptyStateView: View {
                     .font(.titleLarge.scaledFont())
                     .foregroundColor(titleColor)
                     .multilineTextAlignment(.center)
-                    .accessibleHeading(title, level: .h2)
+                    .accessibleHeading(label: title, level: .h2)
                 
                 Text(message)
                     .font(.bodyMedium.scaledFont())

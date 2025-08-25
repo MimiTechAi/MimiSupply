@@ -250,7 +250,8 @@ final class ExploreHomeViewModelWithErrorHandling: ObservableObject {
             
             // Extract unique partners from search results
             let partnerIds = Set(searchResults.map { $0.partnerId })
-            partners = partners.filter { partnerIds.contains($0.id) }
+            let filteredPartners = partners.filter { partnerIds.contains($0.id) }
+            partners = filteredPartners
             
             isLoading = false
             logger.info("✅ Search returned \(self.partners.count) partners")
@@ -282,9 +283,9 @@ final class ExploreHomeViewModelWithErrorHandling: ObservableObject {
     }
     
     /// Generic error handling wrapper
-    private func withErrorHandling<T: Sendable>(
+    private func withErrorHandling<T>(
         _ operation: String,
-        action: @Sendable () async throws -> T
+        action: @MainActor () async throws -> T
     ) async -> T? {
         do {
             return try await action()

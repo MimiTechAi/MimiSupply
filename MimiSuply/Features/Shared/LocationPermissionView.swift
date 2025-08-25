@@ -1,5 +1,5 @@
-// ... existing code ...
-    func openAppSettings() {
+func openAppSettings() {
+        HapticManager.shared.trigger(.lightImpact)
         Task { @MainActor in
             guard let settingsUrl = URL(string: UIApplication.openSettingsURLString),
                   UIApplication.shared.canOpenURL(settingsUrl) else {

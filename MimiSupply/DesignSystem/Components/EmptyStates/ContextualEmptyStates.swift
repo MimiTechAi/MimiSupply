@@ -158,7 +158,7 @@ struct ContextualEmptyStateView: View {
                     .opacity(hasAppeared ? 1.0 : 0.0)
                     .offset(y: hasAppeared ? 0 : 20)
                     .animation(.easeOut(duration: 0.6).delay(0.2), value: hasAppeared)
-                    .accessibleHeading(type.title, level: .h2)
+                    .accessibleHeading(label: type.title, level: .h2)
                 
                 Text(type.message)
                     .font(.bodyMedium.scaledFont())

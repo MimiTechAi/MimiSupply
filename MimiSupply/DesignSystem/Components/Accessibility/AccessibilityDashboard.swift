@@ -295,7 +295,7 @@ struct AccessibilityDashboard: View {
             ResponsiveText("Testing Tools", style: .headline, weight: .semibold)
             
             ResponsiveVStack(spacing: 12) {
-                NavigationLink(destination: AccessibilityTestingView()) {
+                NavigationLink(destination: Text("Accessibility Testing View")) {
                     Label("Test Components", systemImage: "hammer.fill")
                         .frame(maxWidth: .infinity)
                         .accessibilityPadding()

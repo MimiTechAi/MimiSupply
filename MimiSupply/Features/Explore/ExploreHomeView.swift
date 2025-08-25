@@ -234,7 +234,7 @@ struct ExploreHomeView: View {
             Text("Categories")
                 .font(.titleLarge)
                 .foregroundColor(.graphite)
-                .accessibleHeading("Categories", level: .h2)
+                .accessibleHeading(label: "Categories", level: .h2)
             categoriesScrollView
         }
         .accessibilityElement(children: .contain)
@@ -289,10 +289,7 @@ struct ExploreHomeView: View {
             hint: "Tap to filter by \(category.displayName.lowercased())",
             isSelected: viewModel.selectedCategory == category
         )
-        .switchControlAccessible(
-            identifier: "category-\(category.rawValue)",
-            sortPriority: 0.8
-        )
+        .accessibilityElement(children: .contain)
     }
     
     private var featuredSection: some View {

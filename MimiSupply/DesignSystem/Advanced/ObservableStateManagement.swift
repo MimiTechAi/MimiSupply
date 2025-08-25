@@ -13,7 +13,7 @@ import Observation
 @available(iOS 17.0, *)
 @Observable
 @MainActor
-final class AdvancedAppState {
+final class AdvancedAppState: AppStateProtocol {
     
     // MARK: - App-Level State
     var isLoading: Bool = false
@@ -69,7 +69,7 @@ final class AdvancedAppState {
 // MARK: - Legacy Support (iOS 16 and earlier)
 
 @MainActor
-final class LegacyAppState: ObservableObject {
+final class LegacyAppState: ObservableObject, AppStateProtocol {
     
     // MARK: - App-Level State
     @Published var isLoading: Bool = false
@@ -155,13 +155,6 @@ struct ModernAppStateView<Content: View>: View {
     }
 }
 
-// MARK: - State Container Protocol
-
-protocol StateContainer {
-    associatedtype State
-    var state: State { get }
-}
-
 // MARK: - State Management Utilities
 
 @MainActor
@@ -178,8 +171,9 @@ struct StateManager {
 
 // MARK: - Advanced State Modifiers
 
+@available(iOS 17.0, *)
 struct StateObservingModifier<State: AppStateProtocol>: ViewModifier {
-    @Bindable var state: State
+    let state: State
     
     func body(content: Content) -> some View {
         content
@@ -191,6 +185,7 @@ struct StateObservingModifier<State: AppStateProtocol>: ViewModifier {
 // MARK: - View Extensions
 
 extension View {
+    @available(iOS 17.0, *)
     func observeAppState<State: AppStateProtocol>(_ state: State) -> some View {
         self.modifier(StateObservingModifier(state: state))
     }

@@ -311,7 +311,9 @@ struct ParticleSystemModifier: ViewModifier {
     
     private func startParticleSystem() {
         timer = Timer.scheduledTimer(withTimeInterval: 0.05, repeats: true) { _ in
-            updateParticles()
+            Task { @MainActor in
+                updateParticles()
+            }
         }
     }
     
@@ -320,6 +322,7 @@ struct ParticleSystemModifier: ViewModifier {
         timer = nil
     }
     
+    @MainActor
     private func updateParticles() {
         // Update existing particles
         for i in particles.indices {

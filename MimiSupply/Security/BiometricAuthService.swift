@@ -50,31 +50,33 @@ final class BiometricAuthService: ObservableObject {
     
     private func evaluateBiometricAvailability() {
         var error: NSError?
-        let isAvailable = context.canEvaluatePolicy(.biometryOwner, error: &error)
-        
-        self.isAvailable = isAvailable
-        
-        if isAvailable {
-            switch context.biometryType {
-            case .touchID:
-                biometricType = .touchID
-            case .faceID:
-                biometricType = .faceID
-            case .opticID:
-                biometricType = .faceID // Treat Optic ID as Face ID variant
-            case .none:
-                biometricType = .none
-            @unknown default:
-                biometricType = .none
-            }
-        } else {
-            biometricType = .none
+        guard context.canEvaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, error: &error) else {
+            self.isAvailable = false
+            
             if let error = error {
                 logger.error("❌ Biometric authentication not available: \(error.localizedDescription)")
             }
+            
+            logger.info("🔐 Biometric availability: false, type: none")
+            return
         }
         
-        logger.info("🔐 Biometric availability: \(isAvailable), type: \(biometricType.rawValue)")
+        self.isAvailable = true
+        
+        switch context.biometryType {
+        case .touchID:
+            biometricType = .touchID
+        case .faceID:
+            biometricType = .faceID
+        case .opticID:
+            biometricType = .faceID // Treat Optic ID as Face ID variant
+        case .none:
+            biometricType = .none
+        @unknown default:
+            biometricType = .none
+        }
+        
+        logger.info("🔐 Biometric availability: true, type: \(self.biometricType.rawValue)")
     }
     
     private func loadBiometricSettings() {
@@ -101,7 +103,7 @@ final class BiometricAuthService: ObservableObject {
         authenticationStatus = .authenticating
         
         do {
-            let success = try await context.evaluatePolicy(.biometryOwner, localizedReason: reason)
+            let success = try await context.evaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, localizedReason: reason)
             
             if success {
                 await handleSuccessfulAuthentication()

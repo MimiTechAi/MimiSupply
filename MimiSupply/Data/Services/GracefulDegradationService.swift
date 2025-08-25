@@ -61,38 +61,22 @@ final class GracefulDegradationService: ObservableObject {
         return cacheManager.retrieve(type, forKey: key)
     }
     
-    /// Execute operation with fallback
-    func executeWithFallback<T: Codable>(
-        serviceType: ServiceType,
-        cacheKey: String,
-        operation: () async throws -> T
-    ) async -> Result<T, AppError> {
+    /// Execute operation with graceful degradation
+    func executeWithFallback<T: Sendable>(
+        operation: @Sendable () async throws -> T,
+        fallback: (() -> T)? = nil
+    ) async -> Result<T, Error> {
         do {
             let result = try await operation()
-            
-            // Cache successful result
-            cacheManager.cache(result, forKey: cacheKey)
-            
-            // Report service recovery if it was previously degraded
-            if serviceStatus[serviceType] != .healthy {
-                reportServiceRecovery(serviceType)
-            }
-            
             return .success(result)
         } catch {
-            logger.warning("⚠️ Operation failed for \(serviceType.rawValue): \(error.localizedDescription)")
+            logger.warning("⚠️ Operation failed, attempting graceful degradation: \(error.localizedDescription)")
             
-            // Report service failure
-            let appError = convertToAppError(error)
-            reportServiceFailure(serviceType, error: appError)
-            
-            // Try to return cached data
-            if let cachedData = getFallbackData(T.self, for: cacheKey) {
-                logger.info("📦 Returning cached data for \(serviceType.rawValue)")
-                return .success(cachedData)
+            if let fallbackResult = fallback?() {
+                return .success(fallbackResult)
             }
             
-            return .failure(appError)
+            return .failure(error)
         }
     }
     

@@ -109,7 +109,7 @@ final class ServiceHealthMonitor: ObservableObject {
     }
     
     private func performAllHealthChecks() async {
-        logger.debug("🔍 Performing health checks for \(services.count) services")
+        logger.debug("🔍 Performing health checks for \(self.services.count) services")
         
         await withTaskGroup(of: Void.self) { group in
             for serviceName in services.keys {
@@ -200,7 +200,7 @@ final class ServiceHealthMonitor: ObservableObject {
             if stats.isThrottled {
                 return HealthCheckResult(status: .degraded, message: "Rate limited")
             } else if stats.successRate < 0.8 {
-                return HealthCheckResult(status: .degraded, message: "Low success rate: \(stats.successRate * 100, specifier: "%.1f")%")
+                return HealthCheckResult(status: .degraded, message: "Low success rate: \(String(format: "%.1f", stats.successRate * 100))%")
             } else {
                 return HealthCheckResult(status: .healthy, message: "All systems operational")
             }
@@ -270,7 +270,7 @@ final class ServiceHealthMonitor: ObservableObject {
             overallHealth = .unhealthy
         }
         
-        logger.info("🏥 Overall health: \(overallHealth.rawValue) (healthy: \(healthyCount), degraded: \(degradedCount), unhealthy: \(unhealthyCount))")
+        logger.info("🏥 Overall health: \(self.overallHealth.rawValue) (healthy: \(healthyCount), degraded: \(degradedCount), unhealthy: \(unhealthyCount))")
     }
     
     private func updateUptime(for serviceName: String, isHealthy: Bool) {

@@ -35,8 +35,9 @@ extension View {
             .accessibleInteractive(
                 label: label,
                 hint: hint ?? "Double tap to activate",
-                traits: isEnabled ? [.isButton] : [.isButton, .notEnabled]
+                traits: isEnabled ? [.isButton] : [.isButton]
             )
+            .disabled(!isEnabled)
     }
     
     /// Setup for text input fields
@@ -184,26 +185,21 @@ enum AccessibilityAnimationType {
 
 // MARK: - VoiceOver Helpers
 
+@MainActor
 struct VoiceOverHelpers {
     /// Post an accessibility announcement
     static func announce(_ message: String) {
-        DispatchQueue.main.async {
-            UIAccessibility.post(notification: .announcement, argument: message)
-        }
+        UIAccessibility.post(notification: .announcement, argument: message)
     }
     
     /// Post a screen changed notification
     static func screenChanged(focusTo element: Any? = nil) {
-        DispatchQueue.main.async {
-            UIAccessibility.post(notification: .screenChanged, argument: element)
-        }
+        UIAccessibility.post(notification: .screenChanged, argument: element)
     }
     
     /// Post a layout changed notification
     static func layoutChanged(focusTo element: Any? = nil) {
-        DispatchQueue.main.async {
-            UIAccessibility.post(notification: .layoutChanged, argument: element)
-        }
+        UIAccessibility.post(notification: .layoutChanged, argument: element)
     }
     
     /// Check if VoiceOver is running

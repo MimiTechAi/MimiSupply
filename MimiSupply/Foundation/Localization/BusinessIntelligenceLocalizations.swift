@@ -139,7 +139,7 @@ extension LocalizationKeys {
         case cancel = "bi.cancel"
         
         var localized: String {
-            return EnhancedLocalizationManager.shared.localizedString(for: self.rawValue)
+            return EnhancedLocalizationManager.shared.localizedString(for: LocalizationKeys.BusinessIntelligence(rawValue: self.rawValue) ?? LocalizationKeys.BusinessIntelligence.dashboard)
         }
     }
 }

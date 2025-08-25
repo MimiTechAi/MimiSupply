@@ -36,7 +36,7 @@ struct AnimationOptimizer {
     // MARK: - Reduced Motion Support
     
     /// Returns appropriate animation based on accessibility settings
-    static func adaptiveAnimation(_ defaultAnimation: Animation) -> Animation? {
+    @MainActor static func adaptiveAnimation(_ defaultAnimation: Animation) -> Animation? {
         if UIAccessibility.isReduceMotionEnabled {
             return nil // No animation
         }
@@ -45,12 +45,12 @@ struct AnimationOptimizer {
     
     /// Smooth animation that respects reduce motion
     static var accessibleSmooth: Animation? {
-        adaptiveAnimation(smoothSpring)
+        return adaptiveAnimation(smoothSpring)
     }
     
     /// Quick animation that respects reduce motion
     static var accessibleQuick: Animation? {
-        adaptiveAnimation(quickSpring)
+        return adaptiveAnimation(quickSpring)
     }
 }
 

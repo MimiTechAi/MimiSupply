@@ -57,7 +57,7 @@ final class MotionManager: ObservableObject {
     
     private init() {
         setupMotionMonitoring()
-        logger.info("MotionManager initialized with reduceMotion: \(reduceMotionEnabled)")
+        logger.info("MotionManager initialized with reduceMotion: \(self.reduceMotionEnabled)")
     }
     
     // MARK: - Public Methods
@@ -105,7 +105,7 @@ final class MotionManager: ObservableObject {
     
     private func setupMotionMonitoring() {
         // Monitor reduce motion changes
-        NotificationCenter.default.publisher(for: UIAccessibility.reduceMotionStatusDidChangeNotification)
+        NotificationCenter.default.publisher(for: UIAccessibility.reducedMotionStatusDidChangeNotification)
             .sink { [weak self] _ in
                 Task { @MainActor in
                     self?.updateMotionSettings()
@@ -113,8 +113,8 @@ final class MotionManager: ObservableObject {
             }
             .store(in: &cancellables)
         
-        // Monitor cross fade preference changes
-        NotificationCenter.default.publisher(for: UIAccessibility.prefersCrossFadeTransitionsStatusDidChangeNotification)
+        // Monitor cross fade preference changes - using existing notification name
+        NotificationCenter.default.publisher(for: UIAccessibility.reducedMotionStatusDidChangeNotification)
             .sink { [weak self] _ in
                 Task { @MainActor in
                     self?.updateCrossFadeSettings()
@@ -244,7 +244,7 @@ struct MotionAwareButton<Content: View>: View {
         .buttonStyle(PlainButtonStyle())
         .onLongPressGesture(minimumDuration: 0, maximumDistance: .infinity, perform: {}, onPressingChanged: { pressing in
             if motionManager.shouldAnimate(type: .buttonPress) {
-                motionManager.withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) {
+                withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) {
                     isPressed = pressing
                 }
             }

@@ -73,7 +73,9 @@ final class ThemeManager: ObservableObject {
             object: nil,
             queue: .main
         ) { [weak self] _ in
-            self?.isHighContrastEnabled = UIAccessibility.isDarkerSystemColorsEnabled
+            Task { @MainActor in
+                self?.isHighContrastEnabled = UIAccessibility.isDarkerSystemColorsEnabled
+            }
         }
     }
     
@@ -154,9 +156,9 @@ enum AppTheme: String, CaseIterable {
             )
         case .vibrant:
             return ThemeSurfaceColors(
-                primary: Color.dynamic(light: .white, dark: .gray900),
-                secondary: Color.dynamic(light: .orange.opacity(0.05), dark: .orange.opacity(0.1)),
-                elevated: Color.dynamic(light: .white, dark: .gray800)
+                primary: Color.colorDynamic(light: Color(red: 0.95, green: 0.95, blue: 0.95), dark: Color(red: 0.1, green: 0.1, blue: 0.1)),
+                secondary: Color.colorDynamic(light: Color(red: 0.9, green: 0.9, blue: 0.9), dark: Color(red: 0.2, green: 0.2, blue: 0.2)),
+                elevated: Color.colorDynamic(light: .white, dark: Color(red: 0.15, green: 0.15, blue: 0.15))
             )
         case .minimal:
             return ThemeSurfaceColors(
@@ -166,15 +168,15 @@ enum AppTheme: String, CaseIterable {
             )
         case .business:
             return ThemeSurfaceColors(
-                primary: Color.dynamic(light: .white, dark: .gray900),
-                secondary: Color.dynamic(light: .blue.opacity(0.05), dark: .blue.opacity(0.1)),
-                elevated: Color.dynamic(light: .white, dark: .gray800)
+                primary: Color.colorDynamic(light: .white, dark: Color(red: 0.1, green: 0.1, blue: 0.1)),
+                secondary: Color.colorDynamic(light: .blue.opacity(0.05), dark: .blue.opacity(0.1)),
+                elevated: Color.colorDynamic(light: .white, dark: Color(red: 0.2, green: 0.2, blue: 0.2))
             )
         case .analytics:
             return ThemeSurfaceColors(
-                primary: Color.dynamic(light: .white, dark: .black),
-                secondary: Color.dynamic(light: .purple.opacity(0.05), dark: .purple.opacity(0.1)),
-                elevated: Color.dynamic(light: .white, dark: .gray900)
+                primary: Color.colorDynamic(light: .white, dark: .black),
+                secondary: Color.colorDynamic(light: .purple.opacity(0.05), dark: .purple.opacity(0.1)),
+                elevated: Color.colorDynamic(light: .white, dark: Color(red: 0.1, green: 0.1, blue: 0.1))
             )
         }
     }

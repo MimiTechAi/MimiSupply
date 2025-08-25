@@ -7,172 +7,99 @@
 
 import SwiftUI
 
-// MARK: - Advanced Gesture System
+// MARK: - Gesture Value Types
 
-/// Multi-touch gesture recognizer
-struct MultiTouchGesture: Gesture {
-    typealias Value = MultiTouchValue
+/// Multi-touch gesture value
+struct MultiTouchValue: Equatable {
+    var touches: [CGPoint] = []
+    var center: CGPoint = .zero
+    var distance: CGFloat = 0
+    var angle: Angle = .zero
     
-    struct MultiTouchValue {
-        var touches: [CGPoint] = []
-        var center: CGPoint = .zero
-        var distance: CGFloat = 0
-        var angle: Angle = .zero
-    }
-    
-    var body: some Gesture {
-        DragGesture(minimumDistance: 0, coordinateSpace: .local)
-            .simultaneously(with: MagnificationGesture())
-            .simultaneously(with: RotationGesture())
-            .map { value in
-                MultiTouchValue(
-                    touches: [value.first?.location ?? .zero],
-                    center: value.first?.location ?? .zero,
-                    distance: 0,
-                    angle: .zero
-                )
-            }
+    static func == (lhs: MultiTouchValue, rhs: MultiTouchValue) -> Bool {
+        return lhs.center == rhs.center &&
+               lhs.distance == rhs.distance &&
+               lhs.angle == rhs.angle
     }
 }
 
-/// Swipe gesture with velocity and direction
-struct VelocitySwipeGesture: Gesture {
-    let minimumDistance: CGFloat
-    let coordinateSpace: CoordinateSpace
+/// Swipe gesture value with velocity and direction
+struct SwipeValue: Equatable {
+    var startLocation: CGPoint = .zero
+    var location: CGPoint = .zero
+    var translation: CGSize = .zero
+    var velocity: CGSize = .zero
+    var direction: SwipeDirection = .none
+    var distance: CGFloat = 0
     
-    typealias Value = SwipeValue
-    
-    struct SwipeValue {
-        var startLocation: CGPoint = .zero
-        var location: CGPoint = .zero
-        var translation: CGSize = .zero
-        var velocity: CGSize = .zero
-        var direction: SwipeDirection = .none
-        var distance: CGFloat = 0
+    enum SwipeDirection: Equatable {
+        case none, up, down, left, right
         
-        enum SwipeDirection {
-            case none, up, down, left, right
+        static func from(translation: CGSize) -> SwipeDirection {
+            let angle = atan2(translation.height, translation.width)
+            let degrees = angle * 180 / .pi
             
-            static func from(translation: CGSize) -> SwipeDirection {
-                let angle = atan2(translation.height, translation.width)
-                let degrees = angle * 180 / .pi
-                
-                switch degrees {
-                case -45...45: return .right
-                case 45...135: return .down
-                case 135...180, -180...(-135): return .left
-                case -135...(-45): return .up
-                default: return .none
-                }
+            switch degrees {
+            case -45...45: return .right
+            case 45...135: return .down
+            case 135...180, -180...(-135): return .left
+            case -135...(-45): return .up
+            default: return .none
             }
         }
     }
     
-    var body: some Gesture {
-        DragGesture(minimumDistance: minimumDistance, coordinateSpace: coordinateSpace)
-            .map { value in
-                SwipeValue(
-                    startLocation: value.startLocation,
-                    location: value.location,
-                    translation: value.translation,
-                    velocity: CGSize(
-                        width: value.predictedEndLocation.x - value.location.x,
-                        height: value.predictedEndLocation.y - value.location.y
-                    ),
-                    direction: SwipeValue.SwipeDirection.from(translation: value.translation),
-                    distance: sqrt(pow(value.translation.width, 2) + pow(value.translation.height, 2))
-                )
-            }
+    static func == (lhs: SwipeValue, rhs: SwipeValue) -> Bool {
+        return lhs.location == rhs.location &&
+               lhs.translation == rhs.translation &&
+               lhs.direction == rhs.direction
     }
 }
 
-/// Long press with progress tracking
-struct ProgressLongPressGesture: Gesture {
-    let minimumDuration: Double
-    let maximumDistance: CGFloat
+/// Progress-based long press value
+struct ProgressValue: Equatable {
+    var isActive: Bool = false
+    var progress: Double = 0.0
+    var location: CGPoint = .zero
+    var startTime: Date = Date()
     
-    typealias Value = ProgressValue
-    
-    struct ProgressValue {
-        var isActive: Bool = false
-        var progress: Double = 0.0
-        var location: CGPoint = .zero
-        var startTime: Date = Date()
-        
-        var elapsed: TimeInterval {
-            Date().timeIntervalSince(startTime)
-        }
+    var elapsed: TimeInterval {
+        Date().timeIntervalSince(startTime)
     }
     
-    @State private var startTime = Date()
-    @State private var timer: Timer?
-    
-    var body: some Gesture {
-        LongPressGesture(minimumDuration: minimumDuration, maximumDistance: maximumDistance)
-            .sequenced(before: DragGesture(minimumDistance: 0))
-            .map { value in
-                switch value {
-                case .first(let longPress):
-                    return ProgressValue(
-                        isActive: longPress,
-                        progress: longPress ? 1.0 : 0.0,
-                        startTime: startTime
-                    )
-                case .second(_, let drag):
-                    return ProgressValue(
-                        isActive: true,
-                        progress: 1.0,
-                        location: drag?.location ?? .zero,
-                        startTime: startTime
-                    )
-                }
-            }
+    static func == (lhs: ProgressValue, rhs: ProgressValue) -> Bool {
+        return lhs.isActive == rhs.isActive &&
+               abs(lhs.progress - rhs.progress) < 0.001 &&
+               lhs.location == rhs.location
     }
 }
 
-/// Gesture for detecting drawing patterns
-struct DrawingGesture: Gesture {
-    typealias Value = DrawingValue
+/// Drawing gesture value
+struct DrawingValue: Equatable {
+    var points: [CGPoint] = []
+    var currentStroke: [CGPoint] = []
+    var isDrawing: Bool = false
+    var boundingBox: CGRect = .zero
+    var totalDistance: CGFloat = 0
     
-    struct DrawingValue {
-        var points: [CGPoint] = []
-        var currentStroke: [CGPoint] = []
-        var isDrawing: Bool = false
-        var boundingBox: CGRect = .zero
-        var totalDistance: CGFloat = 0
-        
-        var recognizedShape: RecognizedShape? {
-            return ShapeRecognizer.recognize(points: points)
-        }
+    var recognizedShape: RecognizedShape? {
+        return ShapeRecognizer.recognize(points: points)
     }
     
-    var body: some Gesture {
-        DragGesture(minimumDistance: 0)
-            .map { value in
-                var drawingValue = DrawingValue()
-                drawingValue.points = [value.location]
-                drawingValue.currentStroke = [value.location]
-                drawingValue.isDrawing = true
-                return drawingValue
-            }
+    static func == (lhs: DrawingValue, rhs: DrawingValue) -> Bool {
+        return lhs.points == rhs.points &&
+               lhs.isDrawing == rhs.isDrawing &&
+               lhs.boundingBox == rhs.boundingBox
     }
 }
 
-/// Shape recognition system
+// MARK: - Shape Recognition System
+
 struct ShapeRecognizer {
-    enum RecognizedShape {
-        case circle
-        case rectangle
-        case triangle
-        case line
-        case unknown
-    }
-    
     static func recognize(points: [CGPoint]) -> RecognizedShape? {
         guard points.count > 10 else { return nil }
         
         let boundingBox = calculateBoundingBox(points: points)
-        let aspectRatio = boundingBox.width / boundingBox.height
         
         // Simple shape recognition logic
         if isCircleShape(points: points, boundingBox: boundingBox) {
@@ -213,14 +140,6 @@ struct ShapeRecognizer {
     
     private static func isRectangleShape(points: [CGPoint], boundingBox: CGRect) -> Bool {
         // Check if points roughly follow rectangle edges
-        let corners = [
-            CGPoint(x: boundingBox.minX, y: boundingBox.minY),
-            CGPoint(x: boundingBox.maxX, y: boundingBox.minY),
-            CGPoint(x: boundingBox.maxX, y: boundingBox.maxY),
-            CGPoint(x: boundingBox.minX, y: boundingBox.maxY)
-        ]
-        
-        // Simple heuristic: check if most points are near the edges
         let tolerance: CGFloat = 20
         let nearEdgeCount = points.filter { point in
             abs(point.x - boundingBox.minX) < tolerance ||
@@ -289,7 +208,7 @@ struct InteractiveCardModifier: ViewModifier {
     @State private var rotation: Angle = .zero
     @State private var isLongPressed = false
     
-    let onSwipe: ((VelocitySwipeGesture.SwipeValue.SwipeDirection) -> Void)?
+    let onSwipe: ((SwipeValue.SwipeDirection) -> Void)?
     let onLongPress: (() -> Void)?
     let onDoubleTap: (() -> Void)?
     
@@ -310,9 +229,7 @@ struct InteractiveCardModifier: ViewModifier {
                             dragOffset = value.translation
                         }
                         .onEnded { value in
-                            let swipeDirection = VelocitySwipeGesture.SwipeValue.SwipeDirection.from(
-                                translation: value.translation
-                            )
+                            let swipeDirection = SwipeValue.SwipeDirection.from(translation: value.translation)
                             
                             if abs(value.translation.width) > 100 || abs(value.translation.height) > 100 {
                                 onSwipe?(swipeDirection)
@@ -324,9 +241,9 @@ struct InteractiveCardModifier: ViewModifier {
                         },
                     
                     // Magnification gesture
-                    MagnificationGesture()
+                    MagnifyGesture()
                         .onChanged { value in
-                            scale = value
+                            scale = value.magnification
                         }
                         .onEnded { _ in
                             withAnimation(.spring()) {
@@ -337,9 +254,9 @@ struct InteractiveCardModifier: ViewModifier {
             )
             .simultaneousGesture(
                 // Rotation gesture
-                RotationGesture()
+                RotateGesture()
                     .onChanged { value in
-                        rotation = value
+                        rotation = value.rotation
                     }
                     .onEnded { _ in
                         withAnimation(.spring()) {
@@ -418,7 +335,7 @@ struct MagneticSnapModifier: ViewModifier {
 extension View {
     /// Add advanced interactive card gestures
     func interactiveCard(
-        onSwipe: ((VelocitySwipeGesture.SwipeValue.SwipeDirection) -> Void)? = nil,
+        onSwipe: ((SwipeValue.SwipeDirection) -> Void)? = nil,
         onLongPress: (() -> Void)? = nil,
         onDoubleTap: (() -> Void)? = nil
     ) -> some View {
@@ -444,14 +361,24 @@ extension View {
     func velocitySwipe(
         minimumDistance: CGFloat = 20,
         coordinateSpace: CoordinateSpace = .local,
-        onSwipe: @escaping (VelocitySwipeGesture.SwipeValue) -> Void
+        onSwipe: @escaping (SwipeValue) -> Void
     ) -> some View {
         self.gesture(
-            VelocitySwipeGesture(
-                minimumDistance: minimumDistance,
-                coordinateSpace: coordinateSpace
-            )
-            .onEnded(onSwipe)
+            DragGesture(minimumDistance: minimumDistance, coordinateSpace: coordinateSpace)
+                .onEnded { value in
+                    let swipeValue = SwipeValue(
+                        startLocation: value.startLocation,
+                        location: value.location,
+                        translation: value.translation,
+                        velocity: CGSize(
+                            width: value.predictedEndLocation.x - value.location.x,
+                            height: value.predictedEndLocation.y - value.location.y
+                        ),
+                        direction: SwipeValue.SwipeDirection.from(translation: value.translation),
+                        distance: sqrt(pow(value.translation.width, 2) + pow(value.translation.height, 2))
+                    )
+                    onSwipe(swipeValue)
+                }
         )
     }
     
@@ -459,24 +386,38 @@ extension View {
     func progressLongPress(
         minimumDuration: Double = 0.5,
         maximumDistance: CGFloat = 10,
-        onProgress: @escaping (ProgressLongPressGesture.ProgressValue) -> Void
+        onProgress: @escaping (ProgressValue) -> Void
     ) -> some View {
         self.gesture(
-            ProgressLongPressGesture(
-                minimumDuration: minimumDuration,
-                maximumDistance: maximumDistance
-            )
-            .onChanged(onProgress)
+            LongPressGesture(minimumDuration: minimumDuration, maximumDistance: maximumDistance)
+                .onEnded { _ in
+                    let progressValue = ProgressValue(
+                        isActive: true,
+                        progress: 1.0,
+                        location: .zero,
+                        startTime: Date()
+                    )
+                    onProgress(progressValue)
+                }
         )
     }
     
     /// Add drawing gesture recognition
     func drawingGesture(
-        onDraw: @escaping (DrawingGesture.DrawingValue) -> Void
+        onDraw: @escaping (DrawingValue) -> Void
     ) -> some View {
         self.gesture(
-            DrawingGesture()
-                .onChanged(onDraw)
+            DragGesture(minimumDistance: 0)
+                .onChanged { value in
+                    let drawingValue = DrawingValue(
+                        points: [value.location],
+                        currentStroke: [value.location],
+                        isDrawing: true,
+                        boundingBox: CGRect(origin: value.location, size: .zero),
+                        totalDistance: 0
+                    )
+                    onDraw(drawingValue)
+                }
         )
     }
 }

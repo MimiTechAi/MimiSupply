@@ -43,7 +43,9 @@ class MemoryManager: ObservableObject {
     
     private func startMemoryMonitoring() {
         memoryTimer = Timer.scheduledTimer(withTimeInterval: 5.0, repeats: true) { [weak self] _ in
-            self?.updateMemoryUsage()
+            Task { @MainActor in
+                self?.updateMemoryUsage()
+            }
         }
     }
     
