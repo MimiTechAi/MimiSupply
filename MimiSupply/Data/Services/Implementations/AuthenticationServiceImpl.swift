@@ -96,7 +96,7 @@ final class AuthenticationServiceImpl: NSObject, @unchecked Sendable, Authentica
         let request = ASAuthorizationAppleIDProvider().createRequest()
         request.requestedScopes = [.fullName, .email]
         
-        return try await withCheckedThrowingContinuation<AuthenticationResult, Error> { continuation in
+        return try await withCheckedThrowingContinuation { continuation in
             let delegate = AuthenticationDelegate(completion: { result in
                 continuation.resume(with: result)
             })
@@ -359,7 +359,7 @@ final class AuthenticationServiceImpl: NSObject, @unchecked Sendable, Authentica
                     if let storedUser: UserProfile = try await keychainService.retrieve(UserProfile.self, forKey: currentUserKey) {
                         _currentUser = storedUser
                         await updateAuthenticationState(.authenticated(storedUser))
-                        logger.info("Loaded stored user: \(storedUser.name)")
+                        logger.info("Loaded stored user: \(storedUser.id)")
                     } else {
                         await updateAuthenticationState(.unauthenticated)
                         logger.info("No stored user found")
@@ -376,9 +376,9 @@ final class AuthenticationServiceImpl: NSObject, @unchecked Sendable, Authentica
 // MARK: - Helper Classes
 
 private class AuthenticationDelegate: NSObject, ASAuthorizationControllerDelegate {
-    private let completion: (Result<AuthenticationResult, Error>) -> Void
+    private let completion: @Sendable (Result<AuthenticationResult, Error>) -> Void
     
-    init(completion: @escaping (Result<AuthenticationResult, Error>) -> Void) {
+    init(completion: @escaping @Sendable (Result<AuthenticationResult, Error>) -> Void) {
         self.completion = completion
     }
     

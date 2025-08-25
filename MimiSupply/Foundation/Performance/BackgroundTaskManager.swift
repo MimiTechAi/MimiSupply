@@ -24,7 +24,8 @@ class BackgroundTaskManager: NSObject, ObservableObject {
         self.cloudKitService = CloudKitServiceImpl.shared
         super.init()
         
-        Task { @MainActor in
+        Task { @MainActor [weak self] in
+            guard let self = self else { return }
             self.locationService = LocationServiceImpl.shared
             await self.registerBackgroundTasks()
         }
@@ -206,8 +207,8 @@ class BackgroundTaskManager: NSObject, ObservableObject {
             return
         }
         
-        let currentLocation = await MainActor.run {
-            locationService.currentLocation
+        let currentLocation = await MainActor.run { [weak self] in
+            self?.locationService.currentLocation
         }
         
         guard let location = await currentLocation else {

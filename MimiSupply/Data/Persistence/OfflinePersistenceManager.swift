@@ -197,7 +197,7 @@ final class OfflinePersistenceManager: ObservableObject {
     // MARK: - Batch Operations
     
     /// Cache multiple items efficiently
-    func cacheBatch<T: Codable>(
+    func cacheBatch<T: Codable & Sendable>(
         _ items: [(key: String, data: T)],
         category: CacheCategory = .general
     ) async throws {

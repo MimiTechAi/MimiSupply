@@ -118,7 +118,7 @@ protocol OfflineFirstLoadable {
 
 /// Generic offline-first data loader
 @MainActor
-final class OfflineFirstDataLoader<T: Codable & Equatable>: ObservableObject {
+final class OfflineFirstDataLoader<T: Codable & Equatable & Sendable>: ObservableObject {
     @Published var data: T?
     @Published var isLoading = false
     @Published var errorMessage: String?
@@ -126,7 +126,7 @@ final class OfflineFirstDataLoader<T: Codable & Equatable>: ObservableObject {
     
     private let cacheKey: String
     private let cacheCategory: CacheCategory
-    private let onlineLoader: () async throws -> T
+    private let onlineLoader: @Sendable () async throws -> T
     private let persistenceManager = OfflinePersistenceManager.shared
     private let degradationService = GracefulDegradationService.shared
     private let networkMonitor = NetworkMonitor.shared
@@ -141,7 +141,7 @@ final class OfflineFirstDataLoader<T: Codable & Equatable>: ObservableObject {
     init(
         cacheKey: String,
         cacheCategory: CacheCategory = .general,
-        onlineLoader: @escaping () async throws -> T
+        onlineLoader: @escaping @Sendable () async throws -> T
     ) {
         self.cacheKey = cacheKey
         self.cacheCategory = cacheCategory
@@ -257,7 +257,7 @@ final class OfflineFirstDataLoader<T: Codable & Equatable>: ObservableObject {
 
 // MARK: - Offline-First View Modifier
 
-struct OfflineFirstDataModifier<T: Codable & Equatable>: ViewModifier {
+struct OfflineFirstDataModifier<T: Codable & Equatable & Sendable>: ViewModifier {
     @StateObject private var dataLoader: OfflineFirstDataLoader<T>
     
     let onDataLoaded: (T?) -> Void
@@ -266,7 +266,7 @@ struct OfflineFirstDataModifier<T: Codable & Equatable>: ViewModifier {
     init(
         cacheKey: String,
         cacheCategory: CacheCategory = .general,
-        onlineLoader: @escaping () async throws -> T,
+        onlineLoader: @escaping @Sendable () async throws -> T,
         onDataLoaded: @escaping (T?) -> Void,
         onError: @escaping (String?) -> Void
     ) {
@@ -299,11 +299,11 @@ struct OfflineFirstDataModifier<T: Codable & Equatable>: ViewModifier {
 }
 
 extension View {
-    func offlineFirstData<T: Codable & Equatable>(
+    func offlineFirstData<T: Codable & Equatable & Sendable>(
         _ type: T.Type,
         cacheKey: String,
         cacheCategory: CacheCategory = .general,
-        onlineLoader: @escaping () async throws -> T,
+        onlineLoader: @escaping @Sendable () async throws -> T,
         onDataLoaded: @escaping (T?) -> Void,
         onError: @escaping (String?) -> Void = { _ in }
     ) -> some View {

@@ -287,7 +287,7 @@ struct SyncStatusDetailsView: View {
                 Label("Clear Pending", systemImage: "trash")
                     .frame(maxWidth: .infinity)
             }
-            .buttonStyle(.secondary)
+            .buttonStyle(BorderedButtonStyle())
         }
     }
 }

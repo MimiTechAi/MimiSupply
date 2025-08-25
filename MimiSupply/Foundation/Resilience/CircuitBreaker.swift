@@ -77,7 +77,7 @@ final class CircuitBreaker: ObservableObject {
     
     // MARK: - Private Properties
     private let config: CircuitBreakerConfig
-    private let name: String
+    let name: String  // Make this public for SwiftUI access
     private let logger: Logger
     private var recoveryTimer: Timer?
     private let maxConcurrentRequests: Int
@@ -98,7 +98,7 @@ final class CircuitBreaker: ObservableObject {
     }
     
     // MARK: - Public Interface
-    func execute<T>(_ operation: @escaping () async throws -> T) async throws -> T {
+    func execute<T: Sendable>(_ operation: @escaping @Sendable () async throws -> T) async throws -> T {
         // Check if we can execute the request
         try await checkCanExecute()
         
@@ -154,12 +154,12 @@ final class CircuitBreaker: ObservableObject {
             // Reset failure count on success
             if failureCount > 0 {
                 failureCount = 0
-                logger.info("✅ Circuit breaker reset after success: \(name)")
+                logger.info("✅ Circuit breaker reset after success: \(self.name)")
             }
             
         case .halfOpen:
             successCount += 1
-            logger.info("✅ Success in half-open state: \(name) (\(successCount)/\(config.successThreshold))")
+            logger.info("✅ Success in half-open state: \(self.name) (\(self.successCount)/\(self.config.successThreshold))")
             
             if successCount >= config.successThreshold {
                 await transitionToClosed()
@@ -167,7 +167,7 @@ final class CircuitBreaker: ObservableObject {
             
         case .open:
             // Should not happen, but handle gracefully
-            logger.warning("⚠️ Unexpected success in open state: \(name)")
+            logger.warning("⚠️ Unexpected success in open state: \(self.name)")
         }
         
         updateHealthStatus()
@@ -177,7 +177,7 @@ final class CircuitBreaker: ObservableObject {
         failureCount += 1
         lastFailureTime = Date()
         
-        logger.error("❌ Circuit breaker failure: \(name) - \(error.localizedDescription) (count: \(failureCount))")
+        logger.error("❌ Circuit breaker failure: \(self.name) - \(error.localizedDescription) (count: \(self.failureCount))")
         
         switch state {
         case .closed:
@@ -203,7 +203,7 @@ final class CircuitBreaker: ObservableObject {
         successCount = 0
         isHealthy = false
         
-        logger.warning("🔴 Circuit breaker opened: \(name) (failures: \(failureCount))")
+        logger.warning("🔴 Circuit breaker opened: \(self.name) (failures: \(self.failureCount))")
         
         // Schedule recovery attempt
         scheduleRecoveryAttempt()
@@ -213,7 +213,7 @@ final class CircuitBreaker: ObservableObject {
         state = .halfOpen
         successCount = 0
         
-        logger.info("🟡 Circuit breaker half-open: \(name)")
+        logger.info("🟡 Circuit breaker half-open: \(self.name)")
     }
     
     private func transitionToClosed() async {
@@ -226,7 +226,7 @@ final class CircuitBreaker: ObservableObject {
         recoveryTimer?.invalidate()
         recoveryTimer = nil
         
-        logger.info("🟢 Circuit breaker closed: \(name)")
+        logger.info("🟢 Circuit breaker closed: \(self.name)")
     }
     
     // MARK: - Recovery Logic
@@ -258,12 +258,12 @@ final class CircuitBreaker: ObservableObject {
         }
         
         if previousHealth != isHealthy {
-            logger.info("🏥 Health status changed for \(name): \(isHealthy ? "healthy" : "unhealthy")")
+            logger.info("🏥 Health status changed for \(self.name): \(self.isHealthy ? "healthy" : "unhealthy")")
         }
     }
     
     // MARK: - Timeout Helper
-    private func withTimeout<T>(_ timeout: TimeInterval, operation: @escaping () async throws -> T) async throws -> T {
+    private func withTimeout<T: Sendable>(_ timeout: TimeInterval, operation: @escaping @Sendable () async throws -> T) async throws -> T {
         try await withThrowingTaskGroup(of: T.self) { group in
             // Add the main operation
             group.addTask {
@@ -286,13 +286,13 @@ final class CircuitBreaker: ObservableObject {
     // MARK: - Manual Control (for testing)
     func reset() async {
         await transitionToClosed()
-        logger.info("🔄 Circuit breaker manually reset: \(name)")
+        logger.info("🔄 Circuit breaker manually reset: \(self.name)")
     }
     
     func forceOpen() async {
         failureCount = config.failureThreshold
         await transitionToOpen()
-        logger.warning("⚠️ Circuit breaker manually opened: \(name)")
+        logger.warning("⚠️ Circuit breaker manually opened: \(self.name)")
     }
 }
 
@@ -321,7 +321,7 @@ final class CircuitBreakerManager: ObservableObject {
         // Location services
         circuitBreakers["location"] = CircuitBreaker(name: "location", config: .default)
         
-        logger.info("🔌 Circuit breaker manager initialized with \(circuitBreakers.count) breakers")
+        logger.info("🔌 Circuit breaker manager initialized with \(self.circuitBreakers.count) breakers")
     }
     
     func getCircuitBreaker(for service: String) -> CircuitBreaker {
@@ -355,11 +355,11 @@ final class CircuitBreakerManager: ObservableObject {
 
 // MARK: - Convenience Extensions
 extension CircuitBreaker {
-    func executeNetworkRequest<T>(_ request: @escaping () async throws -> T) async throws -> T {
+    func executeNetworkRequest<T: Sendable>(_ request: @escaping @Sendable () async throws -> T) async throws -> T {
         try await execute(request)
     }
     
-    func executePaymentOperation<T>(_ operation: @escaping () async throws -> T) async throws -> T {
+    func executePaymentOperation<T: Sendable>(_ operation: @escaping @Sendable () async throws -> T) async throws -> T {
         try await execute(operation)
     }
 }
@@ -373,22 +373,20 @@ struct CircuitBreakerStatusView: View {
             Text("Circuit Breakers")
                 .font(.headline.scaledFont())
             
-            ForEach(Array(manager.circuitBreakers.keys), id: \.self) { service in
-                if let breaker = manager.circuitBreakers[service] {
-                    HStack {
-                        Circle()
-                            .fill(colorForState(breaker.state))
-                            .frame(width: 8, height: 8)
-                        
-                        Text(service)
-                            .font(.body.scaledFont())
-                        
-                        Spacer()
-                        
-                        Text(breaker.state.description)
-                            .font(.caption.scaledFont())
-                            .foregroundColor(.secondary)
-                    }
+            ForEach(manager.getAllCircuitBreakers(), id: \.name) { breaker in
+                HStack {
+                    Circle()
+                        .fill(colorForState(breaker.state))
+                        .frame(width: 8, height: 8)
+                    
+                    Text(breaker.name)
+                        .font(.body.scaledFont())
+                    
+                    Spacer()
+                    
+                    Text(breaker.state.rawValue)
+                        .font(.caption.scaledFont())
+                        .foregroundColor(.secondary)
                 }
             }
         }
@@ -407,9 +405,4 @@ struct CircuitBreakerStatusView: View {
             return .warning
         }
     }
-}
-
-#Preview {
-    CircuitBreakerStatusView()
-        .padding()
 }
