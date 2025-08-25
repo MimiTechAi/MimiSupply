@@ -5,6 +5,20 @@ import SwiftUI
 @MainActor
 final class BusinessIntelligenceViewModel: ObservableObject {
     
+    // MARK: - Loading State
+    struct LoadingState {
+        var keyMetrics: Bool = false
+        var revenueData: Bool = false
+        var orderAnalytics: Bool = false
+        var customerInsights: Bool = false
+        var performanceMetrics: Bool = false
+        var topProducts: Bool = false
+        
+        var isAnyLoading: Bool {
+            keyMetrics || revenueData || orderAnalytics || customerInsights || performanceMetrics || topProducts
+        }
+    }
+    
     // MARK: - Published Properties
     @Published var keyMetrics: [KeyMetric] = []
     @Published var revenueData: [RevenueDataPoint] = []
@@ -12,6 +26,7 @@ final class BusinessIntelligenceViewModel: ObservableObject {
     @Published var customerInsights: CustomerInsights = CustomerInsights()
     @Published var performanceMetrics: PerformanceMetrics = PerformanceMetrics()
     @Published var topProducts: [TopProduct] = []
+    @Published var loadingState = LoadingState()
     
     @Published var isLoading = false
     @Published var errorMessage: String?
@@ -36,6 +51,16 @@ final class BusinessIntelligenceViewModel: ObservableObject {
     }
     
     func loadData(for timeRange: TimeRange) async {
+        // Set all loading states to true
+        loadingState = LoadingState(
+            keyMetrics: true,
+            revenueData: true,
+            orderAnalytics: true,
+            customerInsights: true,
+            performanceMetrics: true,
+            topProducts: true
+        )
+        
         isLoading = true
         errorMessage = nil
         currentTimeRange = timeRange
@@ -48,12 +73,24 @@ final class BusinessIntelligenceViewModel: ObservableObject {
             async let performanceMetricsTask = loadPerformanceMetrics()
             async let topProductsTask = loadTopProducts(for: timeRange)
             
+            // Load data progressively and update loading states
             keyMetrics = try await keyMetricsTask
+            loadingState.keyMetrics = false
+            
             revenueData = try await revenueDataTask
+            loadingState.revenueData = false
+            
             orderAnalytics = try await orderAnalyticsTask
+            loadingState.orderAnalytics = false
+            
             customerInsights = try await customerInsightsTask
+            loadingState.customerInsights = false
+            
             performanceMetrics = try await performanceMetricsTask
+            loadingState.performanceMetrics = false
+            
             topProducts = try await topProductsTask
+            loadingState.topProducts = false
             
             // Track analytics event
             await analyticsService.trackEvent(
@@ -65,6 +102,8 @@ final class BusinessIntelligenceViewModel: ObservableObject {
             )
             
         } catch {
+            // Reset loading states on error
+            loadingState = LoadingState()
             errorMessage = error.localizedDescription
             await analyticsService.trackError(error, context: [
                 "action": .string("load_business_intelligence"),

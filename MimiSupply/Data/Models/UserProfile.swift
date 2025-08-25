@@ -7,6 +7,11 @@
 
 import Foundation
 
+// MARK: - User Type Alias
+typealias User = UserProfile
+
+// MARK: - User Profile Model
+
 /// User profile model representing authenticated users
 struct UserProfile: Codable, Sendable, Equatable, Identifiable {
     let id: String
@@ -53,6 +58,8 @@ struct UserProfile: Codable, Sendable, Equatable, Identifiable {
     }
 }
 
+// MARK: - User Role
+
 /// User role enumeration
 enum UserRole: String, Codable, CaseIterable, Sendable {
     case customer
@@ -87,6 +94,8 @@ enum UserRole: String, Codable, CaseIterable, Sendable {
     }
 }
 
+// MARK: - User Permissions
+
 /// User permissions
 enum UserPermission: String, Codable, CaseIterable, Sendable {
     case placeOrders
@@ -102,6 +111,8 @@ enum UserPermission: String, Codable, CaseIterable, Sendable {
     case updateBusinessInfo
     case adminAccess
 }
+
+// MARK: - Driver Profile
 
 /// Driver-specific profile information
 struct DriverProfile: Codable, Sendable, Equatable {
@@ -129,6 +140,8 @@ struct DriverProfile: Codable, Sendable, Equatable {
         }
     }
 }
+
+// MARK: - Partner Profile
 
 /// Partner-specific profile information
 struct PartnerProfile: Codable, Sendable, Equatable {
@@ -158,6 +171,8 @@ struct PartnerProfile: Codable, Sendable, Equatable {
         }
     }
 }
+
+// MARK: - Location Coordinate
 
 /// Location coordinate
 struct LocationCoordinate: Codable, Sendable, Equatable {

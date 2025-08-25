@@ -41,16 +41,19 @@ final class AuthenticationServiceImpl: NSObject, @unchecked Sendable, Authentica
     private var authControllerDelegate: AuthenticationDelegate?
     private var presentationContextProvider: PresentationContextProvider?
     
-    init(keychainService: KeychainService = KeychainServiceImpl(), 
-         cloudKitService: CloudKitService = CloudKitServiceImpl.shared) {
-        self.keychainService = keychainService
-        self.cloudKitService = cloudKitService
+    private init() {
+        self.keychainService = KeychainService.shared
+        self.cloudKitService = CloudKitServiceImpl.shared
         super.init()
         
         // Initialize authentication state
         Task {
             await initializeAuthenticationState()
         }
+    }
+    
+    convenience init(keychainService: KeychainService, cloudKitService: CloudKitService) {
+        self.init()
     }
     
     deinit {
@@ -93,8 +96,8 @@ final class AuthenticationServiceImpl: NSObject, @unchecked Sendable, Authentica
             let result = try await performAppleSignIn()
             
             // Store credentials securely
-            try keychainService.store(result.user, for: currentUserKey)
-            try keychainService.store(Date(), for: "last_auth_time")
+            try keychainService.store(result.user, forKey: currentUserKey)
+            try keychainService.store(Date(), forKey: "last_auth_time")
             
             // Check if user needs role selection
             if result.requiresRoleSelection {
@@ -118,9 +121,9 @@ final class AuthenticationServiceImpl: NSObject, @unchecked Sendable, Authentica
         await updateAuthenticationState(.unauthenticated)
         
         // Clear all stored credentials
-        try keychainService.delete(for: currentUserKey)
-        try keychainService.delete(for: credentialsKey)
-        try keychainService.delete(for: "last_auth_time")
+        try keychainService.deleteItem(forKey: currentUserKey)
+        try keychainService.deleteItem(forKey: credentialsKey)
+        try keychainService.deleteItem(forKey: "last_auth_time")
         
         // Stop automatic state management
         await stopAutomaticStateManagement()
@@ -139,7 +142,7 @@ final class AuthenticationServiceImpl: NSObject, @unchecked Sendable, Authentica
             switch credentialState {
             case .authorized:
                 // Update last auth time
-                try keychainService.store(Date(), for: "last_auth_time")
+                try keychainService.store(Date(), forKey: "last_auth_time")
                 return true
                 
             case .revoked, .notFound:
@@ -182,7 +185,7 @@ final class AuthenticationServiceImpl: NSObject, @unchecked Sendable, Authentica
         )
         
         // Store updated profile
-        try keychainService.store(currentUser, for: currentUserKey)
+        try keychainService.store(currentUser, forKey: currentUserKey)
         
         // Sync to CloudKit
         try await syncUserProfileToCloudKit(currentUser)
@@ -195,7 +198,7 @@ final class AuthenticationServiceImpl: NSObject, @unchecked Sendable, Authentica
     
     func updateUserProfile(_ profile: UserProfile) async throws -> UserProfile {
         // Store updated profile
-        try keychainService.store(profile, for: currentUserKey)
+        try keychainService.store(profile, forKey: currentUserKey)
         
         // Sync to CloudKit
         try await syncUserProfileToCloudKit(profile)
@@ -258,7 +261,7 @@ final class AuthenticationServiceImpl: NSObject, @unchecked Sendable, Authentica
     
     private func initializeAuthenticationState() async {
         do {
-            if let storedUser: UserProfile = try keychainService.retrieve(UserProfile.self, for: currentUserKey) {
+            if let storedUser: UserProfile = try keychainService.retrieve(UserProfile.self, forKey: currentUserKey) {
                 // Verify credentials are still valid
                 let isValid = try await refreshCredentials()
                 if isValid {

@@ -349,70 +349,6 @@ struct RecyclableView<Item: Identifiable, Content: View>: View {
     }
 }
 
-// MARK: - Performance Monitoring
-
-@MainActor
-final class PerformanceMonitor: ObservableObject {
-    @Published var frameRate: Double = 60.0
-    @Published var memoryUsage: Double = 0.0
-    @Published var renderTime: Double = 0.0
-    
-    private var displayLink: CADisplayLink?
-    private var frameCount = 0
-    private var lastTimestamp: CFTimeInterval = 0
-    
-    init() {
-        startMonitoring()
-    }
-    
-    deinit {
-        stopMonitoring()
-    }
-    
-    private func startMonitoring() {
-        displayLink = CADisplayLink(target: self, selector: #selector(displayLinkDidFire))
-        displayLink?.add(to: .main, forMode: .common)
-    }
-    
-    private func stopMonitoring() {
-        displayLink?.invalidate()
-        displayLink = nil
-    }
-    
-    @objc private func displayLinkDidFire(_ displayLink: CADisplayLink) {
-        if lastTimestamp == 0 {
-            lastTimestamp = displayLink.timestamp
-            return
-        }
-        
-        frameCount += 1
-        let elapsed = displayLink.timestamp - lastTimestamp
-        
-        if elapsed >= 1.0 {
-            frameRate = Double(frameCount) / elapsed
-            frameCount = 0
-            lastTimestamp = displayLink.timestamp
-            
-            updateMemoryUsage()
-        }
-    }
-    
-    private func updateMemoryUsage() {
-        var info = mach_task_basic_info()
-        var count = mach_msg_type_number_t(MemoryLayout<mach_task_basic_info>.size) / 4
-        
-        let result = withUnsafeMutablePointer(to: &info) {
-            $0.withMemoryRebound(to: integer_t.self, capacity: 1) {
-                task_info(mach_task_self_, task_flavor_t(MACH_TASK_BASIC_INFO), $0, &count)
-            }
-        }
-        
-        if result == KERN_SUCCESS {
-            memoryUsage = Double(info.resident_size) / 1024 / 1024 // MB
-        }
-    }
-}
-
 // MARK: - View Extensions
 
 extension View {
@@ -421,14 +357,6 @@ extension View {
         LazyContainer(threshold: threshold) {
             self
         }
-    }
-    
-    /// Add performance monitoring
-    func monitorPerformance() -> some View {
-        self.overlay(
-            PerformanceOverlay()
-                .opacity(0) // Hidden by default
-        )
     }
     
     /// Optimize for large lists
@@ -443,23 +371,6 @@ extension View {
         self.onChange(of: value) { _, newValue in
             BatchUpdateManager().scheduleUpdate(key: key, value: newValue)
         }
-    }
-}
-
-struct PerformanceOverlay: View {
-    @StateObject private var monitor = PerformanceMonitor()
-    
-    var body: some View {
-        VStack(alignment: .leading, spacing: 4) {
-            Text("FPS: \(monitor.frameRate, specifier: "%.1f")")
-            Text("Memory: \(monitor.memoryUsage, specifier: "%.1f") MB")
-            Text("Render: \(monitor.renderTime, specifier: "%.2f") ms")
-        }
-        .font(.caption.monospaced())
-        .padding(8)
-        .background(.ultraThinMaterial)
-        .cornerRadius(8)
-        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topTrailing)
     }
 }
 
@@ -481,6 +392,5 @@ struct PerformanceOptimizations_Previews: PreviewProvider {
             }
             .padding()
         }
-        .monitorPerformance()
     }
 }

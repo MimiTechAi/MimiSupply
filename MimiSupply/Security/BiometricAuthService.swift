@@ -87,7 +87,7 @@ final class BiometricAuthService: ObservableObject {
     // MARK: - Authentication Methods
     
     /// Authenticate user with biometrics
-    func authenticate(reason: String = "Authenticate to access your account") async -> AuthenticationResult {
+    func authenticate(reason: String = "Authenticate to access your account") async -> BiometricAuthResult {
         guard isAvailable else {
             logger.warning("⚠️ Biometric authentication attempted but not available")
             return .failure(.biometricNotAvailable)
@@ -121,7 +121,7 @@ final class BiometricAuthService: ObservableObject {
     }
     
     /// Authenticate for specific sensitive operation
-    func authenticateForOperation(_ operation: SensitiveOperation) async -> AuthenticationResult {
+    func authenticateForOperation(_ operation: SensitiveOperation) async -> BiometricAuthResult {
         let reason = operation.authenticationReason
         let result = await authenticate(reason: reason)
         
@@ -136,7 +136,7 @@ final class BiometricAuthService: ObservableObject {
     }
     
     /// Enable biometric authentication
-    func enableBiometricAuth(userID: String) async -> AuthenticationResult {
+    func enableBiometricAuth(userID: String) async -> BiometricAuthResult {
         guard isAvailable else {
             return .failure(.biometricNotAvailable)
         }
@@ -263,7 +263,7 @@ final class BiometricAuthService: ObservableObject {
     func authenticateWithMultipleFactor(
         primaryReason: String,
         requireSecondaryAuth: Bool = true
-    ) async -> AuthenticationResult {
+    ) async -> BiometricAuthResult {
         
         // First factor: Biometric
         let biometricResult = await authenticate(reason: primaryReason)
@@ -287,7 +287,7 @@ final class BiometricAuthService: ObservableObject {
         return .success
     }
     
-    private func authenticateWithPasscode(reason: String) async -> AuthenticationResult {
+    private func authenticateWithPasscode(reason: String) async -> BiometricAuthResult {
         do {
             let context = LAContext()
             let success = try await context.evaluatePolicy(.deviceOwnerAuthentication, localizedReason: reason)
@@ -389,7 +389,7 @@ final class BiometricAuthService: ObservableObject {
         try? keychain.storeData(domainState, forKey: "biometric_domain_state")
     }
     
-    private func mapLAError(_ error: LAError) -> AuthenticationError {
+    private func mapLAError(_ error: LAError) -> BiometricAuthError {
         switch error.code {
         case .authenticationFailed:
             return .authenticationFailed
@@ -445,12 +445,12 @@ enum AuthenticationStatus {
     case reauthenticationRequired
 }
 
-enum AuthenticationResult {
+enum BiometricAuthResult {
     case success
-    case failure(AuthenticationError)
+    case failure(BiometricAuthError)
 }
 
-enum AuthenticationError: Error, LocalizedError {
+enum BiometricAuthError: Error, LocalizedError {
     case biometricNotAvailable
     case biometricNotEnabled
     case biometricNotEnrolled
@@ -559,11 +559,11 @@ extension Notification.Name {
 struct BiometricAuthView: View {
     @StateObject private var biometricAuth = BiometricAuthService.shared
     @State private var isAuthenticating = false
-    @State private var authResult: AuthenticationResult?
+    @State private var authResult: BiometricAuthResult?
     
     let operation: SensitiveOperation
     let onSuccess: () -> Void
-    let onFailure: (AuthenticationError) -> Void
+    let onFailure: (BiometricAuthError) -> Void
     
     var body: some View {
         VStack(spacing: 20) {

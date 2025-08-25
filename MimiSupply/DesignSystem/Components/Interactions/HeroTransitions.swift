@@ -1,4 +1,5 @@
 import SwiftUI
+import Charts
 
 // MARK: - Hero Transition System
 struct HeroTransition {
@@ -97,7 +98,7 @@ struct EnhancedBusinessIntelligenceDashboard: View {
                                 }
                             }
                         } else {
-                            KeyMetricsGrid(metrics: viewModel.keyMetrics, namespace: heroNamespace) { cardIndex in
+                            HeroKeyMetricsGrid(metrics: viewModel.keyMetrics, namespace: heroNamespace) { cardIndex in
                                 selectedCard = .keyMetricCard
                                 showingDetailView = true
                             }
@@ -239,7 +240,7 @@ struct EnhancedRevenueChartCard: View {
                     Text(formatTotalRevenue())
                         .font(.title2)
                         .fontWeight(.bold)
-                        .foregroundColor(.emerald)
+                        .foregroundColor(.green)
                         .scaleEffect(animateChart ? 1.0 : 0.8)
                         .opacity(animateChart ? 1.0 : 0.0)
                         .animation(.spring(response: 0.6, dampingFraction: 0.8).delay(0.3), value: animateChart)
@@ -249,7 +250,7 @@ struct EnhancedRevenueChartCard: View {
                 
                 Image(systemName: "arrow.up.right")
                     .font(.title3)
-                    .foregroundColor(.success)
+                    .foregroundColor(.green)
                     .rotationEffect(.degrees(animateChart ? 0 : -90))
                     .animation(.spring(response: 0.5, dampingFraction: 0.8).delay(0.5), value: animateChart)
             }
@@ -260,7 +261,7 @@ struct EnhancedRevenueChartCard: View {
                         x: .value("Date", dataPoint.date),
                         y: .value("Revenue", dataPoint.amount)
                     )
-                    .foregroundStyle(.emerald)
+                    .foregroundStyle(.green)
                     .lineStyle(StrokeStyle(lineWidth: 3))
                     
                     AreaMark(
@@ -269,7 +270,7 @@ struct EnhancedRevenueChartCard: View {
                     )
                     .foregroundStyle(
                         LinearGradient(
-                            colors: [.emerald.opacity(0.3), .clear],
+                            colors: [.green.opacity(0.3), .clear],
                             startPoint: .top,
                             endPoint: .bottom
                         )
@@ -280,6 +281,14 @@ struct EnhancedRevenueChartCard: View {
                 .scaleEffect(x: animateChart ? 1.0 : 0.1, y: 1.0, anchor: .leading)
                 .opacity(animateChart ? 1.0 : 0.0)
                 .animation(.easeOut(duration: 0.8).delay(0.2), value: animateChart)
+            } else {
+                Rectangle()
+                    .fill(Color.gray.opacity(0.3))
+                    .frame(height: 200)
+                    .overlay(
+                        Text("Chart requires iOS 16+")
+                            .foregroundColor(.secondary)
+                    )
             }
         }
         .padding(Spacing.md)
@@ -299,8 +308,8 @@ struct EnhancedRevenueChartCard: View {
     }
 }
 
-// MARK: - Key Metrics Grid with Hero Support
-struct KeyMetricsGrid: View {
+// MARK: - Hero Key Metrics Grid
+struct HeroKeyMetricsGrid: View {
     let metrics: [KeyMetric]
     let namespace: Namespace.ID
     let onCardTap: (Int) -> Void
@@ -329,7 +338,7 @@ struct AnimatedKeyMetricCard: View {
         VStack(alignment: .leading, spacing: Spacing.sm) {
             HStack {
                 Image(systemName: metric.icon)
-                    .foregroundColor(.emerald)
+                    .foregroundColor(.green)
                     .font(.title2)
                     .scaleEffect(hasAnimated ? 1.0 : 0.0)
                     .animation(.spring(response: 0.5, dampingFraction: 0.8).delay(animationDelay), value: hasAnimated)
@@ -343,7 +352,7 @@ struct AnimatedKeyMetricCard: View {
                         Text("\(abs(change), specifier: "%.1f")%")
                             .font(.caption)
                     }
-                    .foregroundColor(change >= 0 ? .success : .error)
+                    .foregroundColor(change >= 0 ? .green : .red)
                     .opacity(hasAnimated ? 1.0 : 0.0)
                     .animation(.easeIn(duration: 0.3).delay(animationDelay + 0.3), value: hasAnimated)
                 }
@@ -352,14 +361,14 @@ struct AnimatedKeyMetricCard: View {
             Text(metric.value)
                 .font(.titleLarge)
                 .fontWeight(.bold)
-                .foregroundColor(.graphite)
+                .foregroundColor(.primary)
                 .opacity(hasAnimated ? 1.0 : 0.0)
                 .offset(y: hasAnimated ? 0 : 20)
                 .animation(.easeOut(duration: 0.4).delay(animationDelay + 0.1), value: hasAnimated)
             
             Text(metric.title)
                 .font(.bodySmall)
-                .foregroundColor(.gray600)
+                .foregroundColor(.secondary)
                 .lineLimit(1)
                 .opacity(hasAnimated ? 1.0 : 0.0)
                 .offset(y: hasAnimated ? 0 : 20)
@@ -456,7 +465,7 @@ struct CardDetailView: View {
                 products: viewModel.topProducts
             )
         case .keyMetricCard:
-            KeyMetricsGrid(metrics: viewModel.keyMetrics, namespace: namespace) { _ in }
+            HeroKeyMetricsGrid(metrics: viewModel.keyMetrics, namespace: namespace) { _ in }
         }
     }
     
@@ -484,7 +493,145 @@ struct CardDetailView: View {
     }
 }
 
-// MARK: - Placeholder Enhanced Cards
+// MARK: - Skeleton Components
+struct KeyMetricCardSkeleton: View {
+    var body: some View {
+        VStack(alignment: .leading, spacing: Spacing.sm) {
+            HStack {
+                EnhancedSkeletonView(width: 24, height: 24, cornerRadius: 12)
+                Spacer()
+                EnhancedSkeletonView(width: 40, height: 16, cornerRadius: 8)
+            }
+            
+            EnhancedSkeletonView(width: 80, height: 24, cornerRadius: 8)
+            EnhancedSkeletonView(width: 120, height: 14, cornerRadius: 7)
+        }
+        .padding(Spacing.md)
+        .background(Color.white)
+        .cornerRadius(12)
+        .shadow(color: .black.opacity(0.1), radius: 4, x: 0, y: 2)
+    }
+}
+
+struct RevenueChartCardSkeleton: View {
+    var body: some View {
+        VStack(alignment: .leading, spacing: Spacing.md) {
+            HStack {
+                VStack(alignment: .leading, spacing: 4) {
+                    EnhancedSkeletonView(width: 120, height: 20, cornerRadius: 8)
+                    EnhancedSkeletonView(width: 80, height: 28, cornerRadius: 8)
+                }
+                Spacer()
+                EnhancedSkeletonView(width: 24, height: 24, cornerRadius: 12)
+            }
+            
+            EnhancedSkeletonView(width: nil, height: 200, cornerRadius: 8)
+        }
+        .padding(Spacing.md)
+        .background(Color.white)
+        .cornerRadius(12)
+        .shadow(color: .black.opacity(0.1), radius: 4, x: 0, y: 2)
+    }
+}
+
+struct OrderAnalyticsCardSkeleton: View {
+    var body: some View {
+        VStack(alignment: .leading, spacing: Spacing.md) {
+            EnhancedSkeletonView(width: 140, height: 20, cornerRadius: 8)
+            
+            VStack(spacing: Spacing.sm) {
+                ForEach(0..<4, id: \.self) { _ in
+                    HStack {
+                        EnhancedSkeletonView(width: 20, height: 20, cornerRadius: 10)
+                        EnhancedSkeletonView(width: 100, height: 16, cornerRadius: 8)
+                        Spacer()
+                        EnhancedSkeletonView(width: 60, height: 16, cornerRadius: 8)
+                    }
+                }
+            }
+        }
+        .padding(Spacing.md)
+        .background(Color.white)
+        .cornerRadius(12)
+        .shadow(color: .black.opacity(0.1), radius: 4, x: 0, y: 2)
+    }
+}
+
+struct CustomerInsightsCardSkeleton: View {
+    var body: some View {
+        VStack(alignment: .leading, spacing: Spacing.md) {
+            EnhancedSkeletonView(width: 140, height: 20, cornerRadius: 8)
+            
+            VStack(spacing: Spacing.sm) {
+                ForEach(0..<4, id: \.self) { _ in
+                    VStack(alignment: .leading, spacing: 4) {
+                        EnhancedSkeletonView(width: 120, height: 16, cornerRadius: 8)
+                        EnhancedSkeletonView(width: 180, height: 14, cornerRadius: 7)
+                    }
+                    .padding(.vertical, 4)
+                }
+            }
+        }
+        .padding(Spacing.md)
+        .background(Color.white)
+        .cornerRadius(12)
+        .shadow(color: .black.opacity(0.1), radius: 4, x: 0, y: 2)
+    }
+}
+
+struct PerformanceMetricsCardSkeleton: View {
+    var body: some View {
+        VStack(alignment: .leading, spacing: Spacing.md) {
+            EnhancedSkeletonView(width: 160, height: 20, cornerRadius: 8)
+            
+            VStack(spacing: Spacing.sm) {
+                ForEach(0..<4, id: \.self) { _ in
+                    HStack {
+                        EnhancedSkeletonView(width: 8, height: 8, cornerRadius: 4)
+                        EnhancedSkeletonView(width: 100, height: 16, cornerRadius: 8)
+                        Spacer()
+                        EnhancedSkeletonView(width: 60, height: 16, cornerRadius: 8)
+                    }
+                    .padding(.vertical, 2)
+                }
+            }
+        }
+        .padding(Spacing.md)
+        .background(Color.white)
+        .cornerRadius(12)
+        .shadow(color: .black.opacity(0.1), radius: 4, x: 0, y: 2)
+    }
+}
+
+struct TopProductsCardSkeleton: View {
+    var body: some View {
+        VStack(alignment: .leading, spacing: Spacing.md) {
+            EnhancedSkeletonView(width: 100, height: 20, cornerRadius: 8)
+            
+            ForEach(0..<5, id: \.self) { _ in
+                HStack(spacing: Spacing.md) {
+                    EnhancedSkeletonView(width: 24, height: 24, cornerRadius: 12)
+                    
+                    VStack(alignment: .leading, spacing: 4) {
+                        EnhancedSkeletonView(width: 120, height: 16, cornerRadius: 8)
+                        EnhancedSkeletonView(width: 80, height: 12, cornerRadius: 6)
+                    }
+                    
+                    Spacer()
+                    
+                    EnhancedSkeletonView(width: 60, height: 16, cornerRadius: 8)
+                }
+                .padding(.vertical, Spacing.xs)
+            }
+        }
+        .padding(Spacing.md)
+        .background(Color.white)
+        .cornerRadius(12)
+        .shadow(color: .black.opacity(0.1), radius: 4, x: 0, y: 2)
+    }
+}
+
+// MARK: - Enhanced Cards (using existing implementations)
 struct EnhancedOrderAnalyticsCard: View {
     let data: OrderAnalytics
     let timeRange: TimeRange

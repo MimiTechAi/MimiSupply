@@ -428,34 +428,25 @@ struct RealTimeChart<DataPoint: Identifiable>: View where DataPoint: Hashable {
     }
 }
 
-// MARK: - Preview Data Types
-
-struct ChartDataPoint: Identifiable, Hashable {
-    let id = UUID()
-    let date: Date
-    let value: Double
-    let category: String
-}
-
 // MARK: - Preview
 
 @available(iOS 16.0, *)
 struct InteractiveCharts_Previews: PreviewProvider {
     static let sampleLineData = [
-        ChartDataPoint(date: Date().addingTimeInterval(-86400 * 6), value: 120, category: "A"),
-        ChartDataPoint(date: Date().addingTimeInterval(-86400 * 5), value: 150, category: "A"),
-        ChartDataPoint(date: Date().addingTimeInterval(-86400 * 4), value: 110, category: "A"),
-        ChartDataPoint(date: Date().addingTimeInterval(-86400 * 3), value: 180, category: "A"),
-        ChartDataPoint(date: Date().addingTimeInterval(-86400 * 2), value: 160, category: "A"),
-        ChartDataPoint(date: Date().addingTimeInterval(-86400 * 1), value: 190, category: "A"),
-        ChartDataPoint(date: Date(), value: 200, category: "A")
+        ChartDataPoint(date: Date().addingTimeInterval(-86400 * 6), value: 120, label: "Day 1"),
+        ChartDataPoint(date: Date().addingTimeInterval(-86400 * 5), value: 150, label: "Day 2"),
+        ChartDataPoint(date: Date().addingTimeInterval(-86400 * 4), value: 110, label: "Day 3"),
+        ChartDataPoint(date: Date().addingTimeInterval(-86400 * 3), value: 180, label: "Day 4"),
+        ChartDataPoint(date: Date().addingTimeInterval(-86400 * 2), value: 160, label: "Day 5"),
+        ChartDataPoint(date: Date().addingTimeInterval(-86400 * 1), value: 190, label: "Day 6"),
+        ChartDataPoint(date: Date(), value: 200, label: "Today")
     ]
     
     static let sampleBarData = [
-        ChartDataPoint(date: Date(), value: 25, category: "Products"),
-        ChartDataPoint(date: Date(), value: 35, category: "Services"),
-        ChartDataPoint(date: Date(), value: 20, category: "Support"),
-        ChartDataPoint(date: Date(), value: 20, category: "Marketing")
+        ChartDataPoint(date: Date(), value: 25, label: "Products"),
+        ChartDataPoint(date: Date(), value: 35, label: "Services"),
+        ChartDataPoint(date: Date(), value: 20, label: "Support"),
+        ChartDataPoint(date: Date(), value: 20, label: "Marketing")
     ]
     
     static var previews: some View {
@@ -471,7 +462,7 @@ struct InteractiveCharts_Previews: PreviewProvider {
                 
                 InteractiveBarChart(
                     data: sampleBarData,
-                    xValue: \.category,
+                    xValue: \.label,
                     yValue: \.value,
                     title: "Department Performance",
                     colors: [.emerald, .blue, .orange, .purple]
@@ -480,7 +471,7 @@ struct InteractiveCharts_Previews: PreviewProvider {
                 InteractivePieChart(
                     data: sampleBarData,
                     valueKeyPath: \.value,
-                    labelKeyPath: \.category,
+                    labelKeyPath: \.label,
                     title: "Budget Distribution",
                     colors: [.emerald, .blue, .orange, .purple]
                 )

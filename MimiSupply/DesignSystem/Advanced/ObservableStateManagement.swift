@@ -127,20 +127,6 @@ enum NetworkStatus {
     case limited
 }
 
-enum AppTheme: String, CaseIterable {
-    case light
-    case dark
-    case system
-    
-    var displayName: String {
-        switch self {
-        case .light: return "Light"
-        case .dark: return "Dark"
-        case .system: return "System"
-        }
-    }
-}
-
 enum NavigationDestination: Hashable {
     case profile
     case settings
