@@ -121,8 +121,8 @@ final class CartIntegrationTests: XCTestCase {
         do {
             try await cartService.addItem(product: limitedProduct, quantity: 5)
             XCTFail("Should have thrown insufficientStock error")
-        } catch CartError.insufficientStock {
-            // Expected
+        } catch let error as CartError {
+            XCTAssertEqual(error, CartError.insufficientStock)
         }
     }
     
