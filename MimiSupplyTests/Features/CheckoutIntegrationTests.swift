@@ -143,8 +143,8 @@ final class CheckoutIntegrationTests: XCTestCase {
             platformFeeCents: order.platformFeeCents,
             taxCents: order.taxCents,
             deliveryAddress: order.deliveryAddress,
-            paymentMethod: order.paymentMethod,
-            estimatedDeliveryTime: Date().addingTimeInterval(30 * 60)
+            estimatedDeliveryTime: Date().addingTimeInterval(30 * 60),
+            paymentMethod: order.paymentMethod
         )
         
         XCTAssertThrowsError(try validateOrder(order)) { error in
@@ -165,8 +165,8 @@ final class CheckoutIntegrationTests: XCTestCase {
             taxCents: order.taxCents,
             tipCents: -100, // Invalid negative tip
             deliveryAddress: order.deliveryAddress,
-            paymentMethod: order.paymentMethod,
-            estimatedDeliveryTime: Date().addingTimeInterval(30 * 60)
+            estimatedDeliveryTime: Date().addingTimeInterval(30 * 60),
+            paymentMethod: order.paymentMethod
         )
         
         XCTAssertThrowsError(try validateOrder(order))
@@ -378,8 +378,8 @@ final class CheckoutIntegrationTests: XCTestCase {
                 postalCode: "94105",
                 country: "US"
             ),
-            paymentMethod: .applePay,
-            estimatedDeliveryTime: Date().addingTimeInterval(30 * 60)
+            estimatedDeliveryTime: Date().addingTimeInterval(30 * 60),
+            paymentMethod: .applePay
         )
     }
     
