@@ -215,6 +215,7 @@ enum CartError: LocalizedError, Equatable {
             return "Remove some items before adding more."
         }
     }
+    
 }
 
 // MARK: - Convenience Methods

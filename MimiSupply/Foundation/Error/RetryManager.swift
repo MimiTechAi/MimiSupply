@@ -12,7 +12,7 @@ import OSLog
 
 /// Manages retry logic for failed operations
 final class RetryManager: ObservableObject, @unchecked Sendable {
-    nonisolated(unsafe) static let shared = RetryManager()
+    static let shared = RetryManager()
     
     private let logger = Logger(subsystem: "com.mimisupply.app", category: "RetryManager")
     private let networkMonitor = NetworkMonitor.shared

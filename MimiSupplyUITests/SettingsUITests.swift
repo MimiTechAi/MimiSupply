@@ -8,9 +8,9 @@
 import XCTest
 
 /// UI tests for settings and profile management functionality
-final class SettingsUITests: XCTestCase {
+@MainActor
+final class SettingsUITests: MimiSupplyUITestCase {
     
-    var app: XCUIApplication!
     
     override func setUpWithError() throws {
         continueAfterFailure = false

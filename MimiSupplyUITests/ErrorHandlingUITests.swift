@@ -235,7 +235,9 @@ final class ErrorHandlingUITests: XCTestCase {
         // Verify error is accessible to VoiceOver
         let inlineError = app.staticTexts.containing(NSPredicate(format: "label CONTAINS 'valid email'")).element
         XCTAssertTrue(inlineError.exists)
-        XCTAssertTrue(inlineError.isAccessibilityElement)
+        Task { @MainActor in
+            XCTAssertTrue(inlineError.isAccessibilityElement)
+        }
     }
     
     // MARK: - Error Recovery Tests
@@ -265,16 +267,21 @@ final class ErrorHandlingUITests: XCTestCase {
         XCTAssertTrue(alert.waitForExistence(timeout: 5))
         
         // Verify alert is accessible
-        XCTAssertTrue(alert.isAccessibilityElement)
+        Task { @MainActor in
+            XCTAssertTrue(alert.isAccessibilityElement)
+        }
         
         // Verify buttons are accessible
         let retryButton = alert.buttons["Retry"]
-        XCTAssertTrue(retryButton.isAccessibilityElement)
+        Task { @MainActor in
+            XCTAssertTrue(retryButton.isAccessibilityElement)
+        }
         XCTAssertNotNil(retryButton.accessibilityLabel)
         
         alert.buttons["OK"].tap()
     }
     
+    @MainActor
     func testErrorStateViewAccessibility() throws {
         app.tabBars.buttons["Explore"].tap()
         app.buttons["simulate_data_loading_error"].tap()
@@ -283,16 +290,21 @@ final class ErrorHandlingUITests: XCTestCase {
         XCTAssertTrue(errorStateView.waitForExistence(timeout: 5))
         
         // Verify error state view is accessible
-        XCTAssertTrue(errorStateView.isAccessibilityElement)
+        Task { @MainActor in
+            XCTAssertTrue(errorStateView.isAccessibilityElement)
+        }
         
         // Verify retry button has proper accessibility
         let retryButton = errorStateView.buttons["Try Again"]
-        XCTAssertTrue(retryButton.isAccessibilityElement)
+        Task { @MainActor in
+            XCTAssertTrue(retryButton.isAccessibilityElement)
+        }
         XCTAssertNotNil(retryButton.accessibilityHint)
     }
     
     // MARK: - Performance Tests
     
+    @MainActor
     func testErrorHandlingPerformance() throws {
         measure {
             // Trigger multiple errors rapidly

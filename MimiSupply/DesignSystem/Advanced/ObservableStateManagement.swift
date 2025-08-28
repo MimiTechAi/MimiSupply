@@ -30,11 +30,14 @@ final class AdvancedAppState: AppStateProtocol {
     // MARK: - Cart State
     var cartItems: [CartItem] = []
     var cartTotal: Double { 
-        cartItems.reduce(0.0) { total, item in 
-            total + (Double(item.product.price) * Double(item.quantity))
-        }
+        let total = cartItems.reduce(0.0, { currentTotal, item in 
+            let itemPrice = Double(item.product.priceCents) / 100.0
+            let itemQuantity = Double(item.quantity)
+            return currentTotal + (itemPrice * itemQuantity)
+        })
+        return total
     }
-    var cartItemCount: Int { cartItems.reduce(0) { $0 + $1.quantity } }
+    var cartItemCount: Int { cartItems.reduce(0, { $0 + $1.quantity }) }
     
     // MARK: - Methods
     func updateTheme(_ theme: AppTheme) {
@@ -90,11 +93,14 @@ final class LegacyAppState: ObservableObject, AppStateProtocol {
     // MARK: - Cart State
     @Published var cartItems: [CartItem] = []
     var cartTotal: Double { 
-        cartItems.reduce(0.0) { total, item in 
-            total + (Double(item.product.price) * Double(item.quantity))
-        }
+        let total = cartItems.reduce(0.0, { currentTotal, item in 
+            let itemPrice = Double(item.product.priceCents) / 100.0
+            let itemQuantity = Double(item.quantity)
+            return currentTotal + (itemPrice * itemQuantity)
+        })
+        return total
     }
-    var cartItemCount: Int { cartItems.reduce(0) { $0 + $1.quantity } }
+    var cartItemCount: Int { cartItems.reduce(0, { $0 + $1.quantity }) }
     
     // MARK: - Initialization
     init() {
@@ -251,7 +257,8 @@ struct ObservableStateManagement_Previews: PreviewProvider {
             Text("App Theme: \(appState.appTheme.displayName)")
             
             Button("Toggle Theme") {
-                appState.updateTheme(appState.appTheme == .light ? .dark : .light)
+                let newTheme: AppTheme = (appState.appTheme == .default) ? .vibrant : .default
+                appState.updateTheme(newTheme)
             }
             
             if appState.isLoading {

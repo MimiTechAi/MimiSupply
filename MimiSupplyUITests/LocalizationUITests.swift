@@ -7,9 +7,9 @@
 
 import XCTest
 
-final class LocalizationUITests: XCTestCase {
+@MainActor
+final class LocalizationUITests: MimiSupplyUITestCase {
     
-    var app: XCUIApplication!
     
     override func setUpWithError() throws {
         continueAfterFailure = false
@@ -75,9 +75,11 @@ final class LocalizationUITests: XCTestCase {
         let backButton = app.buttons.matching(identifier: "back-button").firstMatch
         if backButton.exists {
             // Verify back button is on the right side in RTL
-            let backButtonFrame = backButton.frame
-            let screenWidth = app.frame.width
-            XCTAssertGreaterThan(backButtonFrame.minX, screenWidth * 0.5, "Back button should be on right side in RTL")
+            Task { @MainActor in
+                let backButtonFrame = backButton.frame
+                let screenWidth = app.frame.width
+                XCTAssertGreaterThan(backButtonFrame.minX, screenWidth * 0.5, "Back button should be on right side in RTL")
+            }
         }
     }
     
@@ -90,9 +92,11 @@ final class LocalizationUITests: XCTestCase {
         let exploreTab = app.tabBars.buttons.firstMatch
         if exploreTab.exists {
             // In RTL, first tab should be on the right side
-            let tabFrame = exploreTab.frame
-            let screenWidth = app.frame.width
-            XCTAssertGreaterThan(tabFrame.minX, screenWidth * 0.6, "First tab should be on right side in RTL")
+            Task { @MainActor in
+                let tabFrame = exploreTab.frame
+                let screenWidth = app.frame.width
+                XCTAssertGreaterThan(tabFrame.minX, screenWidth * 0.6, "First tab should be on right side in RTL")
+            }
         }
     }
     

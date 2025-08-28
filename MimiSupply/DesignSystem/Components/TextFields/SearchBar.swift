@@ -34,24 +34,14 @@ struct SearchBar: View {
                 .focused($isFocused)
                 .accessibleTextField(
                     label: accessibilityLabel ?? "Search field",
-                    value: text.isEmpty ? nil : text,
+                    value: text.isEmpty ? "" : text,
                     hint: accessibilityHint ?? "Enter search terms to find restaurants, groceries, and more"
-                )
-                .switchControlAccessible(
-                    identifier: "search-text-field",
-                    sortPriority: 2.0
-                )
-                .voiceControlAccessible(spokenPhrase: "Search")
-                .keyboardAccessible(
-                    onTab: {
-                        AccessibilityFocusState.setFocus(to: "search-field")
-                    }
                 )
                 .onChange(of: text) { oldValue, newValue in
                     // Announce search results updates for VoiceOver users
-                    if accessibilityManager.isVoiceOverEnabled && !newValue.isEmpty && newValue != oldValue {
+                    if accessibilityManager.isVoiceOverRunning && !newValue.isEmpty && newValue != oldValue {
                         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                            accessibilityManager.announceAccessibilityChange("Search updated")
+                            accessibilityManager.announce("Search updated")
                         }
                     }
                 }
@@ -66,11 +56,6 @@ struct SearchBar: View {
                     label: "Clear search",
                     hint: "Removes all text from the search field"
                 )
-                .switchControlAccessible(
-                    identifier: "clear-search-button",
-                    sortPriority: 3.0
-                )
-                .voiceControlAccessible(spokenPhrase: "Clear")
                 .frame(minWidth: Font.minimumTouchTarget, minHeight: Font.minimumTouchTarget)
             }
         }
@@ -99,14 +84,14 @@ struct SearchBar: View {
         text = ""
         
         // Provide haptic feedback
-        if accessibilityManager.isAssistiveTechnologyEnabled {
+        if accessibilityManager.isVoiceOverRunning {
             let impactFeedback = UIImpactFeedbackGenerator(style: .light)
             impactFeedback.impactOccurred()
         }
         
         // Announce the action to VoiceOver users
-        if accessibilityManager.isVoiceOverEnabled {
-            accessibilityManager.announceAccessibilityChange("Search cleared")
+        if accessibilityManager.isVoiceOverRunning {
+            accessibilityManager.announce("Search cleared")
         }
         
         // Return focus to search field

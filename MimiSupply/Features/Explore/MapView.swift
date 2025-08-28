@@ -61,7 +61,7 @@ struct MapView: View {
                     }
                 )
                 .padding(.horizontal, Spacing.md)
-                .padding(.bottom, Spacing.lg)
+                .padding(.bottom, 100) // Extra padding to avoid tab bar overlap
                 .transition(.move(edge: .bottom).combined(with: .opacity))
             }
         }

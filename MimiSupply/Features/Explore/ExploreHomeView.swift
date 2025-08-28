@@ -87,22 +87,8 @@ struct ExploreHomeView: View {
     
     @ViewBuilder
     private var listContentView: some View {
-        OptimizedListView(
-            data: viewModel.partners,
-            onRefresh: {
-                await viewModel.refreshData()
-            },
-            onLoadMore: {
-                await viewModel.loadMoreIfNeeded()
-            }
-        ) { partner in
-            PartnerRowCard(partner: partner) {
-                viewModel.selectPartner(partner)
-            }
-            .optimizedListItem()
-        }
-        .safeAreaInset(edge: .top) {
-            VStack(spacing: Spacing.lg) {
+        ScrollView {
+            LazyVStack(spacing: Spacing.md) {
                 // Search bar
                 searchSection
                 
@@ -115,10 +101,25 @@ struct ExploreHomeView: View {
                 if !viewModel.featuredPartners.isEmpty {
                     featuredSection
                 }
+                
+                // Partners list
+                LazyVStack(spacing: Spacing.md) {
+                    ForEach(viewModel.partners) { partner in
+                        PartnerRowCard(partner: partner) {
+                            viewModel.selectPartner(partner)
+                        }
+                    }
+                }
+                
+                // Bottom padding to avoid tab bar overlap
+                Color.clear
+                    .frame(height: 100)
             }
             .padding(.horizontal, Spacing.md)
             .padding(.top, Spacing.md)
-            .background(Color.clear)
+        }
+        .refreshable {
+            await viewModel.refreshData()
         }
     }
     

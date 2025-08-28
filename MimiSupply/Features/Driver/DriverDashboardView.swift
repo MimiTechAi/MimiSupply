@@ -26,7 +26,7 @@ struct DriverDashboardView: View {
     var body: some View {
         NavigationView {
             ScrollView {
-                VStack(spacing: 20) {
+                LazyVStack(spacing: 20) {
                     // Enhanced Status Card with Quick Actions
                     enhancedStatusCard
                     
@@ -51,7 +51,9 @@ struct DriverDashboardView: View {
                     // Quick Action Grid
                     quickActionGrid
                     
-                    Spacer()
+                    // Bottom padding to avoid tab bar overlap
+                    Color.clear
+                        .frame(height: 100)
                 }
                 .padding()
             }

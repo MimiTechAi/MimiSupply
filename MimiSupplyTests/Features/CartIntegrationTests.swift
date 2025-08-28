@@ -14,13 +14,13 @@ final class CartIntegrationTests: XCTestCase {
     
     var cartService: CartService!
     var cartViewModel: CartViewModel!
-    var mockCoreDataStack: MockCartCoreDataStack!
+    var mockCartCoreDataStack: MockCartCoreDataStack!
     var cancellables: Set<AnyCancellable>!
     
     override func setUp() {
         super.setUp()
-        mockCoreDataStack = MockCartCoreDataStack()
-        cartService = CartService(coreDataStack: mockCoreDataStack)
+        mockCartCoreDataStack = MockCartCoreDataStack()
+        cartService = CartService(coreDataStack: mockCartCoreDataStack)
         cartViewModel = CartViewModel(cartService: cartService)
         cancellables = Set<AnyCancellable>()
     }
@@ -28,7 +28,7 @@ final class CartIntegrationTests: XCTestCase {
     override func tearDown() {
         cartService = nil
         cartViewModel = nil
-        mockCoreDataStack = nil
+        mockCartCoreDataStack = nil
         cancellables = nil
         super.tearDown()
     }

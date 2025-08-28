@@ -11,7 +11,7 @@ import CloudKit
 /// Service for handling CloudKit record conflicts with intelligent resolution strategies
 final class ConflictResolutionService: Sendable {
     
-    nonisolated(unsafe) static let shared = ConflictResolutionService()
+    static let shared = ConflictResolutionService()
     
     private init() {}
     

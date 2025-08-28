@@ -17,6 +17,8 @@
 			<array>
 				<string>com.apple.maps.directionsrequest</string>
 			</array>
+			<key>LSHandlerRank</key>
+			<string>Alternate</string>
 		</dict>
 	</array>
 	<key>CFBundleLocalizations</key>

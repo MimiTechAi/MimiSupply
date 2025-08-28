@@ -8,9 +8,9 @@
 import XCTest
 
 /// UI tests for accessibility features including VoiceOver, Switch Control, and keyboard navigation
-final class AccessibilityUITests: XCTestCase {
+@MainActor
+final class AccessibilityUITests: MimiSupplyUITestCase {
     
-    var app: XCUIApplication!
     
     override func setUpWithError() throws {
         continueAfterFailure = false
@@ -209,16 +209,17 @@ final class AccessibilityUITests: XCTestCase {
         var previousFrame: CGRect?
         for element in interactiveElements.prefix(5) {
             if element.exists && element.isHittable {
-                let currentFrame = element.frame
-                
-                if let prevFrame = previousFrame {
-                    // Basic check: elements should generally flow top to bottom
-                    // (This is a simplified check - real implementation would be more sophisticated)
-                    let isLogicalOrder = currentFrame.minY >= prevFrame.minY - 50 // Allow some tolerance
-                    XCTAssertTrue(isLogicalOrder, "Tab order should be logical")
+                Task { @MainActor in
+                    let currentFrame = element.frame
+                    
+                    if let prevFrame = previousFrame {
+                        // Basic check: elements should generally flow top to bottom
+                        // (This is a simplified check - real implementation would be more sophisticated)
+                        let isLogicalOrder = currentFrame.minY >= prevFrame.minY - 50 // Allow some tolerance
+                        XCTAssertTrue(isLogicalOrder, "Tab order should be logical")
+                    }
+                    previousFrame = currentFrame
                 }
-                
-                previousFrame = currentFrame
             }
         }
     }

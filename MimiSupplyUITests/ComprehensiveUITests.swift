@@ -8,9 +8,9 @@
 import XCTest
 
 /// Comprehensive UI tests covering all screens and user interactions
-final class ComprehensiveUITests: XCTestCase {
+@MainActor
+final class ComprehensiveUITests: MimiSupplyUITestCase {
     
-    var app: XCUIApplication!
     
     override func setUpWithError() throws {
         continueAfterFailure = false
@@ -367,7 +367,7 @@ final class ComprehensiveUITests: XCTestCase {
             let nameField = app.textFields["Full Name"]
             if nameField.exists {
                 nameField.tap()
-                nameField.clearAndEnterText("Test User")
+                nameField.clearAndEnterTextComprehensive("Test User")
             }
             
             let saveButton = app.buttons["Save"]
@@ -531,7 +531,7 @@ final class ComprehensiveUITests: XCTestCase {
 // MARK: - XCUIElement Extensions
 
 extension XCUIElement {
-    func clearAndEnterText(_ text: String) {
+    func clearAndEnterTextComprehensive(_ text: String) {
         guard let stringValue = self.value as? String else {
             XCTFail("Tried to clear and enter text into a non-string value")
             return

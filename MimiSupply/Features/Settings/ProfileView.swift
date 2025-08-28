@@ -15,60 +15,81 @@ struct ProfileView: View {
     
     var body: some View {
         NavigationView {
-            List {
-                if isAuthenticated, let user = currentUser {
-                    // Authenticated user section
-                    Section {
-                        HStack {
-                            Circle()
-                                .fill(Color.emerald)
-                                .frame(width: 60, height: 60)
-                                .overlay(
-                                    Text(user.displayInitials)
-                                        .font(.title2)
-                                        .fontWeight(.semibold)
-                                        .foregroundColor(.white)
-                                )
-                            
-                            VStack(alignment: .leading, spacing: 4) {
-                                Text(user.displayName)
-                                    .font(.headline)
+            ScrollView {
+                LazyVStack(spacing: 16) {
+                    if isAuthenticated, let user = currentUser {
+                        // Authenticated user section
+                        VStack(spacing: 16) {
+                            HStack {
+                                Circle()
+                                    .fill(Color.emerald)
+                                    .frame(width: 60, height: 60)
+                                    .overlay(
+                                        Text(user.displayInitials)
+                                            .font(.title2)
+                                            .fontWeight(.semibold)
+                                            .foregroundColor(.white)
+                                    )
                                 
-                                if let email = user.email {
-                                    Text(email)
-                                        .font(.caption)
-                                        .foregroundColor(.gray600)
+                                VStack(alignment: .leading, spacing: 4) {
+                                    Text(user.displayName)
+                                        .font(.headline)
+                                    
+                                    if let email = user.email {
+                                        Text(email)
+                                            .font(.caption)
+                                            .foregroundColor(.gray600)
+                                    }
                                 }
+                                
+                                Spacer()
                             }
+                            .padding()
+                            .background(.ultraThinMaterial)
+                            .cornerRadius(12)
                             
-                            Spacer()
-                        }
-                        .padding(.vertical, 8)
-                    }
-                    .listRowBackground(Color.white.opacity(0.1))
-                    
-                    Section("Account") {
-                        NavigationLink(destination: ProfileEditView()) {
-                            Label("Edit Profile", systemImage: "person.circle")
+                            VStack(spacing: 12) {
+                                NavigationLink(destination: ProfileEditView()) {
+                                    HStack {
+                                        Label("Edit Profile", systemImage: "person.circle")
+                                        Spacer()
+                                        Image(systemName: "chevron.right")
+                                            .font(.caption)
+                                            .foregroundColor(.secondary)
+                                    }
+                                    .padding()
+                                    .background(.ultraThinMaterial)
+                                    .cornerRadius(8)
+                                }
+                                .buttonStyle(PlainButtonStyle())
+                                
+                                NavigationLink(destination: SettingsView()) {
+                                    HStack {
+                                        Label("Settings", systemImage: "gear")
+                                        Spacer()
+                                        Image(systemName: "chevron.right")
+                                            .font(.caption)
+                                            .foregroundColor(.secondary)
+                                    }
+                                    .padding()
+                                    .background(.ultraThinMaterial)
+                                    .cornerRadius(8)
+                                }
+                                .buttonStyle(PlainButtonStyle())
+                                
+                                Button("Sign Out") {
+                                    signOut()
+                                }
+                                .foregroundColor(.red)
+                                .frame(maxWidth: .infinity)
+                                .padding()
+                                .background(.ultraThinMaterial)
+                                .cornerRadius(8)
+                            }
                         }
                         
-                        NavigationLink(destination: SettingsView()) {
-                            Label("Settings", systemImage: "gear")
-                        }
-                    }
-                    .listRowBackground(Color.white.opacity(0.1))
-                    
-                    Section {
-                        Button("Sign Out") {
-                            signOut()
-                        }
-                        .foregroundColor(.red)
-                    }
-                    .listRowBackground(Color.white.opacity(0.1))
-                    
-                } else {
-                    // Guest user section
-                    Section {
+                    } else {
+                        // Guest user section
                         VStack(spacing: 16) {
                             Image(systemName: "person.circle.fill")
                                 .font(.system(size: 60))
@@ -87,28 +108,52 @@ struct ProfileView: View {
                                 showingSignIn = true
                             }
                         }
-                        .padding(.vertical, 24)
-                        .frame(maxWidth: .infinity)
-                    }
-                    .listRowBackground(Color.clear)
-                    
-                    Section("General") {
-                        NavigationLink(destination: SettingsView()) {
-                            Label("Settings", systemImage: "gear")
-                        }
+                        .padding()
+                        .background(.ultraThinMaterial)
+                        .cornerRadius(12)
                         
-                        NavigationLink(destination: EmptyStateView(
-                            icon: "bag.badge.questionmark",
-                            title: "Sign In Required",
-                            message: "Sign in to view your order history",
-                            actionTitle: "Sign In",
-                            action: { showingSignIn = true }
-                        )) {
-                            Label("Order History", systemImage: "bag")
+                        VStack(spacing: 12) {
+                            NavigationLink(destination: SettingsView()) {
+                                HStack {
+                                    Label("Settings", systemImage: "gear")
+                                    Spacer()
+                                    Image(systemName: "chevron.right")
+                                        .font(.caption)
+                                        .foregroundColor(.secondary)
+                                }
+                                .padding()
+                                .background(.ultraThinMaterial)
+                                .cornerRadius(8)
+                            }
+                            .buttonStyle(PlainButtonStyle())
+                            
+                            NavigationLink(destination: EmptyStateView(
+                                icon: "bag.badge.questionmark",
+                                title: "Sign In Required",
+                                message: "Sign in to view your order history",
+                                actionTitle: "Sign In",
+                                action: { showingSignIn = true }
+                            )) {
+                                HStack {
+                                    Label("Order History", systemImage: "bag")
+                                    Spacer()
+                                    Image(systemName: "chevron.right")
+                                        .font(.caption)
+                                        .foregroundColor(.secondary)
+                                }
+                                .padding()
+                                .background(.ultraThinMaterial)
+                                .cornerRadius(8)
+                            }
+                            .buttonStyle(PlainButtonStyle())
                         }
                     }
-                    .listRowBackground(Color.white.opacity(0.1))
+                    
+                    // Bottom padding to avoid tab bar overlap
+                    Color.clear
+                        .frame(height: 100)
                 }
+                .padding()
             }
             .scrollContentBackground(.hidden)
             .navigationTitle("Profile")

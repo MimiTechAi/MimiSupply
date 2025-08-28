@@ -609,6 +609,8 @@ final class BatchCacheOperation<T: Codable & Sendable>: Operation {
     }
 }
 
+extension BatchCacheOperation: @unchecked Sendable {}
+
 final class CacheCleanupOperation: Operation {
     private let cacheDirectory: URL
     private let imagesCacheDirectory: URL

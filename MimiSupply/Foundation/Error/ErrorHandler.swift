@@ -108,7 +108,7 @@ final class ErrorHandler: ObservableObject {
 
 /// Error reporter for analytics and crash reporting services
 final class ErrorReporter: Sendable {
-    nonisolated(unsafe) static let shared = ErrorReporter()
+    static let shared = ErrorReporter()
     
     private let logger = Logger(subsystem: "com.mimisupply.app", category: "ErrorReporter")
     

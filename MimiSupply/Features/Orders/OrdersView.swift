@@ -105,6 +105,10 @@ struct OrdersView: View {
                         viewModel.selectOrder(order)
                     }
                 }
+                
+                // Bottom padding to avoid tab bar overlap
+                Color.clear
+                    .frame(height: 100)
             }
             .padding()
         }

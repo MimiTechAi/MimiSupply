@@ -7,9 +7,8 @@
 
 import XCTest
 
-final class NavigationUITests: XCTestCase {
-    
-    var app: XCUIApplication!
+@MainActor
+final class NavigationUITests: MimiSupplyUITestCase {
     
     override func setUpWithError() throws {
         continueAfterFailure = false
@@ -356,8 +355,10 @@ final class NavigationAccessibilityUITests: XCTestCase {
         
         // Verify tab labels are readable at different text sizes
         for button in tabBar.buttons.allElementsBoundByIndex {
-            XCTAssertTrue(button.frame.height > 0, "Tab button should have visible height")
-            XCTAssertTrue(button.frame.width > 0, "Tab button should have visible width")
+            Task { @MainActor in
+                XCTAssertTrue(button.frame.height > 0, "Tab button should have visible height")
+                XCTAssertTrue(button.frame.width > 0, "Tab button should have visible width")
+            }
         }
     }
 }

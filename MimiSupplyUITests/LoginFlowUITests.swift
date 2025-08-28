@@ -11,6 +11,7 @@ class LoginFlowUITests: MimiSupplyUITestCase {
     
     // MARK: - Login Flow Tests
     
+    @MainActor
     func testSuccessfulLogin() {
         // Given
         let loginPage = LoginPage(app: app)
@@ -30,6 +31,7 @@ class LoginFlowUITests: MimiSupplyUITestCase {
         takeScreenshot(name: "successful_login_dashboard")
     }
     
+    @MainActor
     func testFailedLoginWithInvalidCredentials() {
         // Given
         let loginPage = LoginPage(app: app)
@@ -48,6 +50,7 @@ class LoginFlowUITests: MimiSupplyUITestCase {
         takeScreenshot(name: "failed_login_error")
     }
     
+    @MainActor
     func testLoginWithEmptyFields() {
         // Given
         let loginPage = LoginPage(app: app)
@@ -62,6 +65,7 @@ class LoginFlowUITests: MimiSupplyUITestCase {
         takeScreenshot(name: "login_empty_fields")
     }
     
+    @MainActor
     func testForgotPasswordFlow() {
         // Given
         let loginPage = LoginPage(app: app)
@@ -74,6 +78,7 @@ class LoginFlowUITests: MimiSupplyUITestCase {
         takeScreenshot(name: "forgot_password_flow")
     }
     
+    @MainActor
     func testSignUpFlow() {
         // Given
         let loginPage = LoginPage(app: app)
@@ -88,6 +93,7 @@ class LoginFlowUITests: MimiSupplyUITestCase {
     
     // MARK: - Accessibility Tests
     
+    @MainActor
     func testLoginPageAccessibility() {
         // Given
         let loginPage = LoginPage(app: app)
@@ -109,6 +115,7 @@ class LoginFlowUITests: MimiSupplyUITestCase {
     
     // MARK: - Performance Tests
     
+    @MainActor
     func testLoginPerformance() {
         // Given
         let loginPage = LoginPage(app: app)
@@ -132,6 +139,7 @@ class LoginFlowUITests: MimiSupplyUITestCase {
     
     // MARK: - Edge Cases
     
+    @MainActor
     func testLoginWithSpecialCharacters() {
         // Given
         let loginPage = LoginPage(app: app)
@@ -148,6 +156,7 @@ class LoginFlowUITests: MimiSupplyUITestCase {
         XCTAssertTrue(dashboardPage.isDisplayed())
     }
     
+    @MainActor
     func testLoginWithLongInput() {
         // Given
         let loginPage = LoginPage(app: app)
@@ -163,6 +172,7 @@ class LoginFlowUITests: MimiSupplyUITestCase {
         XCTAssertTrue(loginPage.isDisplayed())
     }
     
+    @MainActor
     func testLoginFormValidation() {
         // Given
         let loginPage = LoginPage(app: app)

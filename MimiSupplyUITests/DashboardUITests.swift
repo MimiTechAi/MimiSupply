@@ -127,9 +127,11 @@ class DashboardUITests: MimiSupplyUITestCase {
         assertAccessibilityCompliance()
         
         // Test specific accessibility elements
-        XCTAssertTrue(dashboardPage.revenueCard.isAccessibilityElement)
-        XCTAssertTrue(dashboardPage.ordersCard.isAccessibilityElement)
-        XCTAssertTrue(dashboardPage.customersCard.isAccessibilityElement)
+        Task { @MainActor in
+            XCTAssertTrue(dashboardPage.revenueCard.isAccessibilityElement)
+            XCTAssertTrue(dashboardPage.ordersCard.isAccessibilityElement)
+            XCTAssertTrue(dashboardPage.customersCard.isAccessibilityElement)
+        }
         
         // Check accessibility labels
         XCTAssertFalse(dashboardPage.revenueCard.label.isEmpty, "Revenue card should have accessibility label")
@@ -168,6 +170,7 @@ class DashboardUITests: MimiSupplyUITestCase {
     
     // MARK: - Error Handling Tests
     
+    @MainActor
     func testDashboardWithNetworkError() {
         // This would require setting up network error simulation
         // in the app when launched with specific test parameters
@@ -189,6 +192,7 @@ class DashboardUITests: MimiSupplyUITestCase {
         takeScreenshot(name: "dashboard_network_error")
     }
     
+    @MainActor
     func testDashboardWithOfflineMode() {
         // Test offline functionality
         app.terminate()
@@ -210,6 +214,7 @@ class DashboardUITests: MimiSupplyUITestCase {
     
     // MARK: - Landscape Orientation Tests
     
+    @MainActor
     func testDashboardInLandscape() {
         // Rotate to landscape
         XCUIDevice.shared.orientation = .landscapeLeft

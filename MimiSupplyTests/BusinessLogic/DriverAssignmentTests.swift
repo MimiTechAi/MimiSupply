@@ -21,7 +21,10 @@ final class DriverAssignmentTests: XCTestCase {
         mockDriverService = MockDriverService()
         mockLocationService = MockLocationService()
         
-        driverAssignmentService = MockDriverAssignmentService()
+        driverAssignmentService = MockDriverAssignmentService(
+            driverService: mockDriverService,
+            locationService: mockLocationService
+        )
     }
     
     override func tearDown() {
@@ -294,7 +297,7 @@ final class DriverAssignmentTests: XCTestCase {
             name: "Driver \(id)",
             phoneNumber: "+1234567890",
             vehicleType: vehicleType,
-            licensePlate: "ABC123",
+            licensePlate: "ABC-\(id)",
             isOnline: isOnline,
             isAvailable: isAvailable,
             currentLocation: Coordinate(location),
@@ -372,10 +375,18 @@ protocol DriverAssignmentService {
 // MARK: - Mock Driver Assignment Service
 
 class MockDriverAssignmentService: DriverAssignmentService {
+    private let driverService: MockDriverService
+    private let locationService: MockLocationService
+    
     var mockBestDriver: Driver?
     var mockPickupTime: TimeInterval = 600 // 10 minutes
     var mockDeliveryTime: TimeInterval = 1800 // 30 minutes
     var mockAssignments: [DriverAssignment] = []
+    
+    init(driverService: MockDriverService, locationService: MockLocationService) {
+        self.driverService = driverService
+        self.locationService = locationService
+    }
     
     func findBestDriver(
         for pickupLocation: CLLocationCoordinate2D,
@@ -384,7 +395,13 @@ class MockDriverAssignmentService: DriverAssignmentService {
         preferredVehicleType: VehicleType? = nil,
         useLoadBalancing: Bool = false
     ) async throws -> Driver? {
-        return mockBestDriver
+        // Use the actual driver service to find available drivers if mockBestDriver is not set
+        if let mockDriver = mockBestDriver {
+            return mockDriver
+        }
+        
+        // Return first available driver from the mock service
+        return driverService.mockAvailableDrivers.first
     }
     
     func calculateEstimatedPickupTime(

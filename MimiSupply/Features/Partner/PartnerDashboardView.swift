@@ -11,7 +11,7 @@ struct PartnerDashboardView: View {
     var body: some View {
         NavigationStack {
             ScrollView {
-                VStack(spacing: 24) {
+                LazyVStack(spacing: 24) {
                     // Business Stats Card
                     BusinessStatsCard(
                         todayOrders: viewModel.todayOrders,
@@ -41,6 +41,10 @@ struct PartnerDashboardView: View {
                         orders: viewModel.recentOrders,
                         onOrderTap: viewModel.selectOrder
                     )
+                    
+                    // Bottom padding to avoid tab bar overlap
+                    Color.clear
+                        .frame(height: 100)
                 }
                 .padding(.horizontal, 16)
             }
