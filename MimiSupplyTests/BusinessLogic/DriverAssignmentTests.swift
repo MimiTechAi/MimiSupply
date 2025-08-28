@@ -381,7 +381,7 @@ protocol DriverAssignmentService {
 // MARK: - Mock Driver Assignment Service
 
 class MockDriverAssignmentService: DriverAssignmentService {
-    private let driverService: MockDriverService
+    private let cloudKitService: MockDriverService
     private let locationService: MockLocationService
     
     var mockBestDriver: Driver?
