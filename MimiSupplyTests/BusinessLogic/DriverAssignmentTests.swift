@@ -288,6 +288,8 @@ final class DriverAssignmentTests: XCTestCase {
     
     private func createTestDriver(
         id: String = "test-driver",
+        name: String? = nil,
+        phoneNumber: String? = nil,
         location: CLLocationCoordinate2D = CLLocationCoordinate2D(latitude: 37.7749, longitude: -122.4194),
         isOnline: Bool = true,
         isAvailable: Bool = true,
