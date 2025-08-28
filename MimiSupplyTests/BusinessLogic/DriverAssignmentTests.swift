@@ -22,7 +22,7 @@ final class DriverAssignmentTests: XCTestCase {
         mockLocationService = MockLocationService()
         
         driverAssignmentService = MockDriverAssignmentService(
-            driverService: mockDriverService,
+            cloudKitService: mockDriverService,
             locationService: mockLocationService
         )
     }
