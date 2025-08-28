@@ -12,11 +12,11 @@ import CoreLocation
 @MainActor
 final class DriverServiceImpl: DriverService {
     private let cloudKitService: CloudKitService
-    private let locationService: LocationService
+    private let locationService: any LocationService
     
     init(
         cloudKitService: CloudKitService = CloudKitServiceImpl.shared,
-        locationService: LocationService = LocationServiceImpl.shared
+        locationService: any LocationService = LocationServiceImpl.shared
     ) {
         self.cloudKitService = cloudKitService
         self.locationService = locationService

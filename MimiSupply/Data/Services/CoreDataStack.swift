@@ -33,7 +33,7 @@ final class CoreDataStack: ObservableObject, @unchecked Sendable {
         return container
     }()
     
-    private init() {}
+    init() {}
     
     var viewContext: NSManagedObjectContext {
         return persistentContainer.viewContext

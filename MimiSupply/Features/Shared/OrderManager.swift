@@ -13,13 +13,13 @@ final class OrderManager: ObservableObject {
     
     // MARK: - Private Properties
     private let cloudKitService: CloudKitService
-    private let locationService: LocationService
+    private let locationService: any LocationService
     private let pushNotificationService: PushNotificationService
     
     // MARK: - Initialization
     init(
         cloudKitService: CloudKitService = CloudKitServiceImpl.shared,
-        locationService: LocationService? = nil,
+        locationService: (any LocationService)? = nil,
         pushNotificationService: PushNotificationService = PushNotificationServiceImpl()
     ) {
         self.cloudKitService = cloudKitService

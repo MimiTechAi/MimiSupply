@@ -238,6 +238,42 @@ struct BusinessIntelligenceDashboard: View {
     }
 }
 
+// MARK: - KeyMetricCard
+struct KeyMetricCard: View {
+    let metric: KeyMetric
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: Spacing.sm) {
+            HStack {
+                Image(systemName: metric.icon)
+                    .foregroundColor(.green)
+                    .font(.title2)
+                Spacer()
+                if let change = metric.percentageChange {
+                    HStack(spacing: 2) {
+                        Image(systemName: change >= 0 ? "arrow.up" : "arrow.down")
+                            .font(.caption)
+                        Text("\(abs(change), specifier: "%.1f")%")
+                            .font(.caption)
+                    }
+                    .foregroundColor(change >= 0 ? .success : .error)
+                }
+            }
+            Text(metric.value)
+                .font(.titleLarge)
+                .fontWeight(.bold)
+            Text(metric.title)
+                .font(.bodySmall)
+                .foregroundColor(.secondary)
+                .lineLimit(1)
+        }
+        .padding(Spacing.md)
+        .background(Color.white)
+        .cornerRadius(12)
+        .shadow(color: .black.opacity(0.1), radius: 4, x: 0, y: 2)
+    }
+}
+
 // MARK: - Enhanced Cards with Haptic Feedback
 
 struct HapticKeyMetricsGrid: View {
@@ -276,7 +312,7 @@ struct HapticRevenueChartCard: View {
                         x: .value("Date", dataPoint.date),
                         y: .value("Revenue", dataPoint.amount)
                     )
-                    .foregroundStyle(.emerald)
+                    .foregroundStyle(.green)
                     .lineStyle(StrokeStyle(lineWidth: 3))
                     
                     AreaMark(
@@ -285,7 +321,7 @@ struct HapticRevenueChartCard: View {
                     )
                     .foregroundStyle(
                         LinearGradient(
-                            colors: [.emerald.opacity(0.3), .clear],
+                            colors: [.green.opacity(0.3), .clear],
                             startPoint: .top,
                             endPoint: .bottom
                         )
@@ -432,7 +468,7 @@ struct HapticTopProductRow: View {
         case 1: return .yellow
         case 2: return .gray400
         case 3: return .orange
-        default: return .emerald
+        default: return .green
         }
     }
 }
@@ -511,7 +547,7 @@ struct AnalyticsRow: View {
     var body: some View {
         HStack {
             Image(systemName: icon)
-                .foregroundColor(.emerald)
+                .foregroundColor(.green)
                 .frame(width: 20)
             
             Text(title)
@@ -932,3 +968,4 @@ struct BIKeyMetricsGrid: View {
         }
     }
 }
+

@@ -21,14 +21,14 @@ class ExploreHomeViewModel: ObservableObject, @unchecked Sendable {
     @Published private(set) var error: AppError?
     
     // MARK: - Private Properties
-    private let locationService: LocationService
+    private let locationService: any LocationService
     private let googlePlacesService: GooglePlacesService
     private var cancellables = Set<AnyCancellable>()
     private var userLocation: CLLocation?
 
     // MARK: - Initialization
     init(
-        locationService: LocationService = LocationServiceImpl.shared,
+        locationService: any LocationService = LocationServiceImpl.shared,
         googlePlacesService: GooglePlacesService = GooglePlacesServiceImpl()
     ) {
         self.locationService = locationService
@@ -73,7 +73,9 @@ class ExploreHomeViewModel: ObservableObject, @unchecked Sendable {
     
     // MARK: - Partner Fetching
     private func fetchNearbyPartners(location: CLLocation) async {
-        let placeTypes = selectedCategory?.googlePlaceTypes ?? defaultPlaceTypes
+        let placeTypes = await MainActor.run {
+            selectedCategory?.googlePlaceTypes ?? defaultPlaceTypes
+        }
         
         do {
             let googlePlaces = try await googlePlacesService.findNearbyPlaces(
@@ -83,10 +85,14 @@ class ExploreHomeViewModel: ObservableObject, @unchecked Sendable {
             )
             
             // Convert GooglePlace to our Partner model
-            self.partners = googlePlaces.map { convertGooglePlaceToPartner($0) }
+            await MainActor.run {
+                self.partners = googlePlaces.map { convertGooglePlaceToPartner($0) }
+            }
             
         } catch {
-            self.error = .network(.connectionFailed) // CORRECTED
+            await MainActor.run {
+                self.error = .network(.connectionFailed) // CORRECTED
+            }
             print("Error fetching nearby places: \(error.localizedDescription)")
         }
     }

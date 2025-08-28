@@ -39,7 +39,7 @@ final class ExploreHomeViewModelWithErrorHandling: ObservableObject {
     // MARK: - Dependencies
     
     private let cloudKitService: CloudKitService
-    private let locationService: LocationService
+    private let locationService: any LocationService
     private let cartService: CartServiceProtocol
     private let errorHandler = ErrorHandler.shared
     private let degradationService = GracefulDegradationService.shared
@@ -52,7 +52,7 @@ final class ExploreHomeViewModelWithErrorHandling: ObservableObject {
     
     init(
         cloudKitService: CloudKitService? = nil,
-        locationService: LocationService? = nil,
+        locationService: (any LocationService)? = nil,
         cartService: CartServiceProtocol? = nil
     ) {
         // Use direct service implementations instead of AppContainer

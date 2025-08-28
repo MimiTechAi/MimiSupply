@@ -73,13 +73,13 @@ struct LocationPermissionView: View {
 
 @MainActor
 class LocationPermissionViewModel: ObservableObject {
-    private let locationService: LocationService
+    private let locationService: any LocationService
     
     @Published var permissionGranted = false
     @Published var showingPermissionDeniedAlert = false
     
     @MainActor
-    init(locationService: LocationService = LocationServiceImpl.shared) {
+    init(locationService: any LocationService = LocationServiceImpl.shared) {
         self.locationService = locationService
     }
     

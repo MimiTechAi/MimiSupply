@@ -12,7 +12,7 @@ final class AppContainer: ObservableObject {
     let cloudKitService: CloudKitService
     let pushNotificationService: PushNotificationService
     let googlePlacesService: GooglePlacesService
-    let locationService: LocationService
+    let locationService: any LocationService
     let paymentService: PaymentService
     let driverService: DriverService
     

@@ -174,7 +174,7 @@ final class CartService: CartServiceProtocol, ObservableObject {
 
 // MARK: - Cart Errors
 
-enum CartError: LocalizedError {
+enum CartError: LocalizedError, Equatable {
     case itemNotFound
     case invalidQuantity
     case saveFailed

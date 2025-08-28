@@ -655,7 +655,7 @@ class OrderManager {
     }
 }
 
-class DriverAssignmentService {
+class ComprehensiveDriverAssignmentService {
     private let cloudKitService: CloudKitService
     private let locationService: LocationService
     

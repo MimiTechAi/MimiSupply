@@ -4,9 +4,14 @@ import CoreLocation
 import CloudKit
 import UIKit
 
+// MARK: - Sendable Wrapper for Background Tasks
+struct SendableTaskWrapper<T>: @unchecked Sendable {
+    let task: T
+}
+
 // Sendable conformance is omitted because this class is not final and contains mutable state that is not concurrency-safe. All mutable state should be accessed only from the main actor.
 /// Manages background tasks for location updates and data synchronization
-class BackgroundTaskManager: NSObject, ObservableObject, @unchecked Sendable {
+final class BackgroundTaskManager: NSObject, ObservableObject, @unchecked Sendable {
     @MainActor static let shared = BackgroundTaskManager()
     
     // Background task identifiers
@@ -17,7 +22,7 @@ class BackgroundTaskManager: NSObject, ObservableObject, @unchecked Sendable {
     }
     
     @MainActor private var backgroundTaskID: UIBackgroundTaskIdentifier = .invalid
-    @MainActor private var locationService: LocationService!
+    @MainActor private var locationService: (any LocationService)!
     private let cloudKitService: CloudKitService
     
     override init() {
@@ -43,33 +48,36 @@ class BackgroundTaskManager: NSObject, ObservableObject, @unchecked Sendable {
         // Register location update task (iOS < 17)
         BGTaskScheduler.shared.register(
             forTaskWithIdentifier: TaskIdentifier.locationUpdate,
-            using: nil
-        ) { [weak self] task in
-            guard let self = self else { return }
-            Task { @MainActor in
-                await self.handleLocationUpdateTask(task as! BGAppRefreshTask)
+            using: DispatchQueue.global(qos: .background)
+        ) { task in
+            let bgTask = task as! BGAppRefreshTask
+            let wrapper = SendableTaskWrapper(task: bgTask)
+            Task.detached {
+                await BackgroundTaskManager.shared.handleLocationUpdateTask(wrapper.task)
             }
         }
         
         // Register data sync task (iOS < 17)
         BGTaskScheduler.shared.register(
             forTaskWithIdentifier: TaskIdentifier.dataSync,
-            using: nil
-        ) { [weak self] task in
-            guard let self = self else { return }
-            Task { @MainActor in
-                await self.handleDataSyncTask(task as! BGAppRefreshTask)
+            using: DispatchQueue.global(qos: .background)
+        ) { task in
+            let bgTask = task as! BGAppRefreshTask
+            let wrapper = SendableTaskWrapper(task: bgTask)
+            Task.detached {
+                await BackgroundTaskManager.shared.handleDataSyncTask(wrapper.task)
             }
         }
         
         // Register cleanup task (iOS < 17)
         BGTaskScheduler.shared.register(
             forTaskWithIdentifier: TaskIdentifier.cleanup,
-            using: nil
-        ) { [weak self] task in
-            guard let self = self else { return }
-            Task { @MainActor in
-                await self.handleCleanupTask(task as! BGProcessingTask)
+            using: DispatchQueue.global(qos: .background)
+        ) { task in
+            let bgTask = task as! BGProcessingTask
+            let wrapper = SendableTaskWrapper(task: bgTask)
+            Task.detached {
+                await BackgroundTaskManager.shared.handleCleanupTask(wrapper.task)
             }
         }
     }
@@ -116,11 +124,13 @@ class BackgroundTaskManager: NSObject, ObservableObject, @unchecked Sendable {
     
     // MARK: - Task Handlers
     
-    private func handleLocationUpdateTask(_ task: BGAppRefreshTask) async {
+    private nonisolated func handleLocationUpdateTask(_ task: BGAppRefreshTask) async {
         print("🔄 Handling location update background task")
         
         // Schedule next location update
-        scheduleLocationUpdate()
+        await MainActor.run {
+            scheduleLocationUpdate()
+        }
         
         task.expirationHandler = {
             print("⏰ Location update task expired")
@@ -141,11 +151,13 @@ class BackgroundTaskManager: NSObject, ObservableObject, @unchecked Sendable {
         }
     }
     
-    private func handleDataSyncTask(_ task: BGAppRefreshTask) async {
+    private nonisolated func handleDataSyncTask(_ task: BGAppRefreshTask) async {
         print("🔄 Handling data sync background task")
         
         // Schedule next data sync
-        scheduleDataSync()
+        await MainActor.run {
+            scheduleDataSync()
+        }
         
         task.expirationHandler = {
             print("⏰ Data sync task expired")
@@ -164,11 +176,13 @@ class BackgroundTaskManager: NSObject, ObservableObject, @unchecked Sendable {
         }
     }
     
-    private func handleCleanupTask(_ task: BGProcessingTask) async {
+    private nonisolated func handleCleanupTask(_ task: BGProcessingTask) async {
         print("🔄 Handling cleanup background task")
         
         // Schedule next cleanup
-        scheduleCleanup()
+        await MainActor.run {
+            scheduleCleanup()
+        }
         
         task.expirationHandler = {
             print("⏰ Cleanup task expired")

@@ -1,0 +1,38 @@
+{
+  "configurations" : [
+    {
+      "id" : "B351E859-3DE4-4E3C-97BD-B03F6363BA52",
+      "name" : "Test Scheme Action",
+      "options" : {
+
+      }
+    }
+  ],
+  "defaultOptions" : {
+    "performanceAntipatternCheckerEnabled" : true,
+    "targetForVariableExpansion" : {
+      "containerPath" : "container:MimiSupply.xcodeproj",
+      "identifier" : "22653D6F2E4CBA89006F76C2",
+      "name" : "MimiSupply"
+    }
+  },
+  "testTargets" : [
+    {
+      "parallelizable" : true,
+      "target" : {
+        "containerPath" : "container:MimiSupply.xcodeproj",
+        "identifier" : "22653D7C2E4CBA8A006F76C2",
+        "name" : "MimiSupplyTests"
+      }
+    },
+    {
+      "parallelizable" : true,
+      "target" : {
+        "containerPath" : "container:MimiSupply.xcodeproj",
+        "identifier" : "22653D862E4CBA8A006F76C2",
+        "name" : "MimiSupplyUITests"
+      }
+    }
+  ],
+  "version" : 1
+}

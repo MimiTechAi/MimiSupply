@@ -64,6 +64,7 @@ enum CircuitBreakerError: LocalizedError {
     }
 }
 
+// NOTE: Do not access recoveryTimer in deinit—cleanup should be handled explicitly from the main actor context if needed.
 // MARK: - Circuit Breaker Implementation
 @MainActor
 final class CircuitBreaker: ObservableObject {
@@ -91,10 +92,6 @@ final class CircuitBreaker: ObservableObject {
         self.logger = Logger(subsystem: "com.mimisupply.app", category: "CircuitBreaker.\(name)")
         
         logger.info("🔌 Circuit breaker initialized: \(name)")
-    }
-    
-    deinit {
-        recoveryTimer?.invalidate()
     }
     
     // MARK: - Public Interface

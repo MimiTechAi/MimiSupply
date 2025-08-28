@@ -1,9 +1,9 @@
 import Foundation
-import GooglePlaces
+@preconcurrency import GooglePlaces
 import CoreLocation
 
 // MARK: - Protocol
-protocol GooglePlacesService {
+protocol GooglePlacesService: Sendable {
     func findNearbyPlaces(
         coordinate: CLLocationCoordinate2D,
         radius: Double,
@@ -12,7 +12,7 @@ protocol GooglePlacesService {
 }
 
 // MARK: - Implementation
-class GooglePlacesServiceImpl: GooglePlacesService {
+final class GooglePlacesServiceImpl: GooglePlacesService, @unchecked Sendable {
     
     private let placesClient: GMSPlacesClient
     

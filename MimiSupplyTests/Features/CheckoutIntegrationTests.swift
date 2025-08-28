@@ -143,7 +143,8 @@ final class CheckoutIntegrationTests: XCTestCase {
             platformFeeCents: order.platformFeeCents,
             taxCents: order.taxCents,
             deliveryAddress: order.deliveryAddress,
-            paymentMethod: order.paymentMethod
+            paymentMethod: order.paymentMethod,
+            estimatedDeliveryTime: Date().addingTimeInterval(30 * 60)
         )
         
         XCTAssertThrowsError(try validateOrder(order)) { error in
@@ -164,7 +165,8 @@ final class CheckoutIntegrationTests: XCTestCase {
             taxCents: order.taxCents,
             tipCents: -100, // Invalid negative tip
             deliveryAddress: order.deliveryAddress,
-            paymentMethod: order.paymentMethod
+            paymentMethod: order.paymentMethod,
+            estimatedDeliveryTime: Date().addingTimeInterval(30 * 60)
         )
         
         XCTAssertThrowsError(try validateOrder(order))
@@ -274,7 +276,11 @@ final class CheckoutIntegrationTests: XCTestCase {
         viewModel.deliveryAddress = address
         viewModel.proceedToPayment()
         
-        try await Task.sleep(nanoseconds: 200_000_000)
+        do {
+            try await Task.sleep(nanoseconds: 200_000_000)
+        } catch {
+            // Handle sleep interruption if needed
+        }
         
         // Simulate network error during order creation
         // In a real test, you'd mock the network layer to fail
@@ -372,7 +378,8 @@ final class CheckoutIntegrationTests: XCTestCase {
                 postalCode: "94105",
                 country: "US"
             ),
-            paymentMethod: .applePay
+            paymentMethod: .applePay,
+            estimatedDeliveryTime: Date().addingTimeInterval(30 * 60)
         )
     }
     

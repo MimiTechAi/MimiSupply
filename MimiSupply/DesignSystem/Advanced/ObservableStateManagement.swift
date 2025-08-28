@@ -29,7 +29,11 @@ final class AdvancedAppState: AppStateProtocol {
     
     // MARK: - Cart State
     var cartItems: [CartItem] = []
-    var cartTotal: Double { cartItems.reduce(0) { $0 + ($1.product.price * Double($1.quantity)) } }
+    var cartTotal: Double { 
+        cartItems.reduce(0.0) { total, item in 
+            total + (Double(item.product.price) * Double(item.quantity))
+        }
+    }
     var cartItemCount: Int { cartItems.reduce(0) { $0 + $1.quantity } }
     
     // MARK: - Methods
@@ -85,7 +89,11 @@ final class LegacyAppState: ObservableObject, AppStateProtocol {
     
     // MARK: - Cart State
     @Published var cartItems: [CartItem] = []
-    var cartTotal: Double { cartItems.reduce(0) { $0 + ($1.product.price * Double($1.quantity)) } }
+    var cartTotal: Double { 
+        cartItems.reduce(0.0) { total, item in 
+            total + (Double(item.product.price) * Double(item.quantity))
+        }
+    }
     var cartItemCount: Int { cartItems.reduce(0) { $0 + $1.quantity } }
     
     // MARK: - Initialization

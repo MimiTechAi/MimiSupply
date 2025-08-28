@@ -21,10 +21,7 @@ final class DriverAssignmentTests: XCTestCase {
         mockDriverService = MockDriverService()
         mockLocationService = MockLocationService()
         
-        driverAssignmentService = DriverAssignmentService(
-            driverService: mockDriverService,
-            locationService: mockLocationService
-        )
+        driverAssignmentService = MockDriverAssignmentService()
     }
     
     override func tearDown() {
@@ -176,7 +173,7 @@ final class DriverAssignmentTests: XCTestCase {
         let assignedDriver = try await driverAssignmentService.findBestDriver(
             for: pickupLocation,
             deliveryLocation: CLLocationCoordinate2D(latitude: 37.7849, longitude: -122.4094),
-            preferredVehicleType: .car
+            preferredVehicleType: VehicleType.car
         )
         
         // Then
@@ -294,11 +291,13 @@ final class DriverAssignmentTests: XCTestCase {
         return Driver(
             id: id,
             userId: "user-\(id)",
+            name: "Driver \(id)",
+            phoneNumber: "+1234567890",
             vehicleType: vehicleType,
             licensePlate: "ABC123",
             isOnline: isOnline,
             isAvailable: isAvailable,
-            currentLocation: location,
+            currentLocation: Coordinate(location),
             rating: rating,
             completedDeliveries: completedDeliveries,
             verificationStatus: .verified,

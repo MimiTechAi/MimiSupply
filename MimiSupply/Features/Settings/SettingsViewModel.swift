@@ -29,7 +29,7 @@ final class SettingsViewModel: ObservableObject {
     
     private let authService: AuthenticationService
     private let cloudKitService: CloudKitService
-    private let locationService: LocationService
+    private let locationService: any LocationService
     
     // MARK: - Computed Properties
     
@@ -73,7 +73,7 @@ final class SettingsViewModel: ObservableObject {
     init(
         authService: AuthenticationService? = nil,
         cloudKitService: CloudKitService? = nil,
-        locationService: LocationService? = nil
+        locationService: (any LocationService)? = nil
     ) {
         // Access AppContainer.shared properties on MainActor
         self.authService = authService ?? AppContainer.shared.authenticationService

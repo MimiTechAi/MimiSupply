@@ -182,11 +182,11 @@ struct SelectedPartnerCard: View {
 
 @MainActor
 class MapLocationManager: ObservableObject {
-    private let locationService: LocationService
+    private let locationService: any LocationService
     @Published var currentLocation: CLLocation?
     private var cancellable: AnyCancellable?
 
-    init(locationService: LocationService = LocationServiceImpl.shared) {
+    init(locationService: any LocationService = LocationServiceImpl.shared) {
         self.locationService = locationService
         cancellable = (locationService as? LocationServiceImpl)?.$currentLocation.sink { [weak self] location in
             self?.currentLocation = location

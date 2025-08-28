@@ -36,22 +36,22 @@ struct SettingsView: View {
                 // Performance Section
                 Section {
                     NavigationLink(destination: PerformanceDashboard()) {
-                        SettingRow(
+                        SettingsRow(
                             icon: "speedometer",
                             title: "Performance",
                             subtitle: "Monitor app performance",
-                            showChevron: true
+                            action: {}  // Empty action since NavigationLink handles navigation
                         )
                     }
                     .accessibilityLabel("Performance dashboard")
                     .accessibilityHint("View app performance metrics and optimization tools")
                     
                     NavigationLink(destination: AccessibilityDashboard()) {
-                        SettingRow(
+                        SettingsRow(
                             icon: "accessibility",
                             title: "Accessibility",
                             subtitle: "Accessibility tools and audit",
-                            showChevron: true
+                            action: {}  // Empty action since NavigationLink handles navigation
                         )
                     }
                     .accessibilityLabel("Accessibility dashboard")
@@ -115,7 +115,7 @@ struct SettingsView: View {
                 .frame(width: 60, height: 60)
                 .clipShape(Circle())
                 .accessibleImage(
-                    label: "Profile picture",
+                    description: "Profile picture",
                     isDecorative: false
                 )
                 
@@ -154,7 +154,7 @@ struct SettingsView: View {
             .padding(.vertical, Spacing.xs)
         } header: {
             Text("Profile")
-                .accessibleHeading("Profile", level: .h2)
+                .accessibleHeading(label: "Profile", level: .h2)
         }
         .accessibilityElement(children: .contain)
     }
@@ -203,7 +203,7 @@ struct SettingsView: View {
             )
         } header: {
             Text("Account")
-                .accessibleHeading("Account", level: .h2)
+                .accessibleHeading(label: "Account", level: .h2)
         }
     }
     
@@ -239,7 +239,7 @@ struct SettingsView: View {
             )
         } header: {
             Text("Preferences")
-                .accessibleHeading("Preferences", level: .h2)
+                .accessibleHeading(label: "Preferences", level: .h2)
         }
     }
     
@@ -266,7 +266,7 @@ struct SettingsView: View {
             )
         } header: {
             Text("Privacy & Security")
-                .accessibleHeading("Privacy & Security", level: .h2)
+                .accessibleHeading(label: "Privacy & Security", level: .h2)
         }
     }
     
@@ -302,7 +302,7 @@ struct SettingsView: View {
             )
         } header: {
             Text("Support")
-                .accessibleHeading("Support", level: .h2)
+                .accessibleHeading(label: "Support", level: .h2)
         }
     }
     
@@ -348,7 +348,7 @@ struct SettingsView: View {
             )
         } header: {
             Text("About")
-                .accessibleHeading("About", level: .h2)
+                .accessibleHeading(label: "About", level: .h2)
         }
     }
 }
@@ -411,15 +411,9 @@ struct SettingsRow: View {
             .padding(.vertical, Spacing.xs)
         }
         .buttonStyle(PlainButtonStyle())
-        .accessibleCard(
-            title: title,
-            subtitle: subtitle,
-            hint: "Tap to \(title.lowercased())"
-        )
-        .switchControlAccessible(
-            identifier: "settings-\(title.lowercased().replacingOccurrences(of: " ", with: "-"))",
-            sortPriority: 0.7
-        )
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel(title)
+        .accessibilityHint("Tap to \(title.lowercased())")
     }
     
     private var iconColor: Color {

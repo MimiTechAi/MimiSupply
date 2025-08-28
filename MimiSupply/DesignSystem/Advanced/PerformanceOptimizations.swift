@@ -259,8 +259,9 @@ struct Debounced<T: Equatable> {
             pendingValue = newValue
             timer?.invalidate()
             let currentValue = newValue
+            let currentAction = action
             timer = Timer.scheduledTimer(withTimeInterval: delay, repeats: false) { _ in
-                action(currentValue)
+                currentAction(currentValue)
             }
         }
     }

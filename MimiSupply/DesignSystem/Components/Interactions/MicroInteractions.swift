@@ -295,21 +295,14 @@ struct LoadingButton: View {
     private func handleAction() {
         isLoading = true
         loadingProgress = 0
-        
-        // Simulate loading progress
-        let progressTimer = Timer.scheduledTimer(withTimeInterval: 0.1, repeats: true) { timer in
-            Task { @MainActor in
-                self.loadingProgress += 0.1
-                if self.loadingProgress >= 1.0 {
-                    DispatchQueue.main.async {
-                        timer.invalidate()
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                            self.isLoading = false
-                            self.action()
-                        }
-                    }
-                }
+        Task { @MainActor in
+            for _ in 0..<10 {
+                try? await Task.sleep(for: .milliseconds(100))
+                loadingProgress += 0.1
             }
+            try? await Task.sleep(for: .milliseconds(500))
+            isLoading = false
+            action()
         }
     }
 }

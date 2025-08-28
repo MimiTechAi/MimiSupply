@@ -104,7 +104,8 @@ final class BiometricAuthService: ObservableObject {
         authenticationStatus = .authenticating
         
         do {
-            let success = try await context.evaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, localizedReason: reason)
+            let authContext = LAContext()
+            let success = try await authContext.evaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, localizedReason: reason)
             
             if success {
                 await handleSuccessfulAuthentication()
@@ -365,7 +366,7 @@ final class BiometricAuthService: ObservableObject {
     private func disableForSecurityReason(_ reason: SecurityReason) async {
         logger.warning("🚨 Disabling biometric auth for security reason: \(reason.rawValue)")
         
-        await disableBiometricAuth()
+        _ = await disableBiometricAuth()
         
         // Notify about security event
         NotificationCenter.default.post(

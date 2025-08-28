@@ -18,7 +18,7 @@ protocol PaymentService: Sendable {
 }
 
 /// Result of payment operations
-struct PaymentResult: Sendable {
+struct PaymentResult: Sendable, Equatable {
     let transactionId: String
     let status: PaymentStatus
     let amount: Int

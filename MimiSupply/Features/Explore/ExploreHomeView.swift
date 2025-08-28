@@ -233,7 +233,6 @@ struct ExploreHomeView: View {
                 .accessibleHeading(label: "Categories", level: .h2)
             categoriesScrollView
         }
-        .accessibilityElement(children: .contain)
     }
 
     @ViewBuilder
@@ -279,13 +278,10 @@ struct ExploreHomeView: View {
             .cornerRadius(12)
             .shadow(radius: 1)
         }
-        .accessibleCard(
-            title: category.displayName,
-            subtitle: "\(viewModel.getPartnerCount(for: category)) partners",
-            hint: "Tap to filter by \(category.displayName.lowercased())",
-            isSelected: viewModel.selectedCategory == category
-        )
-        .accessibilityElement(children: .contain)
+        .accessibilityLabel(category.displayName)
+        .accessibilityValue(Text("\(viewModel.getPartnerCount(for: category)) partners"))
+        .accessibilityHint("Tap to filter by \(category.displayName.lowercased())")
+        .accessibilityAddTraits(viewModel.selectedCategory == category ? .isSelected : [])
     }
     
     private var featuredSection: some View {
@@ -322,7 +318,6 @@ struct ExploreHomeView: View {
             }
             .padding(.horizontal, -20)
         }
-        .accessibilityElement(children: .contain)
     }
     
 

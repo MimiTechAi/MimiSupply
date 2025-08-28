@@ -31,11 +31,11 @@ final class LocalizationManager: ObservableObject, @unchecked Sendable {
     
     private init() {
         // Initialize with system language or saved preference
-        let savedLanguageCode = userDefaults.string(forKey: languageKey) ?? 
-                               Locale.current.language.languageCode?.identifier ?? "en"
+        let savedLanguageCode = userDefaults.string(forKey: languageKey) ??
+                                Locale.current.language.languageCode?.identifier ?? "en"
         
-        let language = SupportedLanguage.allLanguages.first { $0.code == savedLanguageCode } ?? 
-                      SupportedLanguage.english
+        let language = SupportedLanguage.allLanguages.first { $0.code == savedLanguageCode } ??
+                       SupportedLanguage.english
         
         self.currentLanguage = language
         self.currentLocale = Locale(identifier: language.localeIdentifier)

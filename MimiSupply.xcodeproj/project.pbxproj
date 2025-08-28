@@ -34,6 +34,7 @@
 		22653D702E4CBA89006F76C2 /* MimiSupply.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MimiSupply.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		22653D7D2E4CBA8A006F76C2 /* MimiSupplyTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = MimiSupplyTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		22653D872E4CBA8A006F76C2 /* MimiSupplyUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = MimiSupplyUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		22F7430C2E5E07B9000F599F /* MimiSupply.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; path = MimiSupply.xctestplan; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -113,6 +114,7 @@
 		22653D672E4CBA89006F76C2 = {
 			isa = PBXGroup;
 			children = (
+				22F7430C2E5E07B9000F599F /* MimiSupply.xctestplan */,
 				22653D722E4CBA89006F76C2 /* MimiSupply */,
 				22653D802E4CBA8A006F76C2 /* MimiSupplyTests */,
 				22653D8A2E4CBA8A006F76C2 /* MimiSupplyUITests */,
