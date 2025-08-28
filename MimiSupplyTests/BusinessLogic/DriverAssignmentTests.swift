@@ -237,6 +237,8 @@ final class DriverAssignmentTests: XCTestCase {
     func testCalculateEstimatedDeliveryTime() async throws {
         // Given
         let driver = createTestDriver(
+            name: "Test Driver",
+            phoneNumber: "+1234567890",
             location: CLLocationCoordinate2D(latitude: 37.7749, longitude: -122.4194)
         )
         let pickupLocation = CLLocationCoordinate2D(latitude: 37.7849, longitude: -122.4094)
