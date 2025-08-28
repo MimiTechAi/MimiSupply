@@ -93,7 +93,7 @@ final class CartIntegrationTests: XCTestCase {
         try await cartService.addItem(product: product2, quantity: 1, specialInstructions: "Extra sauce")
         
         // Simulate app restart
-        let newCartService = CartService(coreDataStack: mockCoreDataStack)
+        let newCartService = CartService(coreDataStack: mockCartCoreDataStack)
         let newCartViewModel = CartViewModel(cartService: newCartService)
         await newCartViewModel.loadCartItems()
         
