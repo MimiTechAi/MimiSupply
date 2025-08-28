@@ -389,8 +389,8 @@ class MockDriverAssignmentService: DriverAssignmentService {
     var mockDeliveryTime: TimeInterval = 1800 // 30 minutes
     var mockAssignments: [DriverAssignment] = []
     
-    init(driverService: MockDriverService, locationService: MockLocationService) {
-        self.driverService = driverService
+    init(cloudKitService: MockDriverService, locationService: MockLocationService) {
+        self.cloudKitService = cloudKitService
         self.locationService = locationService
     }
     
