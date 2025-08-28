@@ -407,7 +407,7 @@ class MockDriverAssignmentService: DriverAssignmentService {
         }
         
         // Return first available driver from the mock service
-        return driverService.mockAvailableDrivers.first
+        return cloudKitService.mockAvailableDrivers.first
     }
     
     func calculateEstimatedPickupTime(
