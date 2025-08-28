@@ -17,7 +17,7 @@ final class CoreDataStackTests: XCTestCase {
     override func setUpWithError() throws {
         super.setUp()
         // Use in-memory store for testing
-        sut = CoreDataStack()
+        sut = CoreDataStack.shared
         
         // Configure for testing
         let description = NSPersistentStoreDescription()
